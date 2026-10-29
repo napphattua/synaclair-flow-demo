@@ -1,0 +1,2129 @@
+{
+ "welcome": {
+  "type": "flex",
+  "altText": "เริ่มขอรับบริการกายภาพที่บ้าน",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "เริ่มขอรับบริการ\nกายภาพที่บ้าน",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ประเมินเบื้องต้น ไม่ถึง 3 นาที",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "มีคำถาม พิมพ์ในแชตนี้ได้เลย ทีมตอบให้ค่ะ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เริ่มคัดกรอง",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Frequest"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-welcome.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "received": {
+  "type": "flex",
+  "altText": "รับคำขอเรียบร้อยแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "รับคำขอเรียบร้อยแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เลขอ้างอิง: SC-2610-0099",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ผู้รับบริการ: คุณแม่สมใจ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "นัดให้: คุณแม่",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เบอร์โทร: 08x-xxx-1234",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "พื้นที่: บางนา กรุงเทพฯ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เวลาหลัก: เสาร์ 25 ต.ค. ช่วงเช้า",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "สถานะ: กำลังประสานนักกายภาพ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ทีมจะแจ้งผ่าน LINE เมื่อพบนักกายภาพที่รับงานได้",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูสถานะคำขอ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fhome"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "แก้ไขข้อมูล",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Frequest%3Fedit%3D11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-request-received.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "intakePay": {
+  "type": "flex",
+  "altText": "เปิดรายละเอียดชำระเงิน",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "เปิดรายละเอียดชำระเงิน",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "หลังตรวจยอดเงินผ่านจึงเริ่มจับคู่ ไม่ใช่นัดยืนยัน",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิด QR และรายละเอียดชำระ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fpayments%2F11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-request-received.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "invoiceOpen": {
+  "type": "flex",
+  "altText": "รายการชำระเงิน",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "รายการชำระเงิน",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "1,599.00 บาท",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ครบกำหนด 20 ต.ค. 2569",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดรายการชำระ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fpayments"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ติดต่อทีมเรื่องการชำระ",
+       "uri": "https://synaclair.example/support"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-payment-due.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "receipt": {
+  "type": "flex",
+  "altText": "รับชำระเงินแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "1,599.00 บาท",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "สถานะได้รับการยืนยันจากผู้ให้บริการชำระเงินแล้ว",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูรายการ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fpayments"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-payment-received.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "intakeMatching": {
+  "type": "flex",
+  "altText": "ตรวจเงินแล้ว · กำลังจับคู่ PT",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "ตรวจเงินแล้ว · กำลังจับคู่ PT",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เก็บยอดที่ตรวจรับแล้ว ไม่ต้องชำระซ้ำ เปิดดูสถานะล่าสุดได้เลย",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูสถานะคำขอ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fhome"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-request-received.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "ptOffer": {
+  "type": "flex",
+  "altText": "ข้อเสนองานใหม่",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+     {
+      "type": "box",
+      "layout": "vertical",
+      "backgroundColor": "#E8F6EE",
+      "paddingAll": "md",
+      "cornerRadius": "md",
+      "contents": [
+       {
+        "type": "text",
+        "text": "SynaClair",
+        "color": "#0E7A55",
+        "weight": "bold",
+        "size": "md"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": "ข้อเสนองานใหม่",
+      "weight": "bold",
+      "size": "lg",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เขต/อำเภอ: บางนา กรุงเทพฯ",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เสาร์ 25 ต.ค. 09:00–10:30",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ประเภทความช่วยเหลือ: ปวดหลังส่วนล่าง เดินได้ช้า",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "รายได้สุทธิ: 1,199.00 บาท",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ตอบรับภายใน 12:00",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+     {
+      "type": "button",
+      "style": "link",
+      "color": "#00543C",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูรายละเอียด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fpt%2Foffers"
+      }
+     },
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00543C",
+      "height": "sm",
+      "action": {
+       "type": "postback",
+       "label": "รับงาน",
+       "data": "act=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "displayText": "รับงาน"
+      }
+     },
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00543C",
+      "height": "sm",
+      "action": {
+       "type": "postback",
+       "label": "ปฏิเสธ",
+       "data": "act=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+       "displayText": "ปฏิเสธ"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "ptAccepted": {
+  "type": "flex",
+  "altText": "พบนักกายภาพที่รับงานได้",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "พบนักกายภาพที่รับงานได้",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "box",
+      "layout": "horizontal",
+      "spacing": "md",
+      "contents": [
+       {
+        "type": "box",
+        "layout": "vertical",
+        "flex": 1,
+        "height": "72px",
+        "backgroundColor": "#E5EFE8",
+        "cornerRadius": "36px",
+        "contents": [
+         {
+          "type": "text",
+          "text": "PT",
+          "color": "#285C48",
+          "weight": "bold",
+          "align": "center",
+          "gravity": "center"
+         }
+        ]
+       },
+       {
+        "type": "box",
+        "layout": "vertical",
+        "flex": 3,
+        "contents": [
+         {
+          "type": "text",
+          "text": "คุณบอส",
+          "weight": "bold",
+          "size": "md",
+          "wrap": true
+         },
+         {
+          "type": "text",
+          "text": "เลขใบประกอบวิชาชีพ ก.12345",
+          "color": "#42564F",
+          "size": "xs",
+          "wrap": true
+         },
+         {
+          "type": "text",
+          "text": "ตรวจสอบใบประกอบวิชาชีพแล้ว",
+          "color": "#276D53",
+          "size": "xs",
+          "wrap": true
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": "เสาร์ 25 ต.ค. 09:00–10:30",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ค่าบริการ: 1,599.00 บาท",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ค่าเดินทาง: 0.00 บาท",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ยอดชำระรวม: 1,599.00 บาท",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "PT รับงานแล้ว แต่นัดยังไม่ยืนยันจนกว่าจะตรวจชำระเงิน",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "กรุณาชำระภายใน 12:00",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ชำระเงินและยืนยันนัด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fpayments%2F11111111-2222-4333-8444-555555555555"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูโปรไฟล์นักกายภาพ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fcare-team%2Fpt%2F11111111-2222-4333-8444-555555555555%3FreturnTo%3D%252Fapp%252Frequests%253FrequestId%253D11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "confirmed": {
+  "type": "flex",
+  "altText": "นัดหมายยืนยันแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "นัดหมายยืนยันแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เสาร์ 25 ต.ค. 09:00–10:30",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "นักกายภาพ: คุณบอส",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูรายละเอียดนัด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fappointments%2F11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-appointment-confirmed.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "tomorrow": {
+  "type": "flex",
+  "altText": "พรุ่งนี้มีนัดหมาย",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "พรุ่งนี้มีนัดหมาย",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เสาร์ 25 ต.ค. 09:00–10:30",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "นักกายภาพ: คุณบอส",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูรายละเอียดนัด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fappointments%2F11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-appointment-reminder.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "travelStarted": {
+  "type": "flex",
+  "altText": "เริ่มเดินทางแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "เริ่มเดินทางแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "คาดว่าจะถึง 08:50–09:10",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "postback",
+       "label": "ถึงแล้ว",
+       "data": "act=ccccccccccccccccccccccccccccccccccccccccccc",
+       "displayText": "ถึงแล้ว"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดรายละเอียดนัด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fpt%2Ftoday"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-pt-en-route.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "report2": {
+  "type": "flex",
+  "altText": "สรุปการดูแลพร้อมแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "สรุปการดูแลพร้อมแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ครั้งที่ 2",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เปิดอ่านสรุปที่เตรียมไว้สำหรับคุณ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูสรุปวันนี้",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Freports%2Flatest"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-report-ready.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "ptUpcoming": {
+  "type": "flex",
+  "altText": "ใกล้ถึงเวลานัดของคุณ",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "ใกล้ถึงเวลานัดของคุณ",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "09:00 · คุณแม่สมใจ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "พื้นที่: บางนา",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ออกให้ถึงตามนัด และแจ้งช่วงเวลาที่คาดว่าจะถึงเมื่อเริ่มเดินทาง",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เริ่มเดินทาง",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fpt%2Fappointments%2F11111111-2222-4333-8444-555555555555%3Faction%3Dtravel"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูตารางวันนี้",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fpt%2Ftoday"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-appointment-reminder.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "enRoute": {
+  "type": "flex",
+  "altText": "นักกายภาพกำลังเดินทาง",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "นักกายภาพกำลังเดินทาง",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "คาดว่าจะถึง 08:50–09:10",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูสถานะนัด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fappointments"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ติดต่อทีม",
+       "uri": "https://synaclair.example/support"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-pt-en-route.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "visitDone": {
+  "type": "flex",
+  "altText": "จบการดูแลครั้งนี้แล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "จบการดูแลครั้งนี้แล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "รีวิวได้ตามสะดวก เราจะแจ้งอีกครั้งเมื่อสรุปการดูแลพร้อมอ่าน",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "รีวิวการดูแล",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Ffeedback%2F11111111-2222-4333-8444-555555555555"
+      }
+     },
+     {
+      "type": "button",
+      "style": "secondary",
+      "color": "#E7F5EF",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดใบเสร็จ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fpayments%2F11111111-2222-4333-8444-555555555555%2Freceipt"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-feedback.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "report": {
+  "type": "flex",
+  "altText": "สรุปการดูแลพร้อมแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "สรุปการดูแลพร้อมแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ครั้งที่ 1",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เปิดอ่านสรุปที่เตรียมไว้สำหรับคุณ",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูสรุปวันนี้",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Freports%2Flatest"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-report-ready.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "feedback": {
+  "type": "flex",
+  "altText": "ช่วยบอกความเห็นของคุณ",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "ช่วยบอกความเห็นของคุณ",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "มีเพียง 2 คำถาม ใช้เวลาไม่เกิน 30 วินาที",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูนัดที่พร้อมประเมิน",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fappointments"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-feedback.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "courseProposal": {
+  "type": "flex",
+  "altText": "แผนบริการที่แนะนำสำหรับคุณ",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "แผนบริการที่แนะนำสำหรับคุณ",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "แผน 10 ครั้ง ใน 5 สัปดาห์ · สัปดาห์ละ 2 ครั้ง",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ชำระเต็มคอร์สผ่าน QR และรอทีมตรวจสอบยอด",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูราคาคอร์ส",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fcourses%2Foffers%3FpatientId%3D11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-payment-due.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "courseReceipt": {
+  "type": "flex",
+  "altText": "รับชำระเงินแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "12,900.00 บาท",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ทีมตรวจสอบยอดเงินแล้ว สิทธิ์คอร์สพร้อมใช้งาน",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูรายการ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fcourses%2Fpayments%2F11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-payment-received.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "courseFollowup": {
+  "type": "flex",
+  "altText": "มีเวลานัดครั้งถัดไปให้ยืนยัน",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "มีเวลานัดครั้งถัดไปให้ยืนยัน",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ครั้งที่ 2 · อังคาร 28 ต.ค. 09:00",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "โปรดยืนยันเวลาก่อนนัดหมายมีผล",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูและยืนยันนัดต่อ",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fcourses%3FpatientId%3D11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-appointment-confirmed.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "confirmedCourse": {
+  "type": "flex",
+  "altText": "นัดหมายยืนยันแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "นัดหมายยืนยันแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "อังคาร 28 ต.ค. 09:00–10:30",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "นักกายภาพ: คุณบอส",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ใช้สิทธิ์คอร์ส · เหลือ 9 ครั้ง",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูรายละเอียดนัด",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fappointments%2F11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-appointment-confirmed.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "appStatus": {
+  "type": "flex",
+  "altText": "รับใบสมัครของคุณแล้ว",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "รับใบสมัครของคุณแล้ว",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ทีมจะติดต่อเรื่องสัมภาษณ์ทาง LINE บัญชีนี้ ไม่ต้องส่งอีเมล",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดใบสมัคร",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fpt%2Fapply"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-welcome.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "interview": {
+  "type": "flex",
+  "altText": "นัดคุยกับทีม SynaClair",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "นัดคุยกับทีม SynaClair",
+      "color": "#004C38",
+      "weight": "bold",
+      "size": "xl",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "จันทร์ 20 ต.ค. 14:00 · Google Meet",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "เปิดดูรายละเอียดและตอบรับเวลาจากใบสมัครได้เลย",
+      "size": "sm",
+      "color": "#42564F",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#00885F",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดใบสมัคร",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fpt%2Fapply"
+      }
+     }
+    ]
+   },
+   "hero": {
+    "type": "image",
+    "url": "https://synaclair.example/line-cards/team-20261012-welcome.png",
+    "size": "full",
+    "aspectRatio": "3:2",
+    "aspectMode": "fit",
+    "backgroundColor": "#FFFEFB"
+   }
+  }
+ },
+ "paymentReview": {
+  "type": "flex",
+  "altText": "มีหลักฐานชำระเงินรอตรวจ",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+     {
+      "type": "box",
+      "layout": "vertical",
+      "backgroundColor": "#E8F6EE",
+      "paddingAll": "md",
+      "cornerRadius": "md",
+      "contents": [
+       {
+        "type": "text",
+        "text": "SynaClair",
+        "color": "#0E7A55",
+        "weight": "bold",
+        "size": "md"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": "มีหลักฐานชำระเงินรอตรวจ",
+      "weight": "bold",
+      "size": "lg",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "นัดรับบริการ · 1,599.00 บาท",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ตรวจยอดเงินเข้าบัญชีจริงก่อนยืนยัน",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+     {
+      "type": "button",
+      "style": "link",
+      "color": "#00543C",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดรายการเพื่อตรวจยอด",
+       "uri": "https://synaclair.example/admin/payments?payment=11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "paymentReviewCourse": {
+  "type": "flex",
+  "altText": "มีหลักฐานชำระเงินรอตรวจ",
+  "contents": {
+   "type": "bubble",
+   "size": "kilo",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+     {
+      "type": "box",
+      "layout": "vertical",
+      "backgroundColor": "#E8F6EE",
+      "paddingAll": "md",
+      "cornerRadius": "md",
+      "contents": [
+       {
+        "type": "text",
+        "text": "SynaClair",
+        "color": "#0E7A55",
+        "weight": "bold",
+        "size": "md"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": "มีหลักฐานชำระเงินรอตรวจ",
+      "weight": "bold",
+      "size": "lg",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "คอร์ส · 12,900.00 บาท",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     },
+     {
+      "type": "text",
+      "text": "ตรวจยอดเงินเข้าบัญชีจริงก่อนยืนยัน",
+      "size": "sm",
+      "color": "#4B5563",
+      "wrap": true
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+     {
+      "type": "button",
+      "style": "link",
+      "color": "#00543C",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "เปิดรายการเพื่อตรวจยอด",
+       "uri": "https://synaclair.example/admin/payments?payment=11111111-2222-4333-8444-555555555555"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "myCare": {
+  "type": "flex",
+  "altText": "การดูแลของฉัน · นัดครั้งหน้า 28 ต.ค. 2569",
+  "contents": {
+   "type": "bubble",
+   "size": "mega",
+   "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "paddingAll": "lg",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "text",
+      "text": "การดูแลของฉัน",
+      "weight": "bold",
+      "size": "xl",
+      "color": "#073D2C"
+     },
+     {
+      "type": "box",
+      "layout": "vertical",
+      "spacing": "xs",
+      "paddingAll": "md",
+      "cornerRadius": "lg",
+      "backgroundColor": "#E8F6EE",
+      "borderColor": "#D5EFE1",
+      "borderWidth": "1px",
+      "contents": [
+       {
+        "type": "text",
+        "text": "นัดครั้งหน้า",
+        "size": "xs",
+        "color": "#0E7A55",
+        "weight": "bold"
+       },
+       {
+        "type": "text",
+        "text": "28 ต.ค. 2569 · 09:00 น.",
+        "size": "lg",
+        "color": "#073D2C",
+        "wrap": true,
+        "weight": "bold"
+       },
+       {
+        "type": "text",
+        "text": "นักกายภาพ คุณบอส",
+        "size": "sm",
+        "color": "#42564F",
+        "wrap": true
+       },
+       {
+        "type": "text",
+        "text": "ยืนยันแล้ว",
+        "size": "xs",
+        "color": "#0E7A55",
+        "wrap": true
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "layout": "vertical",
+      "spacing": "xs",
+      "paddingAll": "md",
+      "cornerRadius": "lg",
+      "backgroundColor": "#FFFFFF",
+      "borderColor": "#D5EFE1",
+      "borderWidth": "1px",
+      "contents": [
+       {
+        "type": "text",
+        "text": "คอร์สของคุณ",
+        "size": "xs",
+        "color": "#0E7A55",
+        "weight": "bold"
+       },
+       {
+        "type": "text",
+        "text": "เหลือ 9 จาก 10 ครั้ง",
+        "size": "md",
+        "color": "#073D2C",
+        "wrap": true,
+        "weight": "bold"
+       },
+       {
+        "type": "box",
+        "layout": "horizontal",
+        "spacing": "xs",
+        "margin": "sm",
+        "contents": [
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#0E7A55",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         },
+         {
+          "type": "box",
+          "layout": "vertical",
+          "height": "8px",
+          "cornerRadius": "4px",
+          "backgroundColor": "#D5EFE1",
+          "contents": []
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "layout": "vertical",
+      "spacing": "xs",
+      "paddingAll": "md",
+      "cornerRadius": "lg",
+      "backgroundColor": "#FFFFFF",
+      "borderColor": "#D5EFE1",
+      "borderWidth": "1px",
+      "contents": [
+       {
+        "type": "text",
+        "text": "ดูแลไปแล้ว",
+        "size": "xs",
+        "color": "#0E7A55",
+        "weight": "bold"
+       },
+       {
+        "type": "text",
+        "text": "1 ครั้ง",
+        "size": "md",
+        "color": "#073D2C",
+        "wrap": true,
+        "weight": "bold"
+       },
+       {
+        "type": "text",
+        "text": "สรุปล่าสุด 20 ต.ค. 2569",
+        "size": "xs",
+        "color": "#42564F",
+        "wrap": true
+       }
+      ]
+     }
+    ]
+   },
+   "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "paddingAll": "lg",
+    "paddingTop": "none",
+    "backgroundColor": "#FFFEFB",
+    "contents": [
+     {
+      "type": "button",
+      "style": "primary",
+      "color": "#0E7A55",
+      "height": "sm",
+      "action": {
+       "type": "uri",
+       "label": "ดูหน้าของฉัน",
+       "uri": "https://liff.line.me/2000000000-abcdEFGH?returnTo=%2Fapp%2Fhome"
+      }
+     }
+    ]
+   }
+  }
+ }
+}

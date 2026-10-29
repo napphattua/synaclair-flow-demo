@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>SynaClair Flow Simulator (Demo)</title>
+<meta name="description" content="ห้องซ้อมโฟลว์ SynaClair: ข้อมูลตัวอย่างทั้งหมด ไม่ส่ง LINE จริง ไม่รับเงินจริง">
+<style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}body{background:#FDFDFD}</style>
+</head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Prompt:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="shell.css">
+<header class="top">
+  <div class="brand"><img src="a/synaclair-logo.svg" alt="SynaClair"><div><b>ห้องซ้อมทั้งระบบ</b><small>กดได้ทุกปุ่ม · ข้อมูลตัวอย่าง · ไม่ส่ง LINE จริง ไม่รับเงินจริง</small></div></div>
+  <nav id="roles" aria-label="สลับบทบาท"></nav>
+</header>
+<section id="flow" aria-label="ผังโฟลว์ทั้งระบบ">
+  <div class="flowhead"><b>ผังโฟลว์ทั้งระบบ</b><small>แตะกล่องเพื่อเปิดหน้านั้น · จุดเขียววิ่งตามขั้นที่คุณซ้อมอยู่</small></div>
+  <div class="boardbox"><div class="lanes" aria-hidden="true"><span data-lane="P" class="lp">คนไข้</span><span data-lane="X" class="lx">แอดมิน</span><span data-lane="T" class="lt">นักกายภาพ</span></div>
+    <div class="board" id="board"><svg id="flowsvg" role="img" aria-label="ผังโฟลว์ 27 ขั้นใน 16 ด่าน"></svg></div></div>
+  <div id="whatif"></div>
+</section>
+<div id="minibar"></div>
+<div class="stagewrap">
+  <aside id="rail" aria-label="ด่านซ้อม"></aside>
+  <section class="stagecol">
+    <div id="guide" aria-live="polite"></div>
+    <div id="devsw" role="group" aria-label="ขนาดหน้าจอ"></div>
+    <div id="dev" class="dev dev-phone"></div>
+  </section>
+  <aside class="linep" aria-label="แชต LINE"><div class="line-phone"><div id="lineHead"></div><div id="lineBody"></div><div id="lineMenu"></div></div></aside>
+</div>
+<button class="line-fab" data-open-line aria-label="เปิดแชต LINE">LINE <span id="lineBadge"></span></button>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="bkk.js"></script>
+<script src="whatif.js"></script>
+<script src="app.js"></script>
+<script src="flow.js"></script>
+<script src="infinity.js"></script>
+<script src="screens-patient.js"></script>
+<script src="screens-pt.js"></script>
+<script src="screens-admin.js"></script>
+</body></html>
