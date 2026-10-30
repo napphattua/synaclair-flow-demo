@@ -1841,7 +1841,7 @@
   const PLAN_DAYS = { 1: [1], 2: [1, 4], 3: [0, 2, 4] };
   const packFor = n => n <= 7 ? 5 : n <= 12 ? 10 : 15;
   function cpOf(s) {
-    if (!s.coursePlan) s.coursePlan = { step: 0, freq: 2, weeks: 5, full: 2000, pack: null, code: false, price: null, bonus: 0, slip: null, next: '', backups: [] };
+    if (!s.coursePlan) s.coursePlan = { step: 0, freq: 2, weeks: 5, full: 1850, pack: null, code: false, price: null, bonus: 0, slip: null, next: '', backups: [] };
     return s.coursePlan;
   }
   const curPack = cp => cp.pack || packFor(cp.freq * cp.weeks);
@@ -2140,7 +2140,7 @@
       if (!c) return `<div class="scr">${ui.bar('สรุปจบคอร์ส')}<div class="body">${ui.empty('flag', 'ยังไม่มีคอร์ส', '')}</div></div>`;
       const total = c.sessions + (c.bonus || 0), goal = (s.coursePlan && s.coursePlan.goal) || ((visitOf(s, 1) || {}).soap || {}).goal || '—';
       if (r.sent) return `<div class="scr">${ui.bar('สรุปจบคอร์ส')}<div class="body">${ui.empty('send', 'ส่งสรุปให้คนไข้แล้ว', r.decided ? 'คนไข้ตัดสินใจแล้ว ดูที่หน้างาน' : 'รอคนไข้เลือกใน LINE · ไม่ตอบใน 3 วัน ระบบเตือน แล้วทีมโทรถาม', '<button class="btn auto" data-go="t.work">กลับหน้างาน</button>')}</div></div>`;
-      const full = Number((s.coursePlan || {}).full) || 2000;
+      const full = Number((s.coursePlan || {}).full) || 1850;
       return `<div class="scr">${ui.bar('สรุปจบคอร์ส')}<div class="body">
         <div class="card cream"><span class="small">คอร์ส ${total} ครั้ง · ใช้ครบแล้ว</span><b class="h3" style="display:block;margin-top:4px">เป้าหมายที่ตั้งไว้ครั้งแรก</b><p class="p" style="color:var(--ink)">${esc(goal)}</p></div>
         <div class="field"><span>ผลเทียบเป้าหมาย</span><div class="stack">${PROG.map(([k, t]) => `<button class="tt-opt ${r.progress === k ? 'on' : ''}" data-pick="renewal.progress" data-value="${k}" aria-pressed="${r.progress === k}">${t}</button>`).join('')}</div></div>

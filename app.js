@@ -225,7 +225,7 @@
       complete() { const x = s.visits[0]; if ((x.remind || 0) < 3) { line('patient', { key: 'tomorrowPatient' }); line('pt', { key: 'ptTomorrow' }); line('pt', { key: 'ptUpcoming' }); } x.remind = 3; x.step = 4; line('patient', { key: 'enRoute' }); line('patient', { key: 'visitDone' }); line('patient', { key: 'feedback' }); } },
     { n: 10, role: 'pt', title: 'วางแผนการรักษากับคนไข้', start: 't.visit', done: () => !!((s.course && s.course.slip && s.course.next && s.course.notified) || (s.perVisit && s.perVisit.next)),
       guide: { 't.visit': ['[data-go="t.plan"]', 'กด "วางแผนการรักษากับคนไข้"'], 't.work': ['[data-go="t.plan"]', 'เปิดการ์ดคุยแผนการรักษากับคนไข้'], 't.plan': ['[data-act="planNext"], [data-act="coursePaid"], [data-act="bookNext"]', 'พิมพ์เป้าหมายที่คนไข้อยากได้ → ความถี่และวัน → เลือกคอร์ส → คนไข้สแกนจ่าย แล้วแจ้งแอดมิน → นัดครั้งที่ 2'] },
-      complete() { s.coursePlan = { step: 6, goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', freq: 2, weeks: 5, full: 2000, pack: 10, code: false, price: null, bonus: 0, slip: 'sample', next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'] }; s.course = { sessions: 10, bonus: 0, perSession: 1479, fee: 2408, net: 14792, total: 17200, code: '', paid: false, slip: 'sample', approved: false, used: 1, next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'], notified: true }; line('admin', { key: 'paymentReviewCourse' }); } },
+      complete() { s.coursePlan = { step: 6, goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', freq: 2, weeks: 5, full: 1850, pack: 10, code: false, price: null, bonus: 0, slip: 'sample', next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'] }; s.course = { sessions: 10, bonus: 0, perSession: 1368, fee: 2227, net: 13683, total: 15910, code: '', paid: false, slip: 'sample', approved: false, used: 1, next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'], notified: true }; line('admin', { key: 'paymentReviewCourse' }); } },
     { n: 11, role: 'pt', title: 'เขียน OPD ภายใน 2 ชม.', start: 't.work', done: () => !!(s.visits[0] && s.visits[0].published),
       guide: { 't.plan': ['[data-act="planDone"]', 'กด "เขียน OPD"'], 't.work': ['[data-go="t.opd"]', 'เปิดบันทึกที่ต้องส่ง'], 't.opd': ['[data-act="publishReport"]', 'เป้าหมายดึงมาจากแผนที่คุยกับคนไข้ เขียน OPD แล้วกด "ลงนามและส่งสรุป"'] },
       complete() { const x = s.visits[0]; x.published = true; x.soap = { goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', s: 'Low back pain when standing up, 6/10', o: 'Needs hands to push up from a chair; slow gait', t: ['Lumbar mobilization', 'Sit-to-stand training, 3 sets', 'Home exercise teaching'], p: 'ฝึกลุกจากเก้าอี้ 10 ครั้ง วันละ 2 รอบ มีคนยืนข้าง ๆ', dx: 'Low back pain with lower-limb weakness', family: 'ให้คุณแม่ฝึกลุกนั่งวันละ 2 รอบ มีคนยืนข้าง ๆ' }; line('patient', { key: 'report' }); } },
@@ -272,7 +272,9 @@
       .replace(/คุณบอส/g, s.pt.displayName || 'คุณบอส')
       .replace(/SC-2610-0099/g, (s.request && s.request.ref) || 'SC-2610001')
       .replace(/บางนา/g, s.patient.address.district || s.patient.district || 'บางนา')
-      .replace(/เสาร์ 25 ต\.ค\./g, 'เสาร์ 24 ต.ค.').replace(/28 ต\.ค\./g, '27 ต.ค.').replace(/27 ต\.ค\. 09:00–10:30/g, '27 ต.ค. 09:00–10:00');
+      .replace(/เสาร์ 25 ต\.ค\./g, 'เสาร์ 24 ต.ค.').replace(/28 ต\.ค\./g, '27 ต.ค.').replace(/27 ต\.ค\. 09:00–10:30/g, '27 ต.ค. 09:00–10:00')
+      // The real course card carries an old sample total; show the course this rehearsal priced (Boss 30 Oct: 10 visits = ฿15,910).
+      .replace(/12,900\.00/g, (s.course ? s.course.total : 15910).toLocaleString('en-US', { minimumFractionDigits: 2 }));
   }
   function fnode(c, parent, cardKey) {
     const st = []; const t = c.type;
