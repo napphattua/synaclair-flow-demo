@@ -347,8 +347,9 @@
     r.check = odd ? { ok: false, reasons: [ODD], state: 'open' } : { ok: true, reasons: [], state: 'auto' };
     r.status = 'PAID';
     if (odd) line('admin', { key: 'slipFlag', text: `ระบบตรวจสลิป ${r.ref}: ${ODD} · ระบบจับคู่ PT ต่อไปแล้ว รบกวนแอดมินดูสลิปนี้` });
-    else line('patient', { key: 'receipt' });
-    line('patient', { key: 'intakeMatching' });
+    /* A wrong-amount slip still moves to matching, but the patient is never told the money was checked (ChatGPT review 30 Oct). */
+    if (odd) line('patient', { key: 'slipPending', text: 'ได้รับสลิปแล้ว · กำลังหานักกายภาพให้ ระหว่างนี้ทีมขอตรวจยอดชำระอีกครั้ง ถ้ามีอะไรต้องแก้ ทีมจะทักในแชตนี้' });
+    else { line('patient', { key: 'receipt' }); line('patient', { key: 'intakeMatching' }); }
     const mc = meCandidate(s);
     if (mc && mc.ok && (mc.zoneOk || mc.preferred) && !mc.warn) { r.status = 'OFFERED'; r.offerTo = ['me']; r.auto = mc.preferred ? 'ผู้รับบริการขอคนนี้' : 'ตรงเขตที่รับงาน'; line('pt', { key: 'ptOffer' }); }
   };

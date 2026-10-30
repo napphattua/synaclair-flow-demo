@@ -1521,7 +1521,7 @@
       } else if (tab === 'visits') body = `<div class="list">${s.visits.slice().sort((a, b) => b.n - a.n).map(v => `<button class="li" data-act="openVisit" data-n="${v.n}"><span class="tile">${I(v.step >= 4 ? 'circle-check' : 'calendar-days')}</span><span class="grow"><span class="t">ครั้งที่ ${v.n}</span><br><span class="s">${esc(v.date)} ${esc(v.time)}</span></span><span class="pill ${STEP_PILL[v.step][1]}">${STEP_PILL[v.step][0]}</span></button>`).join('')}</div>`;
       else if (tab === 'notes') body = `<div class="list">${s.visits.filter(v => v.step >= 4).sort((a, b) => b.n - a.n).map(v => v.published
           ? `<button class="li" data-act="viewReport" data-n="${v.n}"><span class="tile">${I('file-check-2')}</span><span class="grow"><span class="t">${v.n === 1 ? 'OPD' : 'SOAP'} ครั้งที่ ${v.n}</span><br><span class="s">${esc(v.date)} · ลงนามแล้ว</span></span>${I('chevron-right', 'chev')}</button>`
-          : `<button class="li" data-go="t.opd" data-p-n="${v.n}"><span class="tile gold">${I('file-pen-line')}</span><span class="grow"><span class="t">${v.n === 1 ? 'OPD' : 'SOAP'} ครั้งที่ ${v.n}</span><br><span class="s">ยังไม่ได้เขียน · ส่งภายใน 20:00</span></span><span class="pill wait">ค้าง</span></button>`).join('') || `<p class="tt-bnone">ยังไม่มีบันทึก</p>`}</div>`;
+          : `<button class="li" data-go="t.opd" data-p-n="${v.n}"><span class="tile gold">${I('file-pen-line')}</span><span class="grow"><span class="t">${v.n === 1 ? 'OPD' : 'SOAP'} ครั้งที่ ${v.n}</span><br><span class="s">ยังไม่ได้เขียน · ${opdDue(v)}</span></span><span class="pill wait">ค้าง</span></button>`).join('') || `<p class="tt-bnone">ยังไม่มีบันทึก</p>`}</div>`;
       else body = `<div class="list">
           <button class="li" data-go="t.cert"><span class="tile ${s.cert.requested && !s.cert.issued ? 'gold' : ''}">${I('file-text')}</span><span class="grow"><span class="t">ใบรับรองกายภาพบำบัด</span><br><span class="s">${s.cert.issued ? 'ส่งแล้ว' : s.cert.requested ? 'คนไข้ขอแล้ว · ค้าง' : 'คนไข้ยังไม่ได้ขอ'}</span></span>${I('chevron-right', 'chev')}</button>
           ${s.renewal && s.renewal.sent ? `<button class="li" data-go="t.renew"><span class="tile">${I('flag')}</span><span class="grow"><span class="t">สรุปจบคอร์ส</span><br><span class="s">${s.renewal.decided ? 'คนไข้ตัดสินใจแล้ว' : 'รอคนไข้ตัดสินใจ'}</span></span>${I('chevron-right', 'chev')}</button>` : ''}</div>`;
@@ -1557,7 +1557,7 @@
           <div class="small row">${I('map-pin')}${esc(districtOf(s))} · ถึงก่อนเวลา 10 นาที</div></button>`).join('')}`);
       const toWrite = s.visits.filter(v => v.step >= 4 && !v.published && (v.n !== 1 || planDone(s)));
       if (toWrite.length) put('docs', `${toWrite.map(v => `<button class="card tap tt-cardbtn" data-go="t.opd" data-p-n="${v.n}">
-          <div class="row"><span class="tile gold">${I('file-pen-line')}</span><span class="grow"><b class="h3">${v.n === 1 ? 'เขียน OPD' : 'เขียน SOAP ครั้งที่ ' + v.n} · ${esc(pname(s))}</b><br><span class="small">ส่งภายใน 20:00 วันนี้</span></span>${I('chevron-right')}</div></button>`).join('')}`);
+          <div class="row"><span class="tile gold">${I('file-pen-line')}</span><span class="grow"><b class="h3">${v.n === 1 ? 'เขียน OPD' : 'เขียน SOAP ครั้งที่ ' + v.n} · ${esc(pname(s))}</b><br><span class="small">${opdDue(v)}</span></span>${I('chevron-right')}</div></button>`).join('')}`);
       const v1 = visitOf(s, 1);
       if (v1 && v1.step >= 4 && !planDone(s)) put('docs', `<button class="card tap tt-cardbtn" data-go="t.plan">
           <div class="row"><span class="tile">${I('clipboard-check')}</span><span class="grow"><b class="h3">คุยแผนการดูแล · ${esc(pname(s))}</b><br><span class="small">${s.coursePlan && s.coursePlan.step ? 'ทำต่อจากขั้นที่ค้างไว้' : 'วางแผน เสนอคอร์ส ให้คนไข้สแกนจ่าย และนัดครั้งที่ 2 หน้างาน'}</span></span>${I('chevron-right')}</div></button>`);
@@ -1589,6 +1589,8 @@
         </div>${ui.tabs('pt', 't.work')}</div>`;
     }
   });
+  // OPD/SOAP is due 2 hours after the visit ends (user-requirements 15 Oct); the old card said a fixed 20:00.
+  function opdDue(v) { const m = /–(\d{2}):(\d{2})/.exec(v.time || ''); if (!m) return 'ส่งภายใน 2 ชม. หลังจบเคส'; const t = +m[1] * 60 + +m[2] + 120; return `ส่งภายใน ${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${m[2]} (2 ชม. หลังจบเคส)`; }
   function remainMin(s) { const t0 = s.pt.offerSeenAt || Date.now(); return Math.max(1, 30 - Math.floor((Date.now() - t0) / 60000)); }
   act('openOffer', s => { if (!s.pt.offerSeenAt) s.pt.offerSeenAt = Date.now(); return 't.offer'; });
   // Rehearsal time skip before visit 1: day-before confirmation in LINE for both sides, then the 1-hour card whose button opens t.visit.
@@ -1752,10 +1754,10 @@
   });
   act('ptMaps', (s, ctx) => ctx.toast('ห้องซ้อม: ในระบบจริงเปิดแอปแผนที่นำทางไปบ้านคนไข้'));
   act('ptCallFamily', (s, ctx) => ctx.toast('ห้องซ้อม: โทรผ่านเบอร์กลางของ SynaClair เบอร์จริงไม่แสดง'));
-  act('ptCallTeam', () => openSheet(() => `<b class="h2">ติดต่อทีม SynaClair</b><p class="small">ทีมตอบทุกวัน 08:00–20:00 · เรื่องด่วนระหว่างทำเคสโทรได้ทันที</p>
+  act('ptCallTeam', () => openSheet(() => `<b class="h2">ติดต่อทีม SynaClair</b><p class="small">ทีมตอบทุกวัน 08:00–22:00 · เรื่องด่วนระหว่างทำเคสโทรได้ทันที</p>
       <button class="btn" data-act="ptTeamCall">${I('phone')}โทรหาทีม</button><button class="btn line" data-act="ptTeamLine">${I('message-circle')}ทักทีมใน LINE</button><button class="btn ghost" data-close>ปิด</button>`));
   act('ptTeamCall', (s, ctx) => { ctx.close(); ctx.toast('ห้องซ้อม: กำลังโทรหาทีม SynaClair'); });
-  act('ptTeamLine', (s, ctx) => { ctx.close(); ctx.toast('เปิดแชตทีมใน LINE แล้ว ทีมตอบใน 08:00–20:00'); });
+  act('ptTeamLine', (s, ctx) => { ctx.close(); ctx.toast('เปิดแชตทีมใน LINE แล้ว ทีมตอบใน 08:00–22:00'); });
 
   /* ======================================================================
      t.opd · OPD ครั้งแรก / SOAP ครั้งถัดไป
@@ -2208,7 +2210,7 @@
         </div>
         <span class="kick">ช่วยเหลือ</span>
         <div class="list">
-          <button class="li" data-act="ptHelp"><span class="tile">${I('life-buoy')}</span><span class="grow"><span class="t">คุยกับทีม SynaClair</span><br><span class="s">ตอบทุกวัน 08:00–20:00</span></span>${I('chevron-right', 'chev')}</button>
+          <button class="li" data-act="ptHelp"><span class="tile">${I('life-buoy')}</span><span class="grow"><span class="t">คุยกับทีม SynaClair</span><br><span class="s">ตอบทุกวัน 08:00–22:00</span></span>${I('chevron-right', 'chev')}</button>
           <button class="li" data-act="ptLogoutAsk"><span class="tile" style="background:var(--redbg);color:var(--red)">${I('log-out')}</span><span class="grow"><span class="t" style="color:var(--red)">ออกจากระบบ</span></span></button>
         </div>
       </div></div>`;
@@ -2221,7 +2223,7 @@
       <button class="btn" data-act="zonesSaved" ${p.zones.length ? '' : 'disabled'}>บันทึก</button>`;
   }));
   act('zonesSaved', (s, ctx) => { ctx.close(); ctx.toast('บันทึกเขตแล้ว งานเสนอส่งตามเขตใหม่'); });
-  act('ptHelp', s => { s.pt.helpMsg = ''; openSheet(() => `<b class="h2">คุยกับทีม SynaClair</b><p class="small">ทีมตอบใน LINE ภายในเวลา 08:00–20:00</p>
+  act('ptHelp', s => { s.pt.helpMsg = ''; openSheet(() => `<b class="h2">คุยกับทีม SynaClair</b><p class="small">ทีมตอบใน LINE ภายในเวลา 08:00–22:00</p>
       <label class="field"><span>เรื่องที่อยากถาม</span><textarea class="in" data-bind="pt.helpMsg" rows="3" placeholder="เช่น อยากเปลี่ยนเขตที่รับงาน"></textarea></label>
       <div class="grid2"><button class="btn ghost" data-close>ยกเลิก</button><button class="btn" data-act="ptHelpSend" data-need="pt.helpMsg">${I('send')}ส่ง</button></div>`); });
   act('ptHelpSend', (s, ctx) => { s.pt.helpMsg = ''; ctx.close(); ctx.toast('ส่งถึงทีมแล้ว ทีมตอบใน LINE'); });

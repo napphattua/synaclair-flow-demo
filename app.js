@@ -90,7 +90,7 @@
     renewal: null,      /* { progress, note, rec: renew|pervisit|stop, pack, sent, decided } (end of course) */
     pastCourses: [],
     course: null,       /* { sessions, bonus, perSession, total, code, paid, slip, approved, used, next, backups:[] } */
-    chat: { patient: [{ from: 'team', text: 'สวัสดีค่ะ ทีม SynaClair ยินดีช่วยค่ะ ถามได้ทุกเรื่อง ตอบในเวลา 08:00–20:00' }] },
+    chat: { patient: [{ from: 'team', text: 'สวัสดีค่ะ ทีม SynaClair ยินดีช่วยค่ะ ถามได้ทุกเรื่อง ตอบในเวลา 08:00–22:00' }] },
     suspicion: { reports: [] },
     line: { patient: [], pt: [], admin: [] },
     unread: { patient: 0, pt: 0, admin: 0 },
@@ -272,7 +272,7 @@
       .replace(/คุณบอส/g, s.pt.displayName || 'คุณบอส')
       .replace(/SC-2610-0099/g, (s.request && s.request.ref) || 'SC-2610001')
       .replace(/บางนา/g, s.patient.address.district || s.patient.district || 'บางนา')
-      .replace(/เสาร์ 25 ต\.ค\./g, 'เสาร์ 24 ต.ค.').replace(/28 ต\.ค\. 2569/g, '27 ต.ค. 2569');
+      .replace(/เสาร์ 25 ต\.ค\./g, 'เสาร์ 24 ต.ค.').replace(/28 ต\.ค\./g, '27 ต.ค.').replace(/27 ต\.ค\. 09:00–10:30/g, '27 ต.ค. 09:00–10:00');
   }
   function fnode(c, parent, cardKey) {
     const st = []; const t = c.type;
@@ -386,7 +386,7 @@
   }
   function richTap(i) {
     const a = RICH[v.role].areas[i], role = v.role;
-    if (a.say) { line(role, { me: true, text: a.say }); line(role, { key: 'teamReply', text: 'ทีม SynaClair รับเรื่องแล้ว พิมพ์คำถามในแชตนี้ได้เลย ทีมตอบทุกวัน 08:00–20:00' }); render(true); return; }
+    if (a.say) { line(role, { me: true, text: a.say }); line(role, { key: 'teamReply', text: 'ทีม SynaClair รับเรื่องแล้ว พิมพ์คำถามในแชตนี้ได้เลย ทีมตอบทุกวัน 08:00–22:00' }); render(true); return; }
     if (a.post === 'my-care') { line(role, { key: 'myCareLive' }); render(true); return; }
     document.body.classList.remove('line-open'); go(a.go);
     if (a.act) runAct(a.act, { dataset: {} });

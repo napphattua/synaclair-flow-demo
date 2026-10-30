@@ -1398,7 +1398,7 @@
     if (/เลื่อน|เวลา|นัด/.test(text)) return 'ได้เลยค่ะ เปิดแท็บ "นัดของฉัน" แล้วกด "ขอเลื่อนนัด" หรือพิมพ์วันเวลาที่สะดวกไว้ที่นี่ ทีมจะเช็กกับนักกายภาพแล้วยืนยันใน LINE ค่ะ';
     if (/ค่า|ราคา|บริการ|จ่าย/.test(text)) return 'ครั้งแรกเป็น ClairConnect Trial ฿1,599 รวมประเมินและรักษาไม่เกิน 1 ชั่วโมงครึ่งค่ะ หลังจากนั้นนักกายภาพจะเสนอคอร์สตามแผนการดูแล ตัดสินใจหน้างานได้เลย';
     if (/ใบเสร็จ/.test(text)) return 'ใบเสร็จอยู่ที่เมนู "ฉัน" > การชำระเงินและใบเสร็จ ค่ะ ทีมส่งเข้า LINE ให้ทุกครั้งหลังตรวจเงิน';
-    return 'รับทราบค่ะ ทีมจะตอบเรื่องนี้ภายใน 15 นาทีในเวลาทำการ 08:00–20:00 นะคะ';
+    return 'รับทราบค่ะ ทีมจะตอบเรื่องนี้ภายใน 15 นาทีในเวลาทำการ 08:00–22:00 นะคะ';
   }
   /* p.chat is the "ช่วยเหลือ" tab (Boss 21 Oct): no second chat inside the app, since patients already talk to the team in LINE.
      It opens that LINE chat, sends common requests into it with one tap, and links the self-service pages. */
@@ -1408,7 +1408,7 @@
     render() {
       return `<div class="scr pp">${ui.bar('ช่วยเหลือ', { back: false })}
         <div class="body enter">
-          <section class="pp-linecard"><span class="lg">${I('message-circle')}</span><span class="grow"><b>คุยกับทีมใน LINE</b><small>แชตเดียวกับที่ได้การ์ดนัดและสรุปการดูแล · ทีมตอบ 08:00–20:00</small></span>
+          <section class="pp-linecard"><span class="lg">${I('message-circle')}</span><span class="grow"><b>คุยกับทีมใน LINE</b><small>แชตเดียวกับที่ได้การ์ดนัดและสรุปการดูแล · ทีมตอบ 08:00–22:00</small></span>
             <button class="btn pp-linebtn" data-open-line>เปิดแชต LINE</button></section>
           <h2 class="sec-h">${I('send')}ส่งเรื่องเข้า LINE ในแตะเดียว</h2>
           <div class="pp-help">${HELP_ASK.map(([ic, t], i) => `<button data-act="helpAsk" data-i="${i}"><span class="tile">${I(ic)}</span>${t}</button>`).join('')}</div>
