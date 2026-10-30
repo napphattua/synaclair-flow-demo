@@ -73,9 +73,6 @@
   .pp .btn.pp-linebtn { width: 100%; background: #06c755; color: #fff; box-shadow: 0 8px 18px #06c75533; }
   .pp-help { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .pp-help button { display: grid; justify-items: start; gap: 8px; padding: 14px; border: 0; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px var(--line); font: 600 15px var(--display); color: var(--forest); text-align: left; }
-  .pp-geo { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px var(--mint2), 0 6px 16px #0730230d; font-size: 15px; color: var(--sub); }
-  .pp-geo > svg { flex: none; color: var(--em); } .pp-geo b { color: var(--forest); } .pp-geo small { display: block; font-size: 12.5px; color: var(--mute); }
-  .pp-geo .btn { flex: none; min-height: 38px; padding: 0 16px; } .pp-geo .link { flex: none; }
   .pp-cta { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border: 0; border-radius: 18px; background: var(--g-sheen), var(--g-em); color: #fff; box-shadow: 0 12px 24px #00583e40; text-align: left; }
   .pp-cta .ic { width: 50px; height: 50px; border-radius: 15px; background: #ffffff24; display: grid; place-items: center; flex: none; } .pp-cta .ic svg { width: 27px; height: 27px; }
   .pp-cta b { display: block; font-size: 19px; color: #fff; } .pp-cta small { font-size: 14px; opacity: .92; } .pp-cta > svg { margin-left: auto; width: 24px; height: 24px; }
@@ -792,15 +789,14 @@
   SC.action('likePost', (s, c) => { toggle(s.patient.likes = s.patient.likes || [], c.data.k); });
   SC.action('savePost', (s, c) => { if (toggle(s.patient.saves = s.patient.saves || [], c.data.k)) c.toast('บันทึกโพสต์แล้ว'); });
   SC.action('feedClear', s => { s.patient.q = ''; s.patient.cat = ''; s.patient.sort = 'rec'; });
-  /* No district picker up front (Boss 21 Oct): the site reads the device location, guesses the district and asks "ใช่ไหม".
-     Real build: navigator.geolocation → nearest district in BKK; if the visitor declines, "แก้" opens the same district list. Here the guess is fixed. */
+  /* No district picker up front (Boss 21 Oct). Like Grab (Boss 30 Oct): use the device location straight away, no "ใช่ไหม" question; "แก้" opens the district list.
+     Real build: navigator.geolocation → nearest district in BKK; if location is denied, show "เลือกเขต" instead. Here the location is fixed. */
   const GEO_GUESS = 'บางนา';
   /* Greeting uses the LINE display name from login (LIFF profile), not the intake name, which may belong to the person being cared for. */
   const LINE_NAME = 'สมศรี';
-  SC.action('geoYes', (s, c) => { s.patient.district = GEO_GUESS; c.toast(`เรียงนักกายภาพใกล้ ${GEO_GUESS} ขึ้นก่อนแล้ว`); });
   SC.action('openDistrict', (s, c) => { ppSheet(c, districtSheet(s)); });
-  SC.action('districtChosen', (s, c) => { c.close(); c.toast(`เรียงนักกายภาพใกล้ ${s.patient.district} ขึ้นก่อนแล้ว`); });
-  SC.action('clearDistrict', (s, c) => { s.patient.district = null; c.close(); c.toast('ไม่ระบุย่าน: เรียงตามรีวิว'); });
+  SC.action('districtChosen', (s, c) => { s.patient.geo = false; c.close(); c.toast(`เรียงนักกายภาพใกล้ ${s.patient.district} ขึ้นก่อนแล้ว`); });
+  SC.action('clearDistrict', (s, c) => { s.patient.district = null; s.patient.geo = false; s.patient.geoOff = true; c.close(); c.toast('ไม่ระบุย่าน: เรียงตามรีวิว'); });
   const openPt = (s, c) => { s.patient.viewPt = c.data.id; s.patient.ptTab = 'about'; return 'p.pt'; };
   SC.action('openPt', openPt);
   SC.action('openPtCover', openPt);
@@ -830,6 +826,7 @@
   SC.screen('p.find', {
     role: 'patient',
     render(s) {
+      if (!s.patient.district && !s.patient.geoOff) { s.patient.district = GEO_GUESS; s.patient.geo = true; }
       const d = s.patient.district, cat = s.patient.cat || '', f = s.patient.findF || 'all';
       let list = feedList(s);
       const nRec = list.filter(p => isRec(s, p)).length, nNear = list.filter(p => p.tier < 2).length;
@@ -839,8 +836,8 @@
         <header class="pl-top">
           <h1 class="pl-fh">ค้นหานักกายภาพ</h1>
           <label class="pl-search">${I('search')}<input class="in" data-bind="patient.q" data-live value="${esc(s.patient.q || '')}" placeholder="ชื่อ อาการ หรือเขต เช่น สโตรก บางนา" aria-label="ค้นหาชื่อนักกายภาพ อาการ หรือเขต" autocomplete="off"></label>
-          ${d ? `<p class="pp-where" style="margin:0">${I('map-pin')}<span>บ้านอยู่ <b>${esc(d)}</b> · ${nNear} คนรับงานใกล้คุณ</span><button class="link" data-act="openDistrict" aria-haspopup="dialog">เปลี่ยน</button></p>`
-            : `<div class="pp-geo" role="group" aria-label="ย่านจากตำแหน่งของคุณ">${I('locate-fixed')}<span class="grow">อยู่แถว <b>${GEO_GUESS}</b> ใช่ไหมคะ<small>บอกเขตแล้วจะเห็นว่าใครใกล้คุณ</small></span><button class="btn sm" data-act="geoYes">ใช่</button><button class="link" data-act="openDistrict">แก้</button></div>`}
+          ${d ? `<p class="pp-where" style="margin:0">${I(s.patient.geo ? 'locate-fixed' : 'map-pin')}<span>${s.patient.geo ? 'ตำแหน่งปัจจุบัน' : 'บ้านอยู่'} <b>${esc(d)}</b> · ${nNear} คนรับงานใกล้คุณ</span><button class="link" data-act="openDistrict" aria-haspopup="dialog">แก้</button></p>`
+            : `<p class="pp-where" style="margin:0">${I('map-pin')}<span>ยังไม่ระบุเขต · เรียงตามรีวิว</span><button class="link" data-act="openDistrict" aria-haspopup="dialog">เลือกเขต</button></p>`}
         </header>
         <div class="body enter">
           <nav class="pl-cats" aria-label="หมวดการดูแล">${CATS.map(([t, ic]) => `<button class="${cat === t ? 'on' : ''}" data-pick="patient.cat" data-value="${cat === t ? '' : t}" aria-pressed="${cat === t}"><span>${I(ic)}</span>${t}</button>`).join('')}</nav>
