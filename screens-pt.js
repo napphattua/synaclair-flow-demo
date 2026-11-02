@@ -49,6 +49,8 @@
 .tt-gal .x{position:absolute;top:4px;right:4px;width:24px;height:24px;min-height:0;aspect-ratio:1;padding:0;border:0;border-radius:50%;background:#0b2a20aa;color:#fff;display:grid;place-items:center}.tt-gal .x svg{width:14px;height:14px}
 .tt-gal .add{display:grid;place-items:center;align-content:center;gap:2px;color:var(--em);border:1.5px dashed var(--mint2);background:#fff;cursor:pointer}
 @media (prefers-reduced-motion: reduce){.tt-note{animation:none}}
+.tt-ok{list-style:none;margin:6px 0;padding:0;display:grid;gap:4px}.tt-ok li{display:flex;gap:8px;align-items:center;font-size:15px}.tt-ok svg{width:16px;height:16px;color:var(--em)}
+.tt-svc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tt-svc .chip{justify-content:flex-start;gap:8px;min-height:48px;white-space:normal;text-align:left;line-height:1.25}.tt-cap{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--line)}.tt-cap b{display:block;font-size:15px}.tt-cap small{display:block;color:var(--mute);font-size:13px;margin-top:2px}.tt-cap.lock{opacity:.85}.tt-cap.lock small{color:var(--gink)}.tt-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.tt-seg button{min-height:40px;border-radius:12px;border:1px solid var(--line);background:#fff;font:500 14px var(--text);color:var(--ink)}.tt-seg button[aria-pressed=true]{background:var(--em);border-color:var(--em);color:#fff}
 .tt-zgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tt-zgrid .chip{justify-content:center;padding:0 8px;gap:6px}.tt-zgrid .chip i{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:99px;display:inline-grid;place-items:center;background:var(--mint);color:var(--em);font:600 12px var(--display)}.tt-zgrid .chip.on i{background:#fff3;color:#fff}
 .tt-zq{position:relative;display:block}.tt-zq svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--mute);pointer-events:none}.tt-zq .in{padding-left:42px}
 .tt-perm svg{color:var(--linegreen);margin-top:3px}
@@ -856,15 +858,16 @@
   scr('t.loading', { render: s => SC.loading.html(s.pt.loadNext || 't.hub'), mount: (root, s) => SC.loading.mount(root, 'pt', 't.loading', s.pt.loadNext || 't.hub') });
 
   /* ======================================================================
-     t.signup · 4 ขั้น: ใบประกอบ + สำเนา → การศึกษา → ชื่อที่แสดง (ตัวอย่างสด) → เขตที่รับงาน
+     t.signup · 5 ขั้น: ใบประกอบ + สำเนา → การศึกษา → ชื่อที่แสดง (ตัวอย่างสด) → งานที่รับ → เขตที่รับงาน
      Boss (28 Oct): the licence copy and education are required before the profile is created, not left for later on the hub.
      ====================================================================== */
   scr('t.signup', {
     render(s) {
-      const p = s.pt, st = Math.min(p.signStep || 0, 3);
+      const p = s.pt, st = Math.min(p.signStep || 0, 4);
+      p.services = p.services || []; p.caps = p.caps || {}; p.equip = p.equip || [];
       const left = st === 0 ? '' : `<button class="ib" data-act="signBack" aria-label="ย้อนกลับ">${I('chevron-left')}</button>`;
       const head = `${st === 0 ? ui.bar('สร้างโปรไฟล์') : ui.bar('สร้างโปรไฟล์', { back: false, left })}
-        <div style="padding:10px 16px 0;background:#fff" class="tt-stepnum"><div class="progress"><i style="width:${(st + 1) / 4 * 100}%"></i></div><span class="small">${st + 1} / 4</span></div>`;
+        <div style="padding:10px 16px 0;background:#fff" class="tt-stepnum"><div class="progress"><i style="width:${(st + 1) / 5 * 100}%"></i></div><span class="small">${st + 1} / 5</span></div>`;
       let body, foot;
       if (st === 0) {
         body = `<div class="stack"><span class="kick">ยืนยันตัวตน</span><h1 class="h1">ใบประกอบวิชาชีพของคุณ</h1></div>
@@ -887,6 +890,9 @@
           <label class="field"><span>ชื่อที่แสดง <span class="tt-xp">+10 XP</span></span><input class="in" data-bind="pt.displayName" data-live maxlength="40" value="${esc(p.displayName)}" placeholder="เช่น กภ.หญิง ดูแลผู้สูงอายุ"><small class="hint">ตั้งเองได้ เช่น ชื่อเล่น + สิ่งที่ถนัด</small></label>
           ${ideas.length ? `<div class="chips">${ideas.map(x => `<button class="chip ${p.displayName === x ? 'on' : ''}" data-pick="pt.displayName" data-value="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}`;
         foot = `<button class="btn" data-act="signNext" data-need="pt.displayName">ต่อไป ${I('arrow-right')}</button>`;
+      } else if (st === 3) {
+        body = capsStep(p);
+        foot = `<button class="btn" data-act="signNext" data-need="pt.services">ต่อไป ${I('arrow-right')}</button>`;
       } else {
         const z = SC.ZONES.find(x => x.code === p.zoneTab) || SC.ZONES[0];
         const all = z.districts.every(d => p.zones.includes(d));
@@ -898,6 +904,26 @@
       return `<div class="scr">${head}<div class="body">${body}</div><div class="foot">${foot}</div></div>`;
     }
   });
+  /* Step 4 · งานที่รับ (พี่ปาล์ม v2.3/v2.4, R1.1–R1.4): pick services first, then answer only the tasks in those services, de-duplicated.
+     Each task: ทำได้ / ยังไม่ถนัด / ขอคุยก่อน. Ticking is a declaration, not an approval: the team checks evidence for specialty tasks.
+     S06 suction is shown locked and can't be declared here. */
+  const CLIN = SC.CLIN;
+  const capTasks = p => [...new Set(CLIN.services.filter(x => (p.services || []).includes(x.id)).flatMap(x => x.tasks))].sort((a, b) => (a[0] === b[0] ? 0 : a[0] === 'C' ? -1 : 1) || a.localeCompare(b));
+  const CAP_OPT = [['can', 'ทำได้'], ['no', 'ยังไม่ถนัด'], ['ask', 'ขอคุยก่อน']];
+  const EQUIP = ['ไม้ค้ำ / walker', 'ยางยืดออกกำลัง', 'เครื่องกระตุ้นไฟฟ้า', 'เครื่องอัลตราซาวด์', 'เข็มขัดช่วยพยุง (gait belt)', 'เครื่องวัดออกซิเจนปลายนิ้ว'];
+  function capsStep(p) {
+    const list = capTasks(p), done = list.filter(id => CLIN.restricted.includes(id) || p.caps[id]).length;
+    const row = id => CLIN.restricted.includes(id)
+      ? `<div class="tt-cap lock"><div class="grow"><b>${esc(CLIN.tasks[id])}</b><small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
+      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.tasks[id])}</b>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}</div>
+          <div class="tt-seg" role="group" aria-label="${esc(CLIN.tasks[id])}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-pick="pt.caps.${id}" data-value="${v}">${l}</button>`).join('')}</div></div>`;
+    return `<div class="stack"><span class="kick">งานที่รับ</span><h1 class="h1">รับงานกลุ่มไหนบ้าง</h1><p class="small">เลือกกลุ่มก่อน แล้วตอบเฉพาะงานในกลุ่มนั้น ไม่ต้องทำได้ทุกข้อ ตอบตามจริงช่วยให้ได้เคสที่เหมาะ</p></div>
+      <div class="tt-svc">${CLIN.services.map(x => { const on = p.services.includes(x.id); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.services" data-value="${x.id}">${I(x.icon)}${esc(x.name)}</button>`; }).join('')}</div>
+      ${list.length ? `<div class="card flat"><div class="row between"><b class="h3">งานในกลุ่มที่เลือก ${list.length} ข้อ</b><span class="pill ${done === list.length ? '' : 'wait'}">ตอบแล้ว ${done}/${list.length}</span></div>${list.map(row).join('')}</div>
+      <div class="card flat"><b class="h3">อุปกรณ์ที่นำไปได้ <span class="small">(ถ้ามี)</span></b><span class="small">ไม่จำเป็นต้องมีเอง บางบ้านมีอุปกรณ์อยู่แล้ว</span>
+        <div class="chips">${EQUIP.map(e => { const on = p.equip.includes(e); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.equip" data-value="${esc(e)}">${on ? I('check') : ''}${esc(e)}</button>`; }).join('')}</div></div>
+      ${lockNote('ที่ติ๊กเป็นข้อมูลจากคุณ ยังไม่ใช่การอนุมัติ งานเฉพาะทางทีมจะขอดูหลักฐาน เช่น ใบอบรมหรือประสบการณ์ ก่อนส่งเคสแบบนั้นให้')}` : ''}`;
+  }
   /* Zone picker: all 6 zones visible at once (Boss could not scroll a sideways row on desktop), plus a search box to find a district by name. */
   function zonePicker(p, z, all) {
     const q = (p.zq || '').trim();
@@ -936,7 +962,8 @@
   act('signNext', (s, ctx) => {
     const p = s.pt;
     if ((p.signStep || 0) === 1 && !p.cv.edu.length) { ctx.toast('เพิ่มประวัติการศึกษาอย่างน้อย 1 รายการ'); return; }
-    p.signStep = Math.min(3, (p.signStep || 0) + 1);
+    if ((p.signStep || 0) === 3) { const left = capTasks(p).filter(id => !CLIN.restricted.includes(id) && !(p.caps || {})[id]); if (!(p.services || []).length || left.length) { ctx.toast(left.length ? `ตอบอีก ${left.length} ข้อนะคะ` : 'เลือกกลุ่มงานอย่างน้อย 1 กลุ่ม'); return; } }
+    p.signStep = Math.min(4, (p.signStep || 0) + 1);
   });
   act('signBack', s => { s.pt.signStep = Math.max(0, (s.pt.signStep || 0) - 1); });
   act('zoneAll', (s, ctx) => {
@@ -946,7 +973,7 @@
   });
   act('ptSignup', (s, ctx) => {
     const p = s.pt;
-    if (!p.legalName.trim() || !/^\d{3,8}$/.test(p.license) || !p.licenseFile || !p.cv.edu.length || !p.displayName.trim() || !p.zones.length) { ctx.toast('กรอกข้อมูลให้ครบทุกขั้นก่อนนะคะ'); return; }
+    if (!p.legalName.trim() || !/^\d{3,8}$/.test(p.license) || !p.licenseFile || !p.cv.edu.length || !p.displayName.trim() || !(p.services || []).length || !p.zones.length) { ctx.toast('กรอกข้อมูลให้ครบทุกขั้นก่อนนะคะ'); return; }
     p.status = 'PENDING'; p.loggedIn = true;
     ctx.xp(XP.signup, 'สร้างโปรไฟล์');
     return 't.hub';
@@ -1633,6 +1660,7 @@
             <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">ความช่วยเหลือที่ขอ</span><br><span class="s">${esc(goalText(s))}${s.patient.bookingFor === 'SOMEONE_ELSE' ? ' · ญาติจองให้' : ''}</span></span></div>
             ${yes ? `<div class="li"><span class="tile gold">${I('shield-check')}</span><span class="grow"><span class="t">ข้อควรระวังจากการคัดกรอง ${yes} ข้อ</span><br><span class="s">ดูรายละเอียดได้หลังรับงาน</span></span></div>` : ''}
           </div></div>
+        ${s.request.review && s.request.review.cleared ? `<div class="card"><b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b><ul class="tt-ok">${s.request.review.allow.map(id => `<li>${I('check')}${esc(SC.CLIN.tasks[id])}</li>`).join('')}</ul>${s.request.review.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(s.request.review.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ถามทีมก่อนทำ</p></div>` : ''}
         <div class="card cream"><span class="small" style="color:var(--gink)">รายได้สุทธิของคุณ</span><span class="price">${money(NET_TRIAL)}</span><span class="small" style="color:var(--gink)">โอนรอบถัดไปหลังส่งสรุปการดูแล · ไม่มีค่าใช้จ่ายอื่นที่ต้องจ่ายเพิ่ม</span></div>
         ${s.pt.agreement ? '' : `<p class="note row tt-top">${I('file-text')}<span>งานแรกของคุณ: กดรับแล้วจะพาไปอ่านข้อตกลงการรับงาน 1 ครั้งก่อน</span></p>`}
       </div><div class="foot row2"><button class="btn ghost" data-act="declineOffer">ปฏิเสธ</button><button class="btn" data-act="acceptOffer">${I('check')}รับงานนี้</button></div></div>`;

@@ -54,6 +54,27 @@
   ];
   const certTxText = (key, en, other) => { if (key === 'other') return other || ''; const t = CERT_TX.find(x => x[0] === key); return t ? t[en ? 2 : 1] : ''; };
   const TRIAL = 1599;  // พี่ปาล์ม's Final price sheet (Boss 29 Oct); was 1499
+  /* Clinical matching catalog: พี่ปาล์ม's handoff v2.3 + v2.4 (approved product draft 1 Nov 2026, not clinically validated).
+     6 services, 24 tasks, service-task mapping 8/16/16/13/9/13. S06 suction is restricted: never offered, never auto-matched. */
+  const CLIN = {
+    services: [
+      { id: '01', name: 'ปวดกล้ามเนื้อและข้อ', icon: 'bone', tasks: ['C01', 'C02', 'C04', 'C06', 'C07', 'C15', 'C16', 'C17'] },
+      { id: '02', name: 'กระดูกและหลังผ่าตัด', icon: 'scissors', tasks: ['C01', 'C02', 'C04', 'C05', 'C06', 'C07', 'C09', 'C10', 'C11', 'C12', 'C13', 'C15', 'C16', 'C17', 'S01', 'S02'] },
+      { id: '03', name: 'ระบบประสาท', icon: 'brain', tasks: ['C01', 'C02', 'C03', 'C04', 'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'C13', 'C14', 'C16', 'S03'] },
+      { id: '04', name: 'ผู้สูงอายุและป้องกันล้ม', icon: 'person-standing', tasks: ['C01', 'C02', 'C04', 'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'C13', 'C16'] },
+      { id: '05', name: 'ติดเตียง', icon: 'bed', tasks: ['C01', 'C04', 'C06', 'C07', 'C09', 'C10', 'C11', 'C16', 'S04'] },
+      { id: '06', name: 'หัวใจและปอด', icon: 'heart-pulse', tasks: ['C01', 'C04', 'C06', 'C07', 'C08', 'C10', 'C11', 'C12', 'C16', 'S04', 'S05', 'S06', 'S08'] }
+    ],
+    tasks: {
+      C01: 'ประเมินความเสี่ยงก่อนเริ่มรักษา', C02: 'ประเมินปวด องศาข้อ กำลังกล้ามเนื้อ', C03: 'ประเมินระบบประสาท', C04: 'ประเมินกิจวัตรและการเคลื่อนไหว',
+      C05: 'ประเมินการทรงตัวและความเสี่ยงล้ม', C06: 'ออกกำลังเพิ่มองศาข้อ', C07: 'ฝึกเพิ่มกำลังกล้ามเนื้อ', C08: 'ฝึกความทนทาน',
+      C09: 'ฝึกควบคุมลำตัวและท่าทาง', C10: 'ฝึกพลิกตัวและลุกจากเตียง', C11: 'ฝึกย้ายตัว', C12: 'ฝึกเดินและขึ้นลงบันได',
+      C13: 'ฝึกการทรงตัว', C14: 'ฝึกการใช้แขนและมือ', C15: 'การรักษาด้วยมือ (Manual therapy)', C16: 'โปรแกรมที่บ้านและสอนผู้ดูแล', C17: 'เครื่องมือทางกายภาพ',
+      S01: 'ฟื้นฟูหลังผ่าตัด (อ่านคำสั่งลงน้ำหนัก)', S02: 'อุปกรณ์เสริมและขาเทียม', S03: 'ฟื้นฟูระบบประสาทเฉพาะโรค', S04: 'ฟื้นฟูระบบหายใจ',
+      S05: 'ช่วยระบายเสมหะ (Airway clearance)', S06: 'ดูดเสมหะ (Suction)', S08: 'ฟื้นฟูหัวใจตามแผนแพทย์'
+    },
+    restricted: ['S06']
+  };
   // Blood pressure categories (AHA chart Boss sent, 23 Oct). sys/dia in mmHg; the higher category of the two wins.
   const BP_CATS = [
     { key: 'normal', label: 'ปกติ', tone: 'ok', note: 'ต่ำกว่า 120/80' },
@@ -76,7 +97,7 @@
   /* ---------- State ---------- */
   const initial = () => ({
     pt: { status: 'NONE', loggedIn: false, legalName: '', license: '', licenseFile: null, displayName: '', zones: [], photo: null, photoApproved: false, bio: '',
-      posts: [], schedule: { sent: false, blocks: [] },
+      posts: [], schedule: { sent: false, blocks: [] }, services: [], caps: {}, equip: [], capReviewed: {},
       // Professional profile (Palm's "Design profile PT" Level 2). Sample values for the rehearsal; the PT fills these in the real profile builder.
       cv: { groups: ['ผู้สูงอายุ', 'ระบบประสาท เช่น Stroke', 'กระดูกและกล้ามเนื้อ'], primary: 'ฟื้นฟูผู้ป่วยหลอดเลือดสมอง (Stroke)', more: ['ผู้สูงอายุเสี่ยงล้ม', 'ฟื้นฟูหลังผ่าตัด'],
         edu: [], train: [] }, agreement: false, xp: 0, xpLog: [], earnings: [] },
@@ -196,8 +217,8 @@
   const me = () => ({ id: 'me', name: s.pt.displayName || 'นักกายภาพของคุณ', zones: s.pt.zones, bio: s.pt.bio, photo: s.pt.photo });
   const STAGES = [
     { n: 1, role: 'pt', title: 'นักกายภาพสมัครด้วย LINE', start: 't.join', done: () => s.pt.status !== 'NONE',
-      guide: { 't.join': ['[data-go="t.line"]', 'กด "สมัครด้วย LINE"'], 't.line': ['[data-act="ptLogin"]', 'กด "อนุญาต" ในหน้าของ LINE'], 't.loading': ['', 'รอสักครู่ ระบบจะพาเข้าเอง'], 't.signup': ['[data-act="signNext"], [data-act="ptSignup"]', 'กรอกให้ครบ 4 ขั้น: ใบประกอบและสำเนา ประวัติการศึกษา ชื่อที่แสดง เขตที่รับงาน แล้วกด "สร้างโปรไฟล์"'] },
-      complete() { Object.assign(s.pt, { loggedIn: true, status: 'PENDING', legalName: 'ณัฐพล ใจดี', license: '12345', displayName: 'กภ.บอส ดูแลถึงบ้าน', zones: ['บางนา', 'พระโขนง', 'สวนหลวง'], licenseFile: 'sample' }); s.pt.cv.edu = [['ปริญญาตรี สาขาวิชากายภาพบำบัด', 'มหาวิทยาลัยตัวอย่าง', 'คณะกายภาพบำบัด', 'sample']]; s.pt.xp += 60; s.pt.xpLog.unshift({ points: 60, reason: 'สร้างโปรไฟล์' }); } },
+      guide: { 't.join': ['[data-go="t.line"]', 'กด "สมัครด้วย LINE"'], 't.line': ['[data-act="ptLogin"]', 'กด "อนุญาต" ในหน้าของ LINE'], 't.loading': ['', 'รอสักครู่ ระบบจะพาเข้าเอง'], 't.signup': ['[data-act="signNext"], [data-act="ptSignup"]', 'กรอกให้ครบ 5 ขั้น: ใบประกอบและสำเนา ประวัติการศึกษา ชื่อที่แสดง งานที่รับ เขตที่รับงาน แล้วกด "สร้างโปรไฟล์"'] },
+      complete() { Object.assign(s.pt, { loggedIn: true, status: 'PENDING', legalName: 'ณัฐพล ใจดี', license: '12345', displayName: 'กภ.บอส ดูแลถึงบ้าน', zones: ['บางนา', 'พระโขนง', 'สวนหลวง'], licenseFile: 'sample', services: ['04', '03'], caps: { C01: 'can', C02: 'can', C03: 'can', C04: 'can', C05: 'can', C06: 'can', C07: 'can', C08: 'can', C09: 'can', C10: 'can', C11: 'can', C12: 'can', C13: 'can', C14: 'ask', C16: 'can', S03: 'can' }, equip: ['ยางยืดออกกำลัง', 'เข็มขัดช่วยพยุง (gait belt)'] }); s.pt.cv.edu = [['ปริญญาตรี สาขาวิชากายภาพบำบัด', 'มหาวิทยาลัยตัวอย่าง', 'คณะกายภาพบำบัด', 'sample']]; s.pt.xp += 60; s.pt.xpLog.unshift({ points: 60, reason: 'สร้างโปรไฟล์' }); } },
     { n: 2, role: 'pt', title: 'สร้างโปรไฟล์ระหว่างรอตรวจ', start: 't.hub', done: () => !!s.pt.photo && !!s.pt.bio && !!s.pt.schedule.sent,
       guide: { 't.hub': ['[data-tt-tip] [data-tt-go]', 'ทำตามคำแนะนำทีละอย่าง: ใส่รูป เขียนแนะนำตัว แล้วลงเวลาว่าง (บังคับ)'], 't.photo': ['[data-act="savePhoto"]', 'เลือกรูป แล้วกด "ใช้รูปนี้"'], 't.schedule': ['[data-act="sendSchedule"]', 'ลงเวลาว่าง (แนะนำสัปดาห์ละ 1 สล็อต) แล้วกด "ส่งตารางเดือนหน้า"'] },
       complete() { s.pt.photo = 'sample'; s.pt.bio = 'ดูแลผู้สูงอายุและผู้ป่วยหลังผ่าตัดที่บ้าน 6 ปี เน้นฝึกให้ลุกเดินเองได้'; s.pt.posts.unshift({ id: 'p1', text: 'ท่าลุกจากเก้าอี้ให้ปลอดภัย 3 ขั้น: เลื่อนตัวมาขอบเก้าอี้ โน้มตัวไปหน้า แล้วดันขาลุก', image: 'a/elderly.jpg', video: '' }); s.pt.schedule = { sent: true, blocks: [{ day: 5, week: 2, start: '09:00', end: '15:00', zone: s.pt.zones && s.pt.zones[0] || 'บางนา', repeat: false, sent: true }] }; s.pt.schedXp = true; s.pt.cv.edu = [['ปริญญาตรี สาขาวิชากายภาพบำบัด', 'มหาวิทยาลัยตัวอย่าง', 'คณะกายภาพบำบัด', 'sample']]; s.pt.cv.train = [['2567', 'ฟื้นฟูผู้ป่วย Stroke: ฝึกเดินและการทรงตัว', true]]; s.pt.xp += 130; s.pt.xpLog.unshift({ points: 130, reason: 'รูป แนะนำตัว โพสต์แรก ส่งตาราง' }); } },
@@ -212,11 +233,11 @@
       complete() { Object.assign(s.patient, { bp: { sys: '138', dia: '84', unknown: false }, legalName: 'สมใจ รักดี', name: 'คุณแม่สมใจ', phone: '0812345678', bookingFor: 'SOMEONE_ELSE', goals: ['WALK', 'PAIN'], address: { province: 'กรุงเทพมหานคร', district: 'บางนา', subdistrict: 'บางนาเหนือ', postal: '10260', line: '99/1 ซ.บางนา-ตราด 25', landmark: 'ตึกสีครีม ประตูรั้วสีเขียว ตรงข้ามร้านสะดวกซื้อ', pin: true }, windows: [VISIT1.short, 'ส. 24 ต.ค. 13:00', 'อา. 25 ต.ค. 09:00'], consent: true, intakeStep: 8 });
         s.request = { ref: 'SC-2610001', status: 'PAYMENT_PENDING', preferredPt: s.patient.chosenPt, offerTo: [], slip: null }; line('patient', { key: 'received' }); line('patient', { key: 'intakePay' }); } },
     { n: 6, role: 'patient', title: 'ชำระ ClairConnect Trial ฿1,599', start: 'p.result', done: () => !!s.request && ['SLIP_SENT', 'PAID', 'OFFERED', 'BOOKED'].includes(s.request.status),
-      guide: { 'p.result': ['[data-go="p.pay"]', 'กดปุ่ม "ClairConnect Trial ฿1,599"'], 'p.pay': ['[data-act="sendSlip"]', 'แนบสลิป (ใช้สลิปตัวอย่างได้) แล้วกด "ส่งสลิป"'] },
-      complete() { s.request.slip = 'sample'; SC.autoPay(s, line); } },
+      guide: { 'p.result': ['[data-go="p.pay"], [data-act="toClinical"]', 'กดปุ่ม "ClairConnect Trial ฿1,599" (ถ้าทีมคลินิกขอดูก่อน ไปฝั่งทีมคลินิกเพื่ออนุมัติ)'], 'a.clinical': ['[data-act="clinApprove"]', 'ติ๊กเฉพาะกิจกรรมที่ปลอดภัย แล้วกด "อนุมัติที่ติ๊ก"'], 'p.pay': ['[data-act="sendSlip"]', 'แนบสลิป (ใช้สลิปตัวอย่างได้) แล้วกด "ส่งสลิป"'] },
+      complete() { if (s.request.status === 'CLINICAL_REVIEW') SC.clinClear(s, line); s.request.slip = 'sample'; SC.autoPay(s, line); } },
     { n: 7, role: 'admin', title: 'ระบบตรวจสลิปและจับคู่ให้เอง', start: 'a.queue', done: () => !!s.request && ['OFFERED', 'BOOKED'].includes(s.request.status),
       guide: { 'a.queue': ['[data-go="a.match"], [data-go="a.payments"]', 'ปกติระบบส่งงานให้ PT เองแล้ว แอดมินทำเฉพาะงานที่ขึ้นในคิว (สลิปผิดปกติ หรือหา PT ไม่ได้)'], 'a.payments': ['[data-act="confirmPayment"]', 'เช็กยอดในบัญชี แล้วกดปิดเรื่อง หรือแจ้งคนไข้'], 'a.match': ['[data-act="sendOffer"]', 'ถ้าคนไข้ขอ PT ไว้ ระบบติ๊กให้แล้ว ถ้าไม่ได้ขอ ติ๊กเลือก PT ที่แนะนำ แล้วกด "ส่งข้อเสนอ"'] },
-      complete() { if (!['PAID', 'OFFERED', 'BOOKED'].includes(s.request.status)) { s.request.slip = 'sample'; SC.autoPay(s, line); } if (s.request.status === 'PAID') { s.request.status = 'OFFERED'; s.request.offerTo = ['me']; line('pt', { key: 'ptOffer' }); } } },
+      complete() { if (s.request.status === 'CLINICAL_REVIEW') SC.clinClear(s, line); if (!['PAID', 'OFFERED', 'BOOKED'].includes(s.request.status)) { s.request.slip = 'sample'; SC.autoPay(s, line); } if (s.request.status === 'PAID') { s.request.status = 'OFFERED'; s.request.offerTo = ['me']; line('pt', { key: 'ptOffer' }); } } },
     { n: 8, role: 'pt', title: 'นักกายภาพรับงานแรก', start: 't.work', done: () => !!s.request && s.request.status === 'BOOKED',
       guide: { 't.work': ['[data-act="openOffer"]', 'เปิดงานเสนอใหม่'], 't.offer': ['[data-act="acceptOffer"]', 'กด "รับงานนี้"'], 't.agreement': ['[data-act="acceptAgreement"]', 'อ่านข้อตกลง ติ๊กยอมรับ แล้วกดยืนยัน (ครั้งเดียว)'] },
       complete() { s.pt.agreement = true; s.request.status = 'BOOKED'; s.visits = [{ n: 1, date: VISIT1.date, time: VISIT1.time, step: 0, soap: {}, published: false }]; line('patient', { key: 'ptIntro' }); line('patient', { key: 'confirmed' }); } },
@@ -610,6 +631,6 @@
   }
 
   window.SC = { screen, action, go, back, sheet, dialog, close, toast, xp, line, render, get, set, ui, esc, money, me, param,
-    jump: jumpTo, reset, confirmJump, onShell: fn => shellHooks.push(fn), stageNow, get s() { return s; }, get v() { return v; }, ZONES, SAMPLE_PTS, CERT_TX, certTxText, TRIAL, VISIT1, RATE, bpCat, VISIT2, TODAY, STAGES };
+    jump: jumpTo, reset, confirmJump, onShell: fn => shellHooks.push(fn), stageNow, get s() { return s; }, get v() { return v; }, ZONES, SAMPLE_PTS, CERT_TX, certTxText, TRIAL, CLIN, VISIT1, RATE, bpCat, VISIT2, TODAY, STAGES };
   document.addEventListener('DOMContentLoaded', boot);
 })();

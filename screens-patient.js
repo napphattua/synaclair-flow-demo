@@ -127,6 +127,9 @@
   .pp-choice span small { display: block; font-size: 13.5px; color: var(--sub); line-height: 1.4; }
   .pp-q { display: grid; gap: 10px; }
   .pp-q .n { font: 600 13px var(--display); color: var(--mute); }
+  .pp-opts { display: grid; gap: 8px; }
+  .pp-opts button { min-height: 50px; padding: 8px 14px; text-align: left; border: 1.5px solid var(--line); border-radius: 13px; background: #fff; font: 500 15.5px var(--text); color: var(--ink); }
+  .pp-opts button[aria-pressed="true"] { background: var(--g-sheen), var(--g-em); border-color: var(--em); color: #fff; }
   .pp-yn { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .pp-yn button { min-height: 50px; border: 1.5px solid var(--line); border-radius: 13px; background: #fff; font: 600 15.5px var(--display); color: var(--ink); }
   .pp-yn button[aria-pressed="true"] { background: var(--g-sheen), var(--g-em); border-color: var(--em); color: #fff; }
@@ -611,6 +614,37 @@
   }
   const bpOk = p => !!(p.bp && (p.bp.unknown || (+p.bp.sys >= 60 && +p.bp.sys <= 300 && +p.bp.dia >= 30 && +p.bp.dia <= 200)));
   const healthFlags = s => HEALTH.slice(1).filter(q => !q.bp && (s.patient.health || {})[q.k] === 'YES').length + (['stage2', 'severe'].includes((SC.bpCat(s.patient.bp) || {}).key) ? 1 : 0);
+  /* พี่ปาล์ม v2.3/v2.4 (R2.1–R2.5): after the goals, ask which group the main problem is closest to, then one or two questions for that group.
+     "ไม่แน่ใจ" is always allowed; an unknown that matters for safety sends the request to the clinical team before any payment. */
+  const GROUPS = [['MSK', 'ปวดกล้ามเนื้อ ข้อ หลัง หรือคอ', 'bone'], ['ORTHO', 'หลังผ่าตัด หรือกระดูกหัก', 'scissors'], ['NEURO', 'อัมพฤกษ์ อัมพาต พาร์กินสัน หรือโรคทางสมอง', 'brain'],
+    ['GERI', 'ผู้สูงอายุ เดินไม่มั่นคง หรือเคยหกล้ม', 'person-standing'], ['BED', 'ติดเตียง หรือลุกจากเตียงเองไม่ได้', 'bed'], ['CARDIO', 'โรคหัวใจ ปอด หรือมีเสมหะ', 'heart-pulse'], ['UNSURE', 'ไม่แน่ใจ ให้ทีมช่วยดู', 'circle-help']];
+  const BRANCH = {
+    MSK: [{ k: 'pain', t: 'ปวดมานานแค่ไหนแล้ว', o: [['SHORT', 'ไม่ถึง 6 สัปดาห์'], ['MID', '6 สัปดาห์ ถึง 3 เดือน'], ['LONG', 'เกิน 3 เดือน'], ['UNSURE', 'ไม่แน่ใจ']] }],
+    ORTHO: [{ k: 'wb', t: 'หมอให้ข้างที่ผ่าตัดลงน้ำหนักได้แค่ไหน', o: [['FULL', 'ลงน้ำหนักได้เต็มที่'], ['PART', 'ลงได้บางส่วน'], ['NONE', 'ห้ามลงน้ำหนัก'], ['UNSURE', 'ไม่แน่ใจ / หมอยังไม่ได้บอก']] }],
+    NEURO: [{ k: 'neuro', t: 'เป็นโรคอะไร', o: [['STROKE', 'หลอดเลือดสมอง (Stroke)'], ['PD', 'พาร์กินสัน'], ['SCI', 'บาดเจ็บไขสันหลัง'], ['TBI', 'บาดเจ็บที่สมอง'], ['UNSURE', 'อื่น ๆ หรือไม่แน่ใจ']] }],
+    GERI: [{ k: 'falls', t: 'หนึ่งปีที่ผ่านมา หกล้มกี่ครั้ง', o: [['N0', 'ไม่เคยล้ม'], ['N1', '1 ครั้ง'], ['N2', '2 ครั้งขึ้นไป'], ['UNSURE', 'ไม่แน่ใจ']] }],
+    BED: [{ k: 'lift', t: 'ย้ายจากเตียงไปเก้าอี้ ต้องมีคนช่วยกี่คน', o: [['N0', 'ทำเองได้'], ['N1', '1 คน'], ['N2', '2 คน หรือต้องใช้เครื่องยก'], ['UNSURE', 'ไม่แน่ใจ']] },
+      { k: 'helpers', t: 'วันนัด ที่บ้านมีคนช่วยได้กี่คน', o: [['N0', 'ไม่มี'], ['N1', '1 คน'], ['N2', '2 คนขึ้นไป'], ['HOIST', 'มีเครื่องยกที่บ้าน']] }],
+    CARDIO: [{ k: 'airway', t: 'เรื่องเสมหะ ตอนนี้เป็นแบบไหน', o: [['NONE', 'ไม่มีเสมหะ'], ['COUGH', 'มีเสมหะ ไอออกเองได้'], ['WEAK', 'มีเสมหะ ไอออกเองไม่ค่อยได้'], ['SUCTION', 'ต้องดูดเสมหะ หรือมีท่อเจาะคอ'], ['UNSURE', 'ไม่แน่ใจ']] }]
+  };
+  const branchQs = p => BRANCH[p.group] || [];
+  /* Why this request needs the clinical team before payment. Empty = routine: pay first, then matching (unchanged). */
+  SC.clinReasons = s => {
+    const p = s.patient, h = p.health || {}, b = p.branch || {}, out = [];
+    const named = { q3: 'มีสายหรืออุปกรณ์ช่วยดูแล', q4: 'เพิ่งออกจากโรงพยาบาล หรือมีข้อห้ามแพทย์', q5: 'เคยผ่าตัด หรือมีอุปกรณ์ในร่างกาย', q6: 'มีโรคประจำตัว' };
+    Object.keys(named).forEach(k => { if (h[k] === 'YES') out.push(named[k]); });
+    if (['stage2', 'severe'].includes((SC.bpCat(p.bp) || {}).key)) out.push('ความดันสูง');
+    if (p.group === 'ORTHO' && b.wb === 'UNSURE') out.push('ยังไม่รู้ว่าหมอให้ลงน้ำหนักได้แค่ไหน');
+    if (p.group === 'BED' && b.lift === 'UNSURE') out.push('ไม่แน่ใจว่าย้ายตัวต้องใช้คนช่วยกี่คน');
+    if (p.group === 'BED' && b.lift === 'N2' && !['N2', 'HOIST'].includes(b.helpers)) out.push('ต้องย้ายตัว 2 คนหรือใช้เครื่องยก แต่ที่บ้านมีคนช่วยไม่พอ');
+    if (p.group === 'CARDIO' && b.airway === 'SUCTION') out.push('ต้องดูดเสมหะ (งานจำกัด ยังไม่เปิดจับคู่อัตโนมัติ)');
+    if (p.group === 'CARDIO' && b.airway === 'UNSURE') out.push('ไม่แน่ใจเรื่องเสมหะ');
+    if (Object.values(p.barthel || {}).filter(v => v === null).length >= 4) out.push('ไม่แน่ใจเรื่องกิจวัตรหลายข้อ');
+    return out;
+  };
+  // data-pick turns "05" into a number, so the patient side uses names; CLIN uses the handoff's service ids.
+  const SVC_ID = { MSK: '01', ORTHO: '02', NEURO: '03', GERI: '04', BED: '05', CARDIO: '06', UNSURE: 'UNSURE' };
+  SC.clinGroup = s => { const p = s.patient, g = GROUPS.find(x => x[0] === p.group); return { id: SVC_ID[p.group] || '', name: g ? g[1] : '', answers: branchQs(p).map(q => [q.t, ((q.o.find(o => o[0] === (p.branch || {})[q.k]) || [])[1]) || '—']) }; };
   const bpLine = p => { const c = SC.bpCat(p.bp); return p.bp && p.bp.unknown ? '<span class="pill gray">ไม่ทราบค่าความดัน</span>' : c ? `<span class="pill ${c.tone === 'ok' ? '' : c.tone}">${esc(p.bp.sys)}/${esc(p.bp.dia)} · ${c.label}</span>` : ''; };
   function bpField(p) {
     const b = p.bp || {}, c = SC.bpCat(b);
@@ -954,7 +988,10 @@
       <label class="field"><span>เบอร์โทร</span><input class="in" data-bind="patient.phone" value="${esc(p.phone)}" placeholder="08x xxx xxxx" inputmode="tel" maxlength="10" autocomplete="tel"><small class="hint">ทีมโทรยืนยันนัดเบอร์นี้</small></label>`;
     if (st === 2) return `<div class="pp-qh"><span class="tile">${I('sparkles')}</span><h1 class="h1">เป้าหมายในการรักษาคืออะไร?</h1><p class="p">เลือกได้หลายข้อ ตามสิ่งที่อยากกลับมาทำได้</p></div>
       <div class="stack">${GOALS.map(([k, t, ic]) => `<button class="pp-choice" aria-pressed="${p.goals.includes(k)}" data-toggle="patient.goals" data-value="${k}">${I(ic)}<span>${t}</span><span class="ck">${I('check')}</span></button>`).join('')}</div>
-      ${p.goals.includes('OTHER') ? `<label class="field"><span>อยากทำอะไรเพิ่มเติม</span><textarea class="in" data-bind="patient.goalOther" placeholder="เช่น อยากกลับไปดูแลสวน">${esc(p.goalOther)}</textarea></label>` : ''}`;
+      ${p.goals.includes('OTHER') ? `<label class="field"><span>อยากทำอะไรเพิ่มเติม</span><textarea class="in" data-bind="patient.goalOther" placeholder="เช่น อยากกลับไปดูแลสวน">${esc(p.goalOther)}</textarea></label>` : ''}
+      ${p.goals.length ? `<div class="pp-qh" style="margin-top:8px"><h2 class="h2">อาการหลักใกล้กับข้อไหนที่สุด?</h2><p class="p">เลือกข้อเดียว ช่วยให้ถามต่อเฉพาะเรื่องที่เกี่ยว</p></div>
+      <div class="stack">${GROUPS.map(([k, t, ic]) => `<button class="pp-choice" aria-pressed="${p.group === k}" data-pick="patient.group" data-value="${k}">${I(ic)}<span>${t}</span><span class="ck">${I('check')}</span></button>`).join('')}</div>
+      ${branchQs(p).map(q => `<div class="card pp-q"><b class="h3">${q.t}</b><div class="pp-opts">${q.o.map(([v, l]) => `<button aria-pressed="${(p.branch || {})[q.k] === v}" data-pick="patient.branch.${q.k}" data-value="${v}">${l}</button>`).join('')}</div></div>`).join('')}` : ''}`;
     if (st === 3) {
       const h = p.health || {};
       return `<div class="pp-qh"><span class="tile">${I('shield-check')}</span><h1 class="h1">ข้อมูลสุขภาพ 6 ข้อ</h1><p class="p">ตอบ มี หรือ ไม่มี ตามที่รู้ ทีมใช้ข้อมูลนี้ดูแลให้ปลอดภัย</p></div>
@@ -1028,7 +1065,7 @@
   function intakeNeed(s) {
     const p = s.patient, st = p.intakeStep || 0;
     if (st === 1) return { need: 'patient.legalName,patient.name,patient.phone' };
-    if (st === 2) return { need: 'patient.goals' + (p.goals.includes('OTHER') ? ',patient.goalOther' : '') };
+    if (st === 2) return { need: 'patient.goals,patient.group' + (p.goals.includes('OTHER') ? ',patient.goalOther' : '') + branchQs(p).map(q => ',patient.branch.' + q.k).join('') };
     if (st === 3) return { need: HEALTH.filter(q => !q.bp).map(q => 'patient.health.' + q.k).join(',') + ((p.health || {}).q3 === 'YES' ? ',patient.devices' : '') + ((p.health || {}).q4 === 'YES' ? ',patient.medNote' : '') + ((p.health || {}).q5 === 'YES' ? ',patient.surgeryNote' : '') + ((p.health || {}).q3 === 'YES' && (p.devices || []).includes('อื่น ๆ') ? ',patient.deviceOther' : '') + ((p.health || {}).q6 === 'YES' && (p.conditions || []).includes('อื่น ๆ') ? ',patient.conditionOther' : ''), off: !bpOk(p), hint: bpOk(p) ? '' : 'ใส่ค่าความดัน หรือติ๊ก "ไม่แน่ใจ"' };
     if (st === 4) { const left = BARTHEL.filter(q => (p.barthel || {})[q.k] === undefined).length; return { off: left > 0, hint: left ? `เหลืออีก ${left} ข้อ` : '' }; }
     if (st === 5) return { need: 'patient.address.district,patient.address.subdistrict,patient.address.postal,patient.address.line,patient.address.landmark,patient.address.pin' };
@@ -1066,6 +1103,7 @@
   });
   SC.action('intakeBack', (s) => { s.patient.intakeStep = Math.max(0, (s.patient.intakeStep || 0) - 1); top(); });
   SC.action('intakeGoto', (s, c) => { s.patient.intakeStep = +c.data.step; top(); if (SC.v.at.patient !== 'p.intake') { c.close(); return 'p.intake'; } });
+  SC.action('toClinical', () => 'a.clinical');
   SC.action('call1669', (s, c) => { c.toast('ห้องซ้อม: เครื่องจริงจะโทรออก 1669 ทันที'); });
   let winSeen = [];
   SC.action('pickWindow', (s, c) => {
@@ -1082,8 +1120,11 @@
   SC.action('submitRequest', (s, c) => {
     if ((s.patient.health || {}).q1 === 'YES') { c.toast('มีอาการฉุกเฉิน: โทร 1669 ก่อนนะคะ'); return; }
     if (s.request) { c.toast('อัปเดตข้อมูลประเมินแล้ว'); return 'p.result'; }
-    s.request = { ref: 'SC-2610001', status: 'PAYMENT_PENDING', preferredPt: s.patient.chosenPt, offerTo: [], slip: null };
-    c.line('patient', { key: 'received' }); c.line('patient', { key: 'intakePay' });
+    const why = SC.clinReasons(s);
+    s.request = { ref: 'SC-2610001', status: why.length ? 'CLINICAL_REVIEW' : 'PAYMENT_PENDING', preferredPt: s.patient.chosenPt, offerTo: [], slip: null };
+    c.line('patient', { key: 'received' });
+    if (why.length) { s.request.review = { reasons: why, allow: [], limits: '' }; c.line('patient', { key: 'clinHold', text: 'ได้รับข้อมูลแล้วค่ะ · ทีมคลินิกขอดูข้อมูลสุขภาพก่อน ยังไม่ต้องชำระเงินนะคะ ทีมจะแจ้งในแชตนี้ภายในวันนี้ (08:00–22:00)' }); c.line('admin', { key: 'clinQueue', text: `คำขอ ${s.request.ref} ต้องตรวจทางคลินิกก่อนเก็บเงิน: ${why.join(' · ')}` }); }
+    else c.line('patient', { key: 'intakePay' });
     return 'p.result';
   });
   /* ================================================================ p.result */
@@ -1092,9 +1133,12 @@
     render(s) {
       if (!s.request) return `<div class="scr pp">${ui.bar('ผลประเมินเบื้องต้น')}<div class="body">${ui.empty('clipboard-check', 'ยังไม่มีผลประเมิน', 'ตอบคำถามสั้น ๆ ไม่ถึง 3 นาที แล้วจะเห็นผลที่นี่', '<button class="btn auto" data-go="p.intake">ประเมินอาการ</button>')}</div></div>`;
       const r = profileOf(s), chosen = s.request.preferredPt && ptName(s, s.request.preferredPt), pending = s.request.status === 'PAYMENT_PENDING';
+      const rv = s.request.review, hold = s.request.status === 'CLINICAL_REVIEW', declined = s.request.status === 'REVIEW_DECLINED';
       return `<div class="scr pp glow">
         ${ui.bar('ผลประเมินเบื้องต้น')}
         <div class="body enter">
+          ${hold ? `<div class="note" role="status"><b class="h3">${I('stethoscope')} ทีมคลินิกขอดูข้อมูลก่อน</b><p style="margin:4px 0 0">มีบางข้อที่ทีมขอดูให้แน่ใจว่าดูแลที่บ้านได้ปลอดภัย ยังไม่ต้องชำระเงิน ทีมจะแจ้งใน LINE ภายในวันนี้</p></div>` : ''}
+          ${declined ? `<div class="note warn" role="status"><b class="h3">ทีมขอโทรคุยก่อนนะคะ</b><p style="margin:4px 0 0">${esc(rv && rv.note || 'ทีมคลินิกอยากคุยรายละเอียดเพิ่ม เพื่อหาทางดูแลที่ปลอดภัยที่สุด')} ยังไม่มีการเก็บเงิน</p></div>` : ''}
           <div class="stack center" style="justify-items:center">
             <span class="kick">ผลประเมินเบื้องต้นของคุณ</span>
             <span class="pp-reveal"><span class="halo"></span><span class="ring"><svg viewBox="0 0 236 236"><circle cx="118" cy="118" r="114"/></svg></span><span class="pp-portrait"><img src="a/${r.img}.jpg" alt=""></span><span class="spk s1"><svg viewBox="0 0 20 20"><path d="M10 0c.9 5.2 4.8 9.1 10 10-5.2.9-9.1 4.8-10 10-.9-5.2-4.8-9.1-10-10 5.2-.9 9.1-4.8 10-10z" fill="currentColor"/></svg></span><span class="spk s2"><svg viewBox="0 0 20 20"><path d="M10 0c.9 5.2 4.8 9.1 10 10-5.2.9-9.1 4.8-10 10-.9-5.2-4.8-9.1-10-10 5.2-.9 9.1-4.8 10-10z" fill="currentColor"/></svg></span><span class="spk s3"><svg viewBox="0 0 20 20"><path d="M10 0c.9 5.2 4.8 9.1 10 10-5.2.9-9.1 4.8-10 10-.9-5.2-4.8-9.1-10-10 5.2-.9 9.1-4.8 10-10z" fill="currentColor"/></svg></span></span>
@@ -1109,12 +1153,14 @@
           <div class="card cream"><b class="sec-h">${I('lightbulb')}เคล็ดลับระหว่างรอ</b><ul class="pp-ul gold">${r.tips.map(t => `<li>${I('lightbulb')}${t}</li>`).join('')}</ul></div>
           <p class="pp-hint">เป็นการประเมินเบื้องต้นจากคำตอบ ไม่ใช่การวินิจฉัย นักกายภาพจะประเมินจริงที่บ้าน</p>
           <div class="card"><b class="sec-h">${I('route')}ขั้นต่อไป</b><div class="steps">
-            <div class="step ${pending ? 'now' : 'done'}"><span class="dot">${pending ? 1 : I('check')}</span><div><div class="t">ชำระ ClairConnect Trial ฿1,599</div><div class="s">ประเมินและรักษาครั้งแรก ไม่เกิน 1 ชั่วโมงครึ่ง</div></div></div>
+            ${rv ? `<div class="step ${hold || declined ? 'now' : 'done'}"><span class="dot">${hold || declined ? I('stethoscope') : I('check')}</span><div><div class="t">ทีมคลินิกดูข้อมูลก่อน</div><div class="s">${hold ? 'ยังไม่ต้องชำระเงิน รอทีมแจ้งใน LINE' : declined ? 'ทีมจะโทรคุยก่อน' : 'ทีมดูแล้ว ดูแลที่บ้านได้'}</div></div></div>` : ''}
+            <div class="step ${pending ? 'now' : hold || declined ? '' : 'done'}"><span class="dot">${pending || hold || declined ? 1 : I('check')}</span><div><div class="t">ชำระ ClairConnect Trial ฿1,599</div><div class="s">ประเมินและรักษาครั้งแรก ไม่เกิน 1 ชั่วโมงครึ่ง</div></div></div>
             <div class="step"><span class="dot">2</span><div><div class="t">${chosen ? `ทีมส่งงานให้ ${esc(chosen)} ก่อน` : 'ทีมจับคู่นักกายภาพใกล้บ้าน'}</div><div class="s">${chosen ? 'ถ้าเวลาและพื้นที่ไม่ตรง ทีมจะหาคนที่ใกล้เคียงให้' : 'มีใบประกอบวิชาชีพ ตรวจสอบแล้วทุกคน'}</div></div></div>
             <div class="step"><span class="dot">3</span><div><div class="t">ยืนยันนัดใน LINE</div><div class="s">เห็นชื่อ รูป และเวลาของนักกายภาพก่อนวันนัด</div></div></div>
           </div></div>
         </div>
-        <div class="foot">${pending ? `<button class="btn" data-go="p.pay">${I('qr-code')}ClairConnect Trial ฿1,599</button>` : `<button class="btn" data-go="p.paywait">${I('hourglass')}ดูสถานะคำขอ</button>`}<button class="btn ghost" data-go="p.chat">${I('message-circle')}ถามทีมก่อน</button></div>
+        <div class="foot">${hold || declined ? `<button class="btn" data-go="p.chat">${I('message-circle')}คุยกับทีม</button>${hold ? `<button class="btn ghost" data-act="toClinical">${I('stethoscope')}ห้องซ้อม: ไปฝั่งทีมคลินิก</button>` : ''}`
+          : `${pending ? `<button class="btn" data-go="p.pay">${I('qr-code')}ClairConnect Trial ฿1,599</button>` : `<button class="btn" data-go="p.paywait">${I('hourglass')}ดูสถานะคำขอ</button>`}<button class="btn ghost" data-go="p.chat">${I('message-circle')}ถามทีมก่อน</button>`}</div>
       </div>`;
     }
   });
@@ -1124,6 +1170,7 @@
     render(s) {
       const r = s.request;
       if (!r) return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('wallet', 'ยังไม่มีรายการที่ต้องชำระ', 'ประเมินอาการก่อน แล้วจะเห็นใบแจ้งชำระที่นี่', '<button class="btn auto" data-go="p.intake">ประเมินอาการ</button>')}</div></div>`;
+      if (['CLINICAL_REVIEW', 'REVIEW_DECLINED'].includes(r.status)) return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('stethoscope', 'ยังไม่ต้องชำระเงิน', 'ทีมคลินิกขอดูข้อมูลก่อน ถ้าดูแลที่บ้านได้ ทีมจะส่งลิงก์ชำระใน LINE', '<button class="btn auto" data-go="p.result">ดูผลประเมิน</button>')}</div></div>`;
       if (r.status !== 'PAYMENT_PENDING') return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('circle-check', 'ส่งสลิปแล้ว', 'ทีมกำลังดูแลขั้นต่อไป ดูความคืบหน้าได้เลย', '<button class="btn auto" data-go="p.paywait">ดูสถานะ</button>')}</div></div>`;
       const slip = r.slipDraft;
       return `<div class="scr pp">
@@ -1172,6 +1219,7 @@
     render(s) {
       const r = s.request;
       if (!r) return `<div class="scr pp">${ui.bar('สถานะคำขอ')}<div class="body">${ui.empty('hourglass', 'ยังไม่มีคำขอ', 'ประเมินอาการก่อน แล้วติดตามสถานะได้ที่นี่', '<button class="btn auto" data-go="p.intake">ประเมินอาการ</button>')}</div></div>`;
+      if (['CLINICAL_REVIEW', 'REVIEW_DECLINED'].includes(r.status)) return `<div class="scr pp">${ui.bar('สถานะคำขอ')}<div class="body"><div class="card hero"><span class="small" style="color:#d6e8de">คำขอ ${esc(r.ref)}</span><b class="h2">${r.status === 'CLINICAL_REVIEW' ? 'ทีมคลินิกกำลังดูข้อมูล' : 'ทีมขอโทรคุยก่อน'}</b><p class="p">ยังไม่ต้องชำระเงิน ทีมจะแจ้งใน LINE</p></div></div><div class="foot"><button class="btn" data-go="p.chat">${I('message-circle')}คุยกับทีม</button></div></div>`;
       const order = ['PAYMENT_PENDING', 'SLIP_SENT', 'PAID', 'OFFERED', 'BOOKED'], k = order.indexOf(r.status);
       const now = k <= 0 ? 0 : k === 1 ? 1 : k <= 3 ? 2 : 4;
       const chosen = r.preferredPt && ptName(s, r.preferredPt), m = SC.me();
