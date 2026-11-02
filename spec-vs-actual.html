@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>SynaClair Spec vs Actual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Prompt:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#043928;--em:#00583e;--mint:#eef6f1;--cream:#fbf3e4;--gold:#8a5a1f;--ink:#16352b;--sub:#4a5f57;--line:#e3e9e5;--bg:#fdfdfd;--red:#a8322a;--redbg:#fbeceb;--amber:#8a5a1f;--amberbg:#fbf3e4;--gray:#5f6b66;--graybg:#f0f2f1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.65 'IBM Plex Sans Thai',system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:28px 16px 64px}
+h1,h2,h3{font-family:Prompt,'IBM Plex Sans Thai',sans-serif;color:var(--forest);letter-spacing:-.01em;line-height:1.3}
+h1{font-size:clamp(26px,4vw,36px);margin:6px 0 8px}
+h2{font-size:clamp(20px,2.6vw,25px);margin:40px 0 12px}
+h3{font-size:17px;margin:0 0 6px}
+.kick{font:600 13px Prompt,sans-serif;color:var(--em);letter-spacing:.04em}
+.meta{color:var(--sub);font-size:14px}
+.note{background:var(--cream);border-radius:14px;padding:12px 16px;color:var(--ink);font-size:14.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+.card.mint{background:var(--mint);border-color:transparent}
+.card ul{margin:6px 0 0;padding-left:20px}
+.chip{display:inline-block;padding:1px 9px;border-radius:99px;font:600 12.5px Prompt,sans-serif;white-space:nowrap}
+.done{background:#e3f2ea;color:var(--em)}.part{background:var(--amberbg);color:var(--amber)}.no{background:var(--graybg);color:var(--gray)}.blk{background:var(--redbg);color:var(--red)}
+.tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14.5px}
+.tbl th{background:var(--mint);text-align:left;font:600 13.5px Prompt,sans-serif;color:var(--forest);padding:9px 12px}
+.tbl td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+.tbl td:first-child{font-weight:600;white-space:nowrap}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px}
+.q{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start}
+.q b{font:600 14px Prompt,sans-serif;color:#fff;background:var(--em);border-radius:8px;padding:2px 8px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+a{color:var(--em)}
+@media (max-width:640px){.tbl{font-size:13.5px}.tbl td,.tbl th{padding:8px}.tbl td:first-child{white-space:normal}}
+</style>
+</head>
+<body>
+<main>
+<div class="kick">SYNACLAIR · CLINICAL MATCHING · 2 พ.ย. 2569</div>
+<h1>สเปก v2.3 + v2.4 เทียบกับของจริง</h1>
+<p class="meta">สำหรับพี่ปาล์มและ AI ที่ตรวจ handoff · จาก Claude (ฝั่งบอส) · repo home-pt-mvp commit 8d865fd · เอกสาร Working Draft ไม่ใช่การอนุมัติเปิดใช้จริง</p>
+
+<h2>สรุปในหนึ่งหน้าจอ</h2>
+<div class="grid">
+  <div class="card mint"><h3>แอปจริง</h3>ยังไม่ได้แก้รอบนี้ ตรวจโดยอ่านโค้ด
+    <ul><li><b>มีแล้ว:</b> ฉุกเฉินหยุดจองและโทร 1669 · ตอบ "ไม่แน่ใจ" ส่งคนตรวจ · เคสต้องตรวจยังไม่ขอเงินจนตรวจผ่าน · จ่ายก่อนจับคู่ · PT เห็นข้อมูลน้อยก่อนรับงาน</li>
+    <li><b>ยังไม่มี:</b> 6 กลุ่ม, 24 ทักษะ, 26 เคส และการให้ PT แจ้งทักษะ</li></ul></div>
+  <div class="card mint"><h3>Simulator (แก้ตาม v2.4 แล้ว)</h3>
+    <ul><li>PT สมัครมีขั้น "งานที่รับ"</li><li>คนไข้มีคำถามตามกลุ่มอาการ</li><li>เคสเสี่ยงพักไว้ให้ทีมคลินิกตรวจก่อนเก็บเงิน อนุมัติเฉพาะกิจกรรม</li><li>เช็กทักษะก่อนส่งงาน</li></ul>
+    <a href="https://napphattua.github.io/synaclair-flow-demo/">ลองกด simulator</a> (ด่าน 5 เลือก "ติดเตียง")</div>
+  <div class="card mint"><h3>ดูดเสมหะ (S06)</h3>ไม่ถูกจับคู่อัตโนมัติทั้งสองที่
+    <ul><li>แอปจริง: ไม่มีการจับคู่อัตโนมัติเลย แอดมินเลือก PT เอง และเคสที่มีท่อเจาะคอถูกส่งตรวจทุกครั้ง</li><li>Simulator: ล็อกไว้ PT แจ้งรับไม่ได้ ผู้ตรวจก็อนุมัติไม่ได้</li></ul></div>
+</div>
+
+<h2>20 ข้อตัดสินใจ</h2>
+<div class="legend"><span class="chip done">ทำแล้ว</span><span class="chip part">บางส่วน</span><span class="chip no">ยังไม่เริ่ม</span><span class="chip blk">รอคน (คลินิก/กฎหมาย)</span></div>
+<div class="wrap"><table class="tbl">
+<tr><th>ข้อ</th><th>เรื่อง</th><th>แอปจริง</th><th>Simulator</th></tr>
+<tr><td>R1.1</td><td>PT เลือกกลุ่มก่อน แล้วถามเฉพาะทักษะที่เกี่ยว</td><td><span class="chip no">ยังไม่เริ่ม</span> ความเชี่ยวชาญยังเป็นข้อความพิมพ์เอง</td><td><span class="chip done">ทำแล้ว</span></td></tr>
+<tr><td>R1.2</td><td>ทำได้ / ทำไม่ได้ / ขอคุยก่อน</td><td><span class="chip no">ยังไม่เริ่ม</span></td><td><span class="chip done">ทำแล้ว</span></td></tr>
+<tr><td>R1.3</td><td>ตรวจใบประกอบ + ตรวจหลักฐานตามความเสี่ยง</td><td><span class="chip part">บางส่วน</span> ตรวจใบประกอบครบ <span class="chip blk">เกณฑ์หลักฐาน</span></td><td><span class="chip part">บางส่วน</span> ทีมติ๊ก "ดูหลักฐานแล้ว"</td></tr>
+<tr><td>R1.4</td><td>อุปกรณ์ของใคร ผู้ช่วยกี่คน</td><td><span class="chip no">ยังไม่เริ่ม</span></td><td><span class="chip part">บางส่วน</span></td></tr>
+<tr><td>R1.5</td><td>ผ่านทุกด่านก่อนรับงาน</td><td><span class="chip part">บางส่วน</span> ยังไม่เช็ก: ใบสมัครผ่าน, ผูก LINE, ตารางที่ส่งแล้ว</td><td><span class="chip part">บางส่วน</span> ยอมรับข้อตกลงตอนรับงานแรก</td></tr>
+<tr><td>R2.1</td><td>คัดกรองเป็นขั้น แยกตามกลุ่ม หยุดเมื่ออันตราย</td><td><span class="chip part">บางส่วน</span> หยุดเมื่อฉุกเฉินได้ ยังไม่แยกกลุ่ม</td><td><span class="chip part">บางส่วน</span> ถ้อยคำยังไม่อนุมัติ</td></tr>
+<tr><td>R2.2</td><td>คง Barthel</td><td><span class="chip done">คงไว้</span> <span class="chip blk">การปรับ</span></td><td><span class="chip done">คงไว้</span></td></tr>
+<tr><td>R2.3</td><td>หลายเป้าหมาย + ไม่รู้ส่งตรวจ</td><td><span class="chip part">บางส่วน</span> ไม่แยกหลัก/รอง</td><td><span class="chip part">บางส่วน</span></td></tr>
+<tr><td>R2.4</td><td>บ้าน ผู้ช่วย อุปกรณ์</td><td><span class="chip part">บางส่วน</span></td><td><span class="chip part">บางส่วน</span> เฉพาะกลุ่มติดเตียง</td></tr>
+<tr><td>R2.5</td><td>เคสต้องตรวจ: ตรวจก่อนขอเงิน · เคสทั่วไปจ่ายก่อนจับคู่</td><td><span class="chip done">ทำแล้ว</span></td><td><span class="chip done">ทำแล้ว</span></td></tr>
+<tr><td>R3.1</td><td>Required ไม่ใช่ตัวกรองอัตโนมัติ</td><td><span class="chip no">ยังไม่เริ่ม</span> (ยังไม่มีอะไรกรองผิด)</td><td><span class="chip done">ทำแล้ว</span></td></tr>
+<tr><td>R3.2</td><td>4 labels ใหม่</td><td><span class="chip no">ยังไม่เริ่ม</span></td><td><span class="chip no">ยังไม่เริ่ม</span></td></tr>
+<tr><td>R3.3</td><td>ตรวจแล้วอนุมัติเฉพาะกิจกรรม</td><td><span class="chip part">บางส่วน</span> อนุมัติได้ทั้งเคสเท่านั้น</td><td><span class="chip done">ทำแล้ว</span></td></tr>
+<tr><td>R3.4</td><td>Clinical Lead รับผิดชอบ + S06 ด่านแยก</td><td><span class="chip part">บางส่วน</span> <span class="chip blk">ใครเป็นผู้ตรวจ</span></td><td><span class="chip part">บางส่วน</span> S06 ล็อก</td></tr>
+<tr><td>R3.5</td><td>ทดสอบ 26 เคส + clinician เซ็น</td><td><span class="chip no">ยังไม่เริ่ม</span> <span class="chip blk">เซ็นรับ</span></td><td><span class="chip no">ยังไม่เริ่ม</span></td></tr>
+<tr><td>R4.1</td><td>กติกามีเวอร์ชัน + ที่มา</td><td><span class="chip part">บางส่วน</span></td><td><span class="chip part">บางส่วน</span></td></tr>
+<tr><td>R4.2</td><td>ตรวจ repo ก่อน ไม่รื้อ</td><td><span class="chip done">ทำแล้ว</span></td><td>—</td></tr>
+<tr><td>R4.3</td><td>เปิดข้อมูลเท่าที่จำเป็น</td><td><span class="chip done">ทำแล้ว</span> <span class="chip blk">PDPA</span></td><td><span class="chip done">ทำแล้ว</span></td></tr>
+<tr><td>R4.4</td><td>เทสต์ T01–T34</td><td><span class="chip part">บางส่วน</span></td><td><span class="chip part">บางส่วน</span></td></tr>
+<tr><td>R4.5</td><td>flag + ทดลอง + ค่อยเปิด</td><td><span class="chip part">บางส่วน</span> มี env flag</td><td>—</td></tr>
+</table></div>
+
+<h2>26 เคส: ตอนนี้ระบบทำอะไร</h2>
+<p class="note">คอลัมน์แอปจริงได้จากการอ่านโค้ด ยังไม่ได้รันด้วยข้อมูลทดสอบ</p>
+<div class="wrap"><table class="tbl">
+<tr><th>เคส</th><th>สเปกบอกว่า</th><th>แอปจริง</th><th>Simulator</th></tr>
+<tr><td>MSK-01…06</td><td>เคสทั่วไป</td><td>จ่ายแล้วจับคู่ (ถ้าตอบ "ไม่" ทุกข้อ)</td><td>จ่ายแล้วจับคู่</td></tr>
+<tr><td>ORTHO-01/02</td><td>ปกติได้ ถ้าเงื่อนไขครบ · NWB ห้ามลงน้ำหนักเด็ดขาด</td><td>ส่งตรวจทุกเคส (เคยผ่าตัด) <b>เข้มกว่าสเปก</b></td><td>ส่งตรวจ · ถามเรื่องลงน้ำหนัก ผู้ตรวจเขียนข้อจำกัดได้</td></tr>
+<tr><td>ORTHO-03/04</td><td>S01 + ข้อห้ามของหมอ</td><td>ส่งตรวจ</td><td>ส่งตรวจ · ไม่รู้คำสั่งลงน้ำหนัก = ส่งตรวจ</td></tr>
+<tr><td>NEURO-01…04</td><td>S03 ตามโรค · C08 Conditional (v2.4)</td><td>ปกติถ้าอาการคงที่ · ไม่เช็กทักษะ PT</td><td>ถามโรค · มีโรคประจำตัว = ส่งตรวจ (เข้มกว่าแอปจริง)</td></tr>
+<tr><td>GERI-01…04</td><td>S04 เฉพาะเมื่อมีปัญหาหายใจจริง ไม่ใช่แค่อ่อนเพลีย</td><td>อ่อนเพลีย = ส่งตรวจ ไม่มี S04</td><td>ถามจำนวนครั้งที่ล้ม · อ่อนเพลียไม่ trigger S04</td></tr>
+<tr><td>BED-01/03</td><td>พึ่งพามาก · BED-03 ต้องมีทักษะ Stroke</td><td>ขึ้นกับคำตอบ</td><td>ถามเรื่องผู้ช่วย</td></tr>
+<tr><td>BED-02</td><td>ต้องใช้ 2 คนหรือเครื่องยก แต่มี 1 คน = พักไว้</td><td><span class="chip no">ตรวจไม่เจอ</span> ไม่มีคำถามนี้</td><td><span class="chip done">ทำแล้ว</span> ส่งตรวจก่อนจ่ายเงิน กดทดสอบแล้ว</td></tr>
+<tr><td>BED-04</td><td>S05 ไม่ใช่ S06 · ตรวจก่อนจับคู่ครั้งแรก</td><td>ส่งตรวจเฉพาะเมื่อมีอุปกรณ์ หรือเพิ่งออกจาก รพ.</td><td><span class="chip part">ยังขาด</span> บันทึกเรื่องเสมหะไว้แต่ยังไม่ส่งตรวจ (ดู Q-C)</td></tr>
+<tr><td>RESP-01, CARDIO-01, RESP-02</td><td>S04 / S08 / S04+S05 · RESP-02 C07 Conditional</td><td>ขึ้นกับคำตอบ (มีออกซิเจน = ส่งตรวจ)</td><td>ส่งตรวจเฉพาะเมื่อดูดเสมหะ หรือไม่แน่ใจ</td></tr>
+<tr><td>RESP-03</td><td>ท่อเจาะคอ + ดูดเสมหะ: ตรวจเสมอ ห้ามจับคู่อัตโนมัติ</td><td><span class="chip done">ส่งตรวจ</span> แอดมินเลือก PT เอง</td><td><span class="chip done">ส่งตรวจ</span> S06 ล็อก</td></tr>
+</table></div>
+
+<h2>จุดที่ต้องตัดสิน</h2>
+<div class="grid">
+  <div class="card"><h3>1. กติกา red flag เดิม</h3>บอสรับ v2.4 แล้ว (2 พ.ย.) ระบบไม่วินิจฉัย แค่พักเคสให้คนตรวจ</div>
+  <div class="card"><h3>2. เคสหลังผ่าตัดถูกส่งตรวจหมด</h3>แอปจริงเข้มกว่าสเปก ต้องมีกติกาว่าแบบไหนนับเป็นเคสทั่วไป</div>
+  <div class="card"><h3>3. กลุ่มบริการไม่ตรงกัน</h3>แอปจริงมี 5 แบบ ไม่มีกลุ่มติดเตียงและหัวใจ/ปอด จะเพิ่มเป็นฟิลด์ใหม่ ไม่แก้ของเดิม</div>
+  <div class="card"><h3>4. ยอมรับข้อตกลงเมื่อไร</h3>ตอนนี้ยอมรับตอนรับงานแรก (ยังรับงานไม่ได้ถ้าไม่ยอมรับ) สเปกให้ยอมรับก่อนลงตาราง</div>
+  <div class="card"><h3>5. Mapping กลุ่ม 05</h3>มี S04 แต่ไม่มี S05 ส่วน BED-04 ใช้ S05 ข้ามกลุ่ม ตั้งใจหรือไม่</div>
+</div>
+
+<h2>คำถามถึงพี่ปาล์ม (ตอบตามรหัสข้อ)</h2>
+<div class="card"><div class="q">
+<b>Q-A</b><span>ใครเป็น Clinical Lead และมอบหมายให้คนอื่นตรวจแทนได้ไหม</span>
+<b>Q-B</b><span>เคสหลังผ่าตัด (ORTHO-01/02) ตอบแบบไหนถึงนับเป็นเคสทั่วไป ไม่ต้องรอตรวจก่อนจ่ายเงิน</span>
+<b>Q-C</b><span>"มีเสมหะ ไอออกเองไม่ค่อยได้" (BED-04, RESP-02) ต้องตรวจก่อนจ่ายเงิน หรือแค่บันทึกว่าเคสต้องใช้ S05</span>
+<b>Q-D</b><span>งานเฉพาะทาง S01–S05 และ S08 ต้องใช้หลักฐานอะไร และมีวันหมดอายุไหม</span>
+<b>Q-E</b><span>PT ตอบ "ขอคุยก่อน" ให้ถือว่ายังทำไม่ได้ จนกว่าทีมจะคุยแล้วใช่ไหม (simulator ทำแบบนี้)</span>
+<b>Q-F</b><span>ยอมรับข้อตกลงตอนรับงานแรกได้ไหม หรือต้องยอมรับก่อนลงตาราง</span>
+<b>Q-G</b><span>ถ้อยคำคำถามตามกลุ่มอาการใน simulator (ด่าน 5) ใช้ได้ไหม</span>
+<b>Q-H</b><span>S06: ใครจะเช็กขอบเขตกับสภากายภาพบำบัด และเมื่อไร</span>
+</div></div>
+
+<h2>ขั้นต่อไปที่เสนอ</h2>
+<div class="grid">
+  <div class="card"><h3>P0 · แอปจริง</h3>เพิ่มด่านก่อนรับงาน (ใบสมัครผ่าน, ผูก LINE, ตารางที่ส่งแล้ว) โดยปิดเปิดได้ด้วย flag · เขียนเทสต์ตามรหัส T ให้สิ่งที่ทำงานอยู่แล้ว</div>
+  <div class="card"><h3>P1 · เพิ่มอย่างเดียว ไม่ลบของเดิม</h3>ตาราง 6 กลุ่ม 24 ทักษะ 26 เคส แบบมีเวอร์ชัน · PT แจ้งทักษะ · อนุมัติเฉพาะกิจกรรม · S06 ล็อก</div>
+  <div class="card"><h3>P2 · หลังได้คำตอบ Q-B, Q-C, Q-G</h3>เอาคำถามตามกลุ่มอาการเข้าแอปจริง · ปรับ Barthel · ถอยกลับได้ด้วยการปิด flag</div>
+</div>
+<p class="meta" style="margin-top:28px">ฉบับเต็มสำหรับ AI (มีไฟล์และบรรทัดในโค้ด): docs/product/clinical-matching-spec-vs-actual-20261102.md</p>
+</main>
+</body>
+</html>
