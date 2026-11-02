@@ -915,7 +915,7 @@
     const list = capTasks(p), done = list.filter(id => CLIN.restricted.includes(id) || p.caps[id]).length;
     const row = id => CLIN.restricted.includes(id)
       ? `<div class="tt-cap lock"><div class="grow"><b>${esc(CLIN.tasks[id])}</b><small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
-      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.tasks[id])}</b>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}</div>
+      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.tasks[id])}</b>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}</div>
           <div class="tt-seg" role="group" aria-label="${esc(CLIN.tasks[id])}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-pick="pt.caps.${id}" data-value="${v}">${l}</button>`).join('')}</div></div>`;
     return `<div class="stack"><span class="kick">งานที่รับ</span><h1 class="h1">รับงานกลุ่มไหนบ้าง</h1><p class="small">เลือกกลุ่มก่อน แล้วตอบเฉพาะงานในกลุ่มนั้น ไม่ต้องทำได้ทุกข้อ ตอบตามจริงช่วยให้ได้เคสที่เหมาะ</p></div>
       <div class="tt-svc">${CLIN.services.map(x => { const on = p.services.includes(x.id); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.services" data-value="${x.id}">${I(x.icon)}${esc(x.name)}</button>`; }).join('')}</div>
@@ -1492,6 +1492,8 @@
   act('sendSchedule', (s, ctx) => {
     const sc = s.pt.schedule; if (!sc.blocks.some(b => !b.sent)) { ctx.toast('ยังไม่มีช่วงเวลาใหม่ให้ส่ง'); return; }
     if (slotCheck(s).n < MONTH_MIN) { ctx.toast('ลงอย่างน้อย 1 สล็อตก่อนส่ง'); return; }
+    // พี่ปาล์ม Q-F (2 Nov): the terms come before a published schedule. Drafts stay saved meanwhile.
+    if (!s.pt.agreement) { s.pt.agreeTick = false; ctx.toast('อ่านและยอมรับข้อตกลงก่อนส่งตารางนะคะ ร่างตารางบันทึกไว้แล้ว'); return 't.agreement'; }
     sc.blocks.forEach(b => { b.sent = true; }); sc.sent = true;
     if (!s.pt.schedXp) { s.pt.schedXp = true; ctx.xp(XP.schedule, 'ส่งตาราง'); }
     ctx.toast('ส่งตารางแล้ว ทีมเห็นเวลาที่คุณว่าง');
@@ -1698,7 +1700,7 @@
     render(s) {
       const done = s.pt.agreement;
       return `<div class="scr">${ui.bar('ข้อตกลงการรับงาน')}<div class="body">
-        <div class="stack"><span class="kick">ฉบับซ้อม · อ่านประมาณ 2 นาที</span><h1 class="h1">อ่านครั้งเดียว ก่อนรับงานแรก</h1>
+        <div class="stack"><span class="kick">ฉบับซ้อม · อ่านประมาณ 2 นาที</span><h1 class="h1">อ่านครั้งเดียว ก่อนส่งตารางและรับงาน</h1>
           <p class="note row tt-top">${I('info')}<span>ฉบับนี้ใช้ในห้องซ้อมเท่านั้น ข้อตกลงจริงมาจากทีมกฎหมายของ SynaClair</span></p></div>
         ${AGREE.map(([ic, t, d], k) => `<div class="card flat"><div class="row tt-top"><span class="tile">${I(ic)}</span><div class="grow"><b class="h3">${k + 1}. ${t}</b><p class="p" style="margin-top:4px">${d}</p></div></div></div>`).join('')}
       </div><div class="foot">${done ? `<p class="note mint row">${I('badge-check')}<span>คุณยอมรับข้อตกลงนี้แล้ว</span></p><button class="btn ghost" data-back>กลับ</button>`
@@ -1707,7 +1709,7 @@
   });
   act('acceptAgreement', (s, ctx) => {
     if (!s.pt.agreeTick) return;
-    s.pt.agreement = true; ctx.toast('ยอมรับข้อตกลงแล้ว รับงานได้เลย');
+    s.pt.agreement = true; ctx.toast('ยอมรับข้อตกลงแล้ว');
     const hist = SC.v.hist.pt; if (hist.length) { SC.back(); return; }
     return offerForMe(s) ? 't.offer' : 't.work';
   });

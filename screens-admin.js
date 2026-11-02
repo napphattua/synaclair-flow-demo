@@ -202,10 +202,10 @@
     const p = s.pt, caps = p.caps || {}, ids = Object.keys(caps); if (!ids.length) return '';
     const names = (p.services || []).map(id => (SC.CLIN.services.find(x => x.id === id) || {}).name).filter(Boolean);
     const by = v => ids.filter(id => caps[id] === v).map(id => esc(SC.CLIN.tasks[id]));
-    const spec = ids.filter(id => id[0] === 'S' && caps[id] === 'can'), rev = p.capReviewed || {};
+    const spec = ids.filter(id => (id[0] === 'S' && caps[id] === 'can') || caps[id] === 'ask'), rev = p.capReviewed || {};
     return `<div class="card flat"><b class="h3">${I('list-checks')}งานที่ PT แจ้งว่ารับได้</b><p class="small" style="margin:0">กลุ่ม: ${esc(names.join(' · ') || '—')} · ที่ติ๊กเป็นข้อมูลจาก PT ยังไม่ใช่การอนุมัติ</p>
-      ${kv([['ทำได้', by('can').join(' · ') || '—'], ['ยังไม่ถนัด', by('no').join(' · ') || '—'], ['ขอคุยก่อน', by('ask').join(' · ') || '—'], ['อุปกรณ์', esc((p.equip || []).join(' · ') || '—')]])}
-      ${spec.length ? `<span class="label">งานเฉพาะทาง · ตรวจหลักฐานก่อนส่งเคสแบบนี้</span>${spec.map(id => `<button class="aa-pick" data-act="capReview" data-id="${id}" aria-pressed="${!!rev[id]}"><span class="aa-box">${rev[id] ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span><span class="s">${rev[id] ? 'ทีมดูหลักฐานแล้ว' : 'ยังไม่ได้ดูหลักฐาน (ใบอบรม ประสบการณ์)'}</span></span></button>`).join('')}` : ''}
+      ${kv([['ทำได้', by('can').join(' · ') || '—'], ['ยังไม่ถนัด', by('no').join(' · ') || '—'], ['ขอคุยก่อน (รอทีมพิจารณา)', by('ask').join(' · ') || '—'], ['อุปกรณ์', esc((p.equip || []).join(' · ') || '—')]])}
+      ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง</span>${spec.map(id => `<button class="aa-pick" data-act="capReview" data-id="${id}" aria-pressed="${!!rev[id]}"><span class="aa-box">${rev[id] ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span><span class="s">${caps[id] === 'ask' ? (rev[id] ? 'คุยแล้ว อนุมัติให้รับงานแบบนี้' : 'PT ขอคุยก่อน · ยังไม่ผ่าน') : (rev[id] ? 'ทีมดูหลักฐานแล้ว' : 'ยังไม่ได้ดูหลักฐาน (ใบอบรม ประสบการณ์)')}</span></span></button>`).join('')}` : ''}
       <p class="small" style="margin:0">${I('lock')} ดูดเสมหะ (Suction) ยังไม่เปิดให้ PT แจ้งรับ ต้องตรวจขอบเขตวิชาชีพไทยก่อน</p></div>`;
   }
   SC.action('capReview', (s, ctx) => { const r = s.pt.capReviewed = s.pt.capReviewed || {}; r[ctx.data.id] = !r[ctx.data.id]; });
@@ -423,12 +423,15 @@
     let ok = true, reason, warn = '';
     /* พี่ปาล์ม v2.4 (R1.5, R3.1–R3.4): eligibility before ranking. 30/90-minute widening never relaxes these. */
     const g = (SC.clinGroup(s) || {}).id, caps = s.pt.caps || {}, allow = (r.review && r.review.allow) || [];
-    const cannot = allow.filter(id => caps[id] !== 'can');
+    // Q-E: "ขอคุยก่อน" waits for the team; a specialty "ทำได้" also needs evidence checked. Never approved automatically.
+    const rev = s.pt.capReviewed || {}, approved = id => (caps[id] === 'can' && (id[0] === 'C' || rev[id])) || (caps[id] === 'ask' && rev[id]);
+    const cannot = allow.filter(id => !approved(id));
     if (s.pt.status !== 'VERIFIED') { ok = false; reason = 'ใบประกอบยังรอตรวจ · อนุมัติก่อนจึงส่งงานได้'; }
+    else if (!s.pt.agreement) { ok = false; reason = 'ยังไม่ยอมรับข้อตกลงการรับงาน'; }
     else if (!s.pt.schedule || !s.pt.schedule.sent) { ok = false; reason = 'ยังไม่ส่งตาราง · ร่างตารางยังใช้จับคู่ไม่ได้'; }
     else if (r.review && !r.review.cleared) { ok = false; reason = 'เคสนี้รอทีมคลินิกตรวจ'; }
     else if (allow.some(id => SC.CLIN.restricted.includes(id))) { ok = false; reason = 'มีงานดูดเสมหะ · ไม่จับคู่อัตโนมัติ ทีมคลินิกประสานเอง'; }
-    else if (cannot.length) { ok = false; reason = `ยังไม่ได้ยืนยันว่าทำได้: ${cannot.map(id => SC.CLIN.tasks[id]).join(' · ')}`; }
+    else if (cannot.length) { ok = false; reason = `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.tasks[id]).join(' · ')}`; }
     else if (st === 'PAUSED') { ok = false; reason = 'พักรับงานใหม่ชั่วคราว · รอทีมทบทวน'; }
     else if (zoneOk) reason = `ตรงพื้นที่ · รับงานใน${d}`;
     else { reason = `รับงาน: ${(s.pt.zones || []).join(' · ') || 'ยังไม่ระบุ'}`; warn = preferred ? `ผู้รับบริการขอคนนี้ แต่ PT ไม่ได้ลงเขต${d} · โทรถาม PT ก่อนส่ง` : `PT ไม่ได้ลงเขต${d} · โทรถามก่อนส่ง`; }
