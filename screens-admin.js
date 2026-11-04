@@ -142,7 +142,8 @@
   function tasks(s) {
     const a = A(s), t = [], r = s.request;
     if (s.pt.status === 'PENDING') t.push({ icon: 'badge-check', tag: 'ตรวจใบประกอบ', title: s.pt.legalName || meName(s), sub: `เลขใบประกอบ ${s.pt.license || '—'} · แสดงเป็น ${meName(s)}${s.pt.photo ? ' · มีรูปโปรไฟล์รอตรวจ' : ''}`, go: 'a.license', cta: 'ตรวจใบประกอบ' });
-    if (r && r.status === 'CLINICAL_REVIEW') t.push({ icon: 'clipboard-plus', tag: 'ตรวจก่อนเก็บเงิน', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
+    if (r && r.scopeHold && !(r.review || {}).declined) t.push({ icon: 'clipboard-plus', tag: 'พักกิจกรรม · นัดเดิมยังอยู่', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
+    if (r && r.status === 'CLINICAL_REVIEW') t.push({ icon: 'clipboard-plus', tag: r.paid ? 'ตรวจซ้ำ · ชำระแล้ว ไม่เก็บซ้ำ' : 'ตรวจก่อนเก็บเงิน', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
     if (r && r.check && r.check.state === 'open') t.push({ icon: 'receipt', tag: 'สลิปผิดปกติ', title: `สลิป ClairConnect Trial · ${r.ref}`, sub: `${patientName(s)} · ${r.check.reasons.join(' · ')} · จับคู่ PT ต่อไปแล้ว`, go: 'a.payments', cta: 'ดูสลิป' });
     if (r && r.status === 'PAID') t.push({ icon: 'users-round', tag: 'จับคู่ PT', title: `${patientName(s)} · ${district(s) || 'ยังไม่ระบุเขต'}`, sub: `${r.preferredPt ? `ผู้รับบริการขอ ${ptName(s, r.preferredPt)} · ` : ''}ระบบหา PT ที่ตรงเขตไม่ได้ ต้องเลือกเอง`, go: 'a.match', cta: 'เลือก PT' });
     if (s.course && s.course.slip && !s.course.approved) t.push({ icon: 'wallet', tag: 'ตรวจเงินคอร์ส', title: `คอร์ส ${s.course.sessions} ครั้ง ${money(s.course.total)}`, sub: `${patientName(s)} · PT ${meName(s)} ส่งสลิปจากหน้างาน`, go: 'a.payments', cta: 'ตรวจสลิปคอร์ส' });
@@ -364,21 +365,36 @@
     /* A wrong-amount slip still moves to matching, but the patient is never told the money was checked (ChatGPT review 30 Oct). */
     if (odd) line('patient', { key: 'slipPending', text: 'ได้รับสลิปแล้ว · กำลังหานักกายภาพให้ ระหว่างนี้ทีมขอตรวจยอดชำระอีกครั้ง ถ้ามีอะไรต้องแก้ ทีมจะทักในแชตนี้' });
     else { line('patient', { key: 'receipt' }); line('patient', { key: 'intakeMatching' }); }
-    const mc = meCandidate(s);
-    if (mc && mc.ok && (mc.zoneOk || mc.preferred) && !mc.warn) { r.status = 'OFFERED'; r.offerTo = ['me']; r.auto = mc.preferred ? 'ผู้รับบริการขอคนนี้' : 'ตรงเขตที่รับงาน'; line('pt', { key: 'ptOffer' }); }
+    offerIfFits(s, line);
   };
+  function offerIfFits(s, line) {
+    const r = s.request, mc = meCandidate(s);
+    if (mc && mc.ok && (mc.zoneOk || mc.preferred) && !mc.warn) { r.status = 'OFFERED'; r.offerTo = ['me']; r.auto = mc.preferred ? 'ผู้รับบริการขอคนนี้' : 'ตรงเขตที่รับงาน'; line('pt', { key: 'ptOffer' }); }
+  }
 
   /* ================= a.clinical =================
      พี่ปาล์ม v2.4 R2.5 + R3.3: a request with a safety question waits here BEFORE any payment is asked.
      The reviewer approves specific activities only (never the whole case), writes limits, or declines and calls.
      Routine requests never come here: they pay first, then matching, as before. S06 suction is locked. */
+  /* Q-A (3 Nov 2026): Clinical Leads. Rehearsal accounts; the real app checks the CLINICAL_LEAD role on the signed-in user. */
+  SC.CLIN_LEADS = [{ id: 'palm', name: 'ปาล์ม', role: 'CEO' }, { id: 'nat', name: 'นัท', role: 'CMO' }, { id: 'boss', name: 'บอส', role: 'CTO' }];
+  const REVIEW_ACCOUNTS = [...SC.CLIN_LEADS, { id: 'staff', name: 'แอดมินทั่วไป', role: 'ไม่มีสิทธิ์' }];
+  const leadOf = id => SC.CLIN_LEADS.find(x => x.id === id);
+  const reviewOpen = r => !!r && (r.status === 'CLINICAL_REVIEW' || (r.scopeHold && !(r.review || {}).cleared && !(r.review || {}).declined));
+  const logReview = (r, lead, decision) => { const rv = r.review; (r.reviewLog = r.reviewLog || []).push({ reviewerId: lead.id, reviewer: `${lead.name} (${lead.role})`, decision, allow: rv.allow.slice(), limits: rv.limits, reason: rv.reason, at: SC.REVIEW_AT, version: r.screeningVersion }); };
   SC.clinClear = (s, line) => {
-    const r = s.request; if (!r || r.status !== 'CLINICAL_REVIEW') return;
+    const r = s.request; if (!reviewOpen(r)) return;
     const rv = r.review; if (!rv.allow.length) rv.allow = ['C01', 'C04', 'C16'];
     rv.allow = rv.allow.filter(id => !SC.CLIN.restricted.includes(id));
-    Object.assign(rv, { cleared: true, by: 'Clinical Lead (ตัวอย่าง)', at: 'ส. 24 ต.ค. 10:15' });
+    const lead = leadOf(rv.byId) || SC.CLIN_LEADS[0]; rv.byId = lead.id; rv.reason = rv.reason || 'ห้องซ้อม: ปุ่มข้ามด่าน';
+    Object.assign(rv, { cleared: true, by: `${lead.name} (${lead.role})`, at: SC.REVIEW_AT, version: r.screeningVersion });
+    logReview(r, lead, 'APPROVED');
+    if (r.offerId) SC.bumpOffer(r);
+    const scope = SC.clinScope(s), said = `ทีมคลินิกตรวจแล้ว · อนุมัติเฉพาะ: ${scope.allow.join(' · ')}${scope.not.length ? ` · ไม่รวม: ${scope.not.join(' · ')}` : ''}`;
+    if (r.scopeHold) { r.scopeHold = false; if (line) { line('patient', { key: 'clinOk', text: `${said} · นัดเดิมยังอยู่ ไม่มีค่าใช้จ่ายเพิ่ม` }); line('pt', { key: 'teamReply', text: `ทีมคลินิกตรวจเคส ${r.ref} แล้ว · ทำได้เฉพาะ: ${scope.allow.join(' · ')}${scope.limits ? ` · ข้อจำกัด: ${scope.limits}` : ''}` }); } return; }
+    if (r.paid) { r.status = 'PAID'; if (line) { line('patient', { key: 'clinOk', text: `${said} · ชำระแล้ว ไม่ต้องชำระซ้ำ ทีมกำลังหานักกายภาพ` }); offerIfFits(s, line); } return; }
     r.status = 'PAYMENT_PENDING';
-    if (line) { line('patient', { key: 'clinOk', text: 'ทีมคลินิกดูข้อมูลแล้ว ดูแลที่บ้านได้ค่ะ · ชำระ ClairConnect Trial ฿1,599 เพื่อเริ่มหานักกายภาพ' }); line('patient', { key: 'intakePay' }); }
+    if (line) { line('patient', { key: 'clinOk', text: `${said} · ชำระ ClairConnect Trial ฿1,599 เพื่อเริ่มหานักกายภาพ` }); line('patient', { key: 'intakePay' }); }
   };
   SC.screen('a.clinical', {
     role: 'admin',
@@ -387,14 +403,14 @@
       if (!r || !r.review) return shell(s, 'a.clinical', head, `<div class="card flat">${ui.empty('clipboard-plus', 'ไม่มีเคสรอตรวจ', 'เคสทั่วไปชำระก่อนแล้วจับคู่เหมือนเดิม หน้านี้มีงานเมื่อคำตอบคัดกรองมีข้อที่ทีมต้องดู', '')}</div>`);
       const rv = r.review, g = SC.clinGroup(s), svc = SC.CLIN.services.find(x => x.id === g.id);
       const list = svc ? svc.tasks : ['C01', 'C02', 'C04', 'C06', 'C07', 'C11', 'C12', 'C16'];
-      const open = r.status === 'CLINICAL_REVIEW';
+      const open = reviewOpen(r), declined = r.status === 'REVIEW_DECLINED' || !!rv.declined;
       const row = id => SC.CLIN.restricted.includes(id)
         ? `<div class="aa-pick off" aria-disabled="true"><span class="aa-box">${I('lock')}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span><span class="s">ปิดอยู่ · รอตรวจขอบเขตวิชาชีพไทย ห้ามจับคู่อัตโนมัติ อนุมัติงานอื่นไม่ได้หมายถึงอนุมัติดูดเสมหะ</span></span></div>`
         : open ? `<button class="aa-pick" data-toggle="request.review.allow" data-value="${id}" aria-pressed="${rv.allow.includes(id)}"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span></span></button>`
         : `<div class="aa-pick off"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span></span></div>`;
       const caseCard = `<article class="card flat">
-        <div class="row between wrap"><b class="h2">${esc(patientName(s))}</b><span class="pill ${open ? 'wait' : r.status === 'REVIEW_DECLINED' ? 'warn' : ''}">${open ? 'รอตรวจ · ยังไม่เก็บเงิน' : r.status === 'REVIEW_DECLINED' ? 'โทรคุยก่อน' : 'อนุมัติแล้ว'}</span></div>
-        ${kv([['เลขคำขอ', esc(r.ref)], ['กลุ่มอาการ', esc(g.name || 'ยังไม่ระบุ')], ...g.answers.map(([q, a]) => [q, esc(a)]), ['เป้าหมาย', esc(goalText(s) || '—')], ['เขต', esc(district(s) || '—')]])}
+        <div class="row between wrap"><b class="h2">${esc(patientName(s))}</b><span class="pill ${open ? 'wait' : declined ? 'warn' : ''}">${open ? (r.scopeHold ? 'รอตรวจ · พักกิจกรรม นัดเดิมยังอยู่' : r.paid ? 'รอตรวจ · ชำระแล้ว ไม่เก็บซ้ำ' : 'รอตรวจ · ยังไม่เก็บเงิน') : declined ? 'โทรคุยก่อน' : 'อนุมัติแล้ว'}</span></div>
+        ${kv([['เลขคำขอ', esc(r.ref)], ['ข้อมูลคัดกรองฉบับที่', esc(String(r.screeningVersion || 1))], ['กลุ่มอาการ', esc(g.name || 'ยังไม่ระบุ')], ...g.answers.map(([q, a]) => [q, esc(a)]), ['เป้าหมาย', esc(goalText(s) || '—')], ['เขต', esc(district(s) || '—')]])}
         <div class="stack"><span class="label">เหตุผลที่ต้องตรวจ</span>${rv.reasons.map(x => `<span class="small">${I('triangle-alert')} ${esc(x)}</span>`).join('')}</div>
         ${s.patient.medNote ? `<p class="small">ข้อห้ามแพทย์: ${esc(s.patient.medNote)}</p>` : ''}${s.patient.surgeryNote ? `<p class="small">ผ่าตัด: ${esc(s.patient.surgeryNote)}</p>` : ''}
         <p class="small" style="margin:0">PT ที่ยังไม่รับงานจะไม่เห็นข้อมูลส่วนนี้และที่อยู่เต็ม</p>
@@ -403,15 +419,19 @@
         <b class="h3">อนุมัติเฉพาะกิจกรรมที่ปลอดภัย</b><p class="small" style="margin:0">ติ๊กเฉพาะที่ทำที่บ้านได้ ไม่ใช่อนุมัติทั้งเคส PT จะเห็นรายการนี้ในงานเสนอ</p>
         <div class="stack">${list.map(row).join('')}</div>
         ${open ? `<label class="field"><span>ข้อจำกัด / ข้อควรระวัง</span><textarea class="in" rows="2" data-bind="request.review.limits" placeholder="เช่น ห้ามลงน้ำหนักขาซ้าย · ย้ายตัวต้องมีผู้ช่วย 2 คน">${esc(rv.limits)}</textarea></label>
-        <div class="aa-acts"><button class="btn" data-act="clinApprove" data-need="request.review.allow">${I('check')}อนุมัติที่ติ๊ก แล้วส่งลิงก์ชำระ</button><button class="btn ghost" data-act="clinDecline">${I('phone')}ยังไม่รับ · โทรคุยก่อน</button></div>`
+        <div class="field"><span>ตรวจในบัญชี</span><div class="chips">${REVIEW_ACCOUNTS.map(x => `<button class="chip ${rv.byId === x.id ? 'on' : ''}" data-pick="request.review.byId" data-value="${x.id}">${esc(x.name)} · ${esc(x.role)}</button>`).join('')}</div></div>
+        <label class="field"><span>เหตุผลการตัดสิน</span><textarea class="in" rows="2" data-bind="request.review.reason" placeholder="บันทึกพร้อมชื่อผู้ตรวจ เวลา และฉบับข้อมูล">${esc(rv.reason || '')}</textarea></label>
+        <div class="aa-acts"><button class="btn" data-act="clinApprove" data-need="request.review.allow,request.review.byId,request.review.reason">${I('check')}${r.paid || r.scopeHold ? 'อนุมัติที่ติ๊ก' : 'อนุมัติที่ติ๊ก แล้วส่งลิงก์ชำระ'}</button><button class="btn ghost" data-act="clinDecline" data-need="request.review.byId,request.review.reason">${I('phone')}ยังไม่รับ · โทรคุยก่อน</button></div>`
         : `<p class="small">ผู้ตรวจ ${esc(rv.by || '—')} · ${esc(rv.at || '')}${rv.limits ? ` · ข้อจำกัด: ${esc(rv.limits)}` : ''}</p>`}
-        <p class="small" style="margin:0">ผู้มีอำนาจตรวจ: Clinical Lead (ยังไม่แต่งตั้ง ใช้เป็นตัวอย่าง) · ทุกการตัดสินบันทึกชื่อ เวลา และเหตุผล</p>
+        <p class="small" style="margin:0">ผู้มีอำนาจตรวจ: ${SC.CLIN_LEADS.map(x => `${esc(x.name)} (${esc(x.role)})`).join(' · ')} · ทุกการตัดสินบันทึกชื่อ เวลา เหตุผล และฉบับข้อมูล</p>
+        ${(r.reviewLog || []).length ? `<div class="stack"><span class="label">ประวัติการตรวจ</span>${r.reviewLog.map(l => `<span class="small">ฉบับที่ ${esc(String(l.version))} · ${{ APPROVED: 'ผ่านตรวจ', DECLINED: 'ขอโทรคุย', SUPERSEDED: 'ผลเดิมถูกพัก' }[l.decision]} · ${esc(l.reviewer)} · ${esc(l.at)}${l.allow.length ? ` · ${l.allow.map(id => esc(SC.CLIN.tasks[id])).join(', ')}` : ''} · ${esc(l.reason)}</span>`).join('')}</div>` : ''}
       </article>`;
       return shell(s, 'a.clinical', head, `<div class="aa-split">${caseCard}<div class="stack lg">${decide}</div></div>`);
     }
   });
-  SC.action('clinApprove', (s, ctx) => { if (!s.request || !s.request.review.allow.length) return; SC.clinClear(s, ctx.line); ctx.toast('อนุมัติแล้ว ส่งลิงก์ชำระให้ผู้รับบริการใน LINE'); return 'a.queue'; });
-  SC.action('clinDecline', (s, ctx) => { const r = s.request; if (!r) return; r.status = 'REVIEW_DECLINED'; Object.assign(r.review, { by: 'Clinical Lead (ตัวอย่าง)', at: 'ส. 24 ต.ค. 10:15', note: 'ทีมคลินิกอยากคุยรายละเอียดเพิ่ม เพื่อหาทางดูแลที่ปลอดภัยที่สุด' }); ctx.line('patient', { key: 'clinCall', text: 'ทีมคลินิกขอโทรคุยก่อนนะคะ เพื่อหาทางดูแลที่ปลอดภัยที่สุด ยังไม่มีการเก็บเงิน' }); ctx.toast('แจ้งผู้รับบริการแล้ว ทีมโทรคุยต่อ'); });
+  const reviewerOk = (s, ctx) => { const rv = s.request && s.request.review; if (rv && leadOf(rv.byId)) return true; ctx.toast('บัญชีนี้ไม่มีสิทธิ์ตรวจทางคลินิก'); return false; };
+  SC.action('clinApprove', (s, ctx) => { if (!s.request || !s.request.review.allow.length || !reviewerOk(s, ctx)) return; const again = s.request.paid || s.request.scopeHold; SC.clinClear(s, ctx.line); ctx.toast(again ? 'อนุมัติแล้ว แจ้งทุกฝั่งใน LINE ไม่มีการเก็บเงินซ้ำ' : 'อนุมัติแล้ว ส่งลิงก์ชำระให้ผู้รับบริการใน LINE'); return 'a.queue'; });
+  SC.action('clinDecline', (s, ctx) => { const r = s.request; if (!r || !reviewerOk(s, ctx)) return; const lead = leadOf(r.review.byId); if (r.scopeHold) r.review.declined = true; else r.status = 'REVIEW_DECLINED'; Object.assign(r.review, { by: `${lead.name} (${lead.role})`, at: SC.REVIEW_AT, note: 'ทีมคลินิกอยากคุยรายละเอียดเพิ่ม เพื่อหาทางดูแลที่ปลอดภัยที่สุด' }); logReview(r, lead, 'DECLINED'); ctx.line('patient', { key: 'clinCall', text: `ทีมคลินิกขอโทรคุยก่อนนะคะ เพื่อหาทางดูแลที่ปลอดภัยที่สุด${r.paid ? ' ยอดชำระเดิมยังอยู่' : ' ยังไม่มีการเก็บเงิน'}` }); ctx.toast('แจ้งผู้รับบริการแล้ว ทีมโทรคุยต่อ'); });
 
   /* ================= a.match ================= */
   function meCandidate(s) {
@@ -436,8 +456,11 @@
     else if (zoneOk) reason = `ตรงพื้นที่ · รับงานใน${d}`;
     else { reason = `รับงาน: ${(s.pt.zones || []).join(' · ') || 'ยังไม่ระบุ'}`; warn = preferred ? `ผู้รับบริการขอคนนี้ แต่ PT ไม่ได้ลงเขต${d} · โทรถาม PT ก่อนส่ง` : `PT ไม่ได้ลงเขต${d} · โทรถามก่อนส่ง`; }
     if (ok && g && g !== 'UNSURE' && !(s.pt.services || []).includes(g)) warn = (warn ? warn + ' · ' : '') + `PT ไม่ได้เลือกรับงานกลุ่ม "${SC.CLIN.services.find(x => x.id === g).name}" · ทีมโทรถามก่อนส่ง`;
-    return { id: 'me', ok, zoneOk, preferred, reason, warn, warned: st === 'WARNING' };
+    return { id: 'me', ok, zoneOk, preferred, reason, warn, warned: st === 'WARNING', cannot };
   }
+  /* FIX-01/02: rechecked when the PT accepts or starts, never trusted from the card. */
+  SC.meCandidate = meCandidate;
+  SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck) { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.tasks[id]).join(' · ')}`; } return ''; };
   SC.screen('a.match', {
     role: 'admin',
     render(s) {

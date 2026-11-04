@@ -181,7 +181,7 @@
     const step = t => { const k = Math.min(1, (t - t0) / 650); n.textContent = Math.round(from + (to - from) * (1 - (1 - k) ** 3)); if (k < 1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
-  function line(role, card) { s.line[role].push(card); if (!(v.panel === 'line' && v.role === role)) s.unread[role] = (s.unread[role] || 0) + 1; }
+  function line(role, card) { if (card.key === 'received') card = Object.assign({ snap: receivedSnap() }, card); if (role === 'pt' && card.key === 'ptOffer') card = offerStamp(card); s.line[role].push(card); if (!(v.panel === 'line' && v.role === role)) s.unread[role] = (s.unread[role] || 0) + 1; }
 
   /* ---------- Small UI helpers shared by every screen file ---------- */
   const icon = (n, cls = '') => `<i data-lucide="${n}" class="${cls}"></i>`;
@@ -231,9 +231,9 @@
     { n: 5, role: 'patient', title: 'ประเมินอาการ', start: 'p.intake', done: () => !!s.request,
       guide: { 'p.intake': ['[data-act="intakeNext"], [data-act="submitRequest"]', 'ตอบทีละข้อ แล้วกด "ถัดไป" จนถึงสรุป'] },
       complete() { Object.assign(s.patient, { bp: { sys: '138', dia: '84', unknown: false }, legalName: 'สมใจ รักดี', name: 'คุณแม่สมใจ', phone: '0812345678', bookingFor: 'SOMEONE_ELSE', goals: ['WALK', 'PAIN'], address: { province: 'กรุงเทพมหานคร', district: 'บางนา', subdistrict: 'บางนาเหนือ', postal: '10260', line: '99/1 ซ.บางนา-ตราด 25', landmark: 'ตึกสีครีม ประตูรั้วสีเขียว ตรงข้ามร้านสะดวกซื้อ', pin: true }, windows: [VISIT1.short, 'ส. 24 ต.ค. 13:00', 'อา. 25 ต.ค. 09:00'], consent: true, intakeStep: 8 });
-        s.request = { ref: 'SC-2610001', status: 'PAYMENT_PENDING', preferredPt: s.patient.chosenPt, offerTo: [], slip: null }; line('patient', { key: 'received' }); line('patient', { key: 'intakePay' }); } },
+        s.request = { ref: 'SC-2610001', status: 'PAYMENT_PENDING', preferredPt: s.patient.chosenPt, offerTo: [], slip: null }; SC.clinStamp(s); line('patient', { key: 'received' }); line('patient', { key: 'intakePay' }); } },
     { n: 6, role: 'patient', title: 'ชำระ ClairConnect Trial ฿1,599', start: 'p.result', done: () => !!s.request && ['SLIP_SENT', 'PAID', 'OFFERED', 'BOOKED'].includes(s.request.status),
-      guide: { 'p.result': ['[data-go="p.pay"], [data-act="toClinical"]', 'กดปุ่ม "ClairConnect Trial ฿1,599" (ถ้าทีมคลินิกขอดูก่อน ไปฝั่งทีมคลินิกเพื่ออนุมัติ)'], 'a.clinical': ['[data-act="clinApprove"]', 'ติ๊กเฉพาะกิจกรรมที่ปลอดภัย แล้วกด "อนุมัติที่ติ๊ก"'], 'p.pay': ['[data-act="sendSlip"]', 'แนบสลิป (ใช้สลิปตัวอย่างได้) แล้วกด "ส่งสลิป"'] },
+      guide: { 'p.result': ['[data-go="p.pay"], [data-act="toClinical"]', 'กดปุ่ม "ClairConnect Trial ฿1,599" (ถ้าทีมคลินิกขอดูก่อน ไปฝั่งทีมคลินิกเพื่ออนุมัติ)'], 'a.clinical': ['[data-act="clinApprove"]', 'ติ๊กกิจกรรมที่ปลอดภัย เลือกบัญชีผู้ตรวจ ใส่เหตุผล แล้วกด "อนุมัติที่ติ๊ก"'], 'p.pay': ['[data-act="sendSlip"]', 'แนบสลิป (ใช้สลิปตัวอย่างได้) แล้วกด "ส่งสลิป"'] },
       complete() { if (s.request.status === 'CLINICAL_REVIEW') SC.clinClear(s, line); s.request.slip = 'sample'; SC.autoPay(s, line); } },
     { n: 7, role: 'admin', title: 'ระบบตรวจสลิปและจับคู่ให้เอง', start: 'a.queue', done: () => !!s.request && ['OFFERED', 'BOOKED'].includes(s.request.status),
       guide: { 'a.queue': ['[data-go="a.match"], [data-go="a.payments"]', 'ปกติระบบส่งงานให้ PT เองแล้ว แอดมินทำเฉพาะงานที่ขึ้นในคิว (สลิปผิดปกติ หรือหา PT ไม่ได้)'], 'a.payments': ['[data-act="confirmPayment"]', 'เช็กยอดในบัญชี แล้วกดปิดเรื่อง หรือแจ้งคนไข้'], 'a.match': ['[data-act="sendOffer"]', 'ถ้าคนไข้ขอ PT ไว้ ระบบติ๊กให้แล้ว ถ้าไม่ได้ขอ ติ๊กเลือก PT ที่แนะนำ แล้วกด "ส่งข้อเสนอ"'] },
@@ -315,8 +315,30 @@
     return '';
   }
   const fpart = (b, k, pad, key) => b[k] ? fnode(Object.assign({ paddingAll: pad + 'px' }, b[k]), 'vertical', key) : '';
+  /* พี่ปาล์ม Fix Brief FIX-02/FIX-04: these cards are stamped with the real request when sent, so a card never shows another case.
+     An offer card carries the offer id; once the scope changes, the id changes and the old card can no longer accept. */
+  function receivedSnap() {
+    const p = s.patient, r = s.request || {}, hold = r.status === 'CLINICAL_REVIEW';
+    return [`เลขอ้างอิง: ${r.ref || '—'}`, `ผู้รับบริการ: ${p.name || '—'}`, `นัดให้: ${p.bookingFor === 'SOMEONE_ELSE' ? 'คนที่คุณดูแล' : 'ตัวเอง'}`, `พื้นที่: ${(p.address && p.address.district) || p.district || '—'}`,
+      (p.windows || [])[0] ? `เวลาหลัก: ${p.windows[0]}` : '', `สถานะ: ${hold ? 'ทีมคลินิกกำลังดูข้อมูล' : 'รอชำระเงิน'}`, hold ? 'ยังไม่ต้องชำระเงิน ทีมจะแจ้งผลใน LINE' : 'หลังชำระแล้ว ทีมจึงเริ่มหานักกายภาพ'].filter(Boolean);
+  }
+  function offerStamp(m) {
+    const r = s.request; if (!r) return m;
+    if (!r.offerId) SC.bumpOffer(r);
+    const sc = SC.clinScope(s);
+    return Object.assign({}, m, { offerId: r.offerId, snap: { area: (s.patient.address && s.patient.address.district) || s.patient.district || '—', when: `${VISIT1.date} · ${VISIT1.time}`, want: sc.want, allow: sc.allow, not: sc.not, limits: sc.limits } });
+  }
+  function offerCard(m) {
+    const r = s.request, sn = m.snap || {}, live = !!r && r.status === 'OFFERED' && r.offerId === m.offerId && (r.offerTo || []).includes('me');
+    const lines = [`เลขงาน: ${m.offerId || '—'}`, `เขต/อำเภอ: ${sn.area || '—'}`, sn.when, `ความช่วยเหลือที่ขอ: ${sn.want || '—'}`, (sn.allow || []).length ? `ทีมคลินิกอนุมัติเฉพาะ: ${sn.allow.join(' · ')}` : '', (sn.not || []).length ? `ไม่รวม: ${sn.not.join(' · ')}` : '', sn.limits ? `ข้อจำกัด: ${sn.limits}` : '', `รายได้สุทธิ: ${SC.money(1199)}`, live ? 'ตอบรับภายใน 30 นาที' : ''].filter(Boolean);
+    const body = lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('');
+    return `<div class="fx-card"><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">ข้อเสนองานใหม่</div>${live ? '' : '<div class="fx-t" style="font-size:13px;font-weight:600;color:#8a5a1f;margin-top:4px">ขอบเขตหรือสถานะงานเปลี่ยนแล้ว การ์ดนี้ใช้รับงานไม่ได้</div>'}${body}</div>
+      <div class="fx-foot" style="padding:10px 14px 14px;display:grid;gap:6px">${live ? `<button class="fx-b" style="background:#00543C;color:#fff" data-card="ptOffer:accept" data-offer="${esc(m.offerId)}">รับงาน</button><button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูรายละเอียด</button>` : '<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูข้อมูลล่าสุด</button>'}</div></div>`;
+  }
   /* Cards the real templates do not cover yet (same look as premiumCard). */
   const CUSTOM = {
+    received: (m) => simpleCard('รับคำขอเรียบร้อยแล้ว', m.snap || receivedSnap(), 'ดูสถานะ', 'line-request-received', 'received'),
+    ptOffer: (m) => offerCard(m.offerId ? m : offerStamp(m)),
     ptVerified: () => simpleCard('ใบประกอบวิชาชีพ ตรวจสอบได้แล้ว', [`ยินดีด้วย ${s.pt.displayName || ''}`, 'ผู้รับบริการเห็นโปรไฟล์ของคุณแล้ว', '+50 XP'], 'ดูหน้าของฉัน', 'line-welcome'),
     certReady: () => simpleCard('ใบรับรองกายภาพบำบัดพร้อมแล้ว', ['ภาษาไทย และ English', `ออกโดย ${s.pt.displayName || 'นักกายภาพ'}`], 'เปิดใบรับรอง', 'line-report-ready'),
     teamReply: (m) => `<div class="fx-msg">${esc(m.text)}</div>`,
@@ -357,8 +379,8 @@
       <p class="fx-ptdate">${icon('calendar-days')}นัดแรก ${esc(VISIT1.short)}</p>
       <div class="fx-foot"><button class="fx-b" style="background:#00885F;color:#fff" data-card="ptIntro">ดูข้อมูลนักกายภาพเพิ่มเติม</button><button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptIntro:appts">ดูนัดของฉัน</button></div></div>`;
   }
-  function simpleCard(title, lines, button, artKey) {
-    return `<div class="fx-card"><img class="fx-hero" src="a/${artKey}.jpg" alt=""><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">${esc(title)}</div>${lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('')}</div><div class="fx-foot"><button class="fx-b" style="background:#00885F;color:#fff" data-card="${title}" data-label="${esc(button)}">${esc(button)}</button></div></div>`;
+  function simpleCard(title, lines, button, artKey, cardKey = title) {
+    return `<div class="fx-card"><img class="fx-hero" src="a/${artKey}.jpg" alt=""><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">${esc(title)}</div>${lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('')}</div><div class="fx-foot"><button class="fx-b" style="background:#00885F;color:#fff" data-card="${esc(cardKey)}" data-label="${esc(button)}">${esc(button)}</button></div></div>`;
   }
   function card(m) {
     if (m.me) return `<div class="fx-msg fx-me">${esc(m.text)}</div>`;
@@ -369,12 +391,12 @@
     return `<div class="fx-card">${hero}${fpart(b, 'header', 14, m.key)}<div class="fx-body">${fpart(b, 'body', 14, m.key)}</div><div class="fx-foot">${fpart(b, 'footer', 10, m.key)}</div></div>`;
   }
   /* LINE buttons that answer in the chat run an action instead of opening a page. */
-  const CARD_ACT = { 'พรุ่งนี้มีนัด': 'ptConfirmTomorrow', ptIntro: 'openMatchedPt' };
+  const CARD_ACT = { 'พรุ่งนี้มีนัด': 'ptConfirmTomorrow', ptIntro: 'openMatchedPt', 'ptOffer:accept': 'acceptOffer' };
   /* Where a LINE button lands (the LIFF page it opens). */
   const CARD_TARGET = {
     welcome: 'p.feed', received: 'p.paywait', intakePay: 'p.pay', invoiceOpen: 'p.pay', receipt: 'p.paywait', intakeMatching: 'p.paywait', ptAccepted: 'p.appts', confirmed: 'p.appts', tomorrow: 'p.appts',
     enRoute: 'p.appts', visitDone: 'p.appts', report: 'p.report', report2: 'p.report', feedback: 'p.review', courseProposal: 'p.course', courseReceipt: 'p.course', courseFollowup: 'p.course', confirmedCourse: 'p.appts', myCare: 'p.me', myCareLive: 'p.appts',
-    ptOffer: 't.work', ptUpcoming: 't.visit', travelStarted: 't.work', paymentReview: 'a.payments', paymentReviewCourse: 'a.payments',
+    ptOffer: 't.work', 'ptOffer:view': 't.offer', ptUpcoming: 't.visit', travelStarted: 't.work', paymentReview: 'a.payments', paymentReviewCourse: 'a.payments',
     'ใบประกอบวิชาชีพ ตรวจสอบได้แล้ว': 't.hub', 'พรุ่งนี้มีนัดหมาย': 'p.appts', 'ptIntro:appts': 'p.appts', 'ใบรับรองกายภาพบำบัดพร้อมแล้ว': 'p.cert',
     'myCare:cert': 'p.certreq', 'คนไข้ขอใบรับรองกายภาพบำบัด': 't.cert', courseUsed: 'p.course', 'courseUsed:review': 'p.review', 'ครบคอร์สแล้ว · สรุปผลจากนักกายภาพ': 'p.renew'
   };
@@ -466,6 +488,7 @@
       const ok = btn.dataset.need.split(',').every(p => { const val = get(p.trim()); return Array.isArray(val) ? val.length > 0 : !!(val && String(val).trim()); });
       btn.disabled = !ok; btn.classList.toggle('off', !ok);
     });
+    if (SC.intakeHint) root.querySelectorAll('[data-need-hint]').forEach(el => { el.textContent = SC.intakeHint(s); });
   }
   function highlight() {
     document.querySelectorAll('.sc-pulse').forEach(el => el.classList.remove('sc-pulse'));
@@ -630,7 +653,7 @@
     render();
   }
 
-  window.SC = { screen, action, go, back, sheet, dialog, close, toast, xp, line, render, get, set, ui, esc, money, me, param,
+  window.SC = { cardHtml: card, screen, action, go, back, sheet, dialog, close, toast, xp, line, render, get, set, ui, esc, money, me, param,
     jump: jumpTo, reset, confirmJump, onShell: fn => shellHooks.push(fn), stageNow, get s() { return s; }, get v() { return v; }, ZONES, SAMPLE_PTS, CERT_TX, certTxText, TRIAL, CLIN, VISIT1, RATE, bpCat, VISIT2, TODAY, STAGES };
   document.addEventListener('DOMContentLoaded', boot);
 })();
