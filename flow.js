@@ -13,7 +13,7 @@
     { lane: 'P', n: 4, label: 'ขอคนนี้', screen: 'p.pt' },
     { lane: 'P', n: 5, label: 'ประเมินอาการ', screen: 'p.intake' },
     { lane: 'P', n: 6, label: 'ผลประเมิน', screen: 'p.result' },
-    { lane: 'P', n: 6, label: 'จ่าย Trial', screen: 'p.pay' },
+    { lane: 'P', n: 6, label: 'จ่าย Clair Match', screen: 'p.pay' },
     { lane: 'X', n: 7, label: 'สลิปผิดปกติ', screen: 'a.payments' },
     { lane: 'X', n: 7, label: 'จับคู่ PT', screen: 'a.match' },
     { lane: 'T', n: 8, label: 'รับงานแรก', screen: 't.offer' },

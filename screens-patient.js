@@ -31,7 +31,7 @@
   .pp-tip b { font-size: 16.5px; color: var(--forest); }
   .pp-tip p { margin: 0; font-size: 15.5px; color: var(--ink); }
   .pp-tipdots { display: flex; gap: 5px; } .pp-tipdots i { width: 6px; height: 6px; border-radius: 99px; background: #e4ece8; transition: width .3s; } .pp-tipdots i.on { width: 18px; background: var(--gold); }
-  /* Intake intro: a floating "first step" ticket with a 3-minute stamp, same object-as-picture idea as the ClairConnect pass (Boss 26 Oct) */
+  /* Intake intro: a floating "first step" ticket with a 3-minute stamp, same object-as-picture idea as the Clair Match pass (Boss 26 Oct) */
   .pp-ih { position: relative; display: grid; justify-items: center; padding: 24px 16px 28px; border-radius: 24px; background: radial-gradient(90% 70% at 85% 0%, #fbefd8 0%, #fbf7ee 40%, transparent 70%), radial-gradient(100% 90% at 0% 100%, #dcefe4 0%, #eef6f1 45%, #f8faf6 100%); overflow: hidden; }
   .pp-ih::before { content: ''; position: absolute; left: 50%; top: 52%; width: 300px; height: 150px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(closest-side, #00583e1f, transparent); filter: blur(6px); }
   .pp-tk { position: relative; z-index: 1; width: min(272px, 82%); filter: drop-shadow(0 16px 22px #0439281f) drop-shadow(0 2px 4px #0439280f); animation: pptkin .9s cubic-bezier(.2,.8,.2,1) both, pptkfl 6s cubic-bezier(.45,0,.55,1) 1s infinite; }
@@ -1064,7 +1064,7 @@
   /* No cancel here (Boss 29 Oct): the patient chose this PT on purpose; to change their mind they go back. */
   function chosenNote(s) {
     const chosen = s.patient.chosenPt && ptName(s, s.patient.chosenPt); if (!chosen) return '';
-    return `<div class="pp-chosen" role="note"><span class="tile">${I('user-round')}</span><span class="grow">คุณขอ <b>${esc(chosen)}</b><small>ครั้งแรกจ่ายราคา ClairConnect Trial ฿1,599 · ทีมส่งงานให้คนนี้ก่อน ถ้าเวลาและพื้นที่ตรงกัน</small></span></div>`;
+    return `<div class="pp-chosen" role="note"><span class="tile">${I('user-round')}</span><span class="grow">คุณขอ <b>${esc(chosen)}</b><small>ครั้งแรกจ่ายราคา Clair Match ฿1,599 · ทีมส่งงานให้คนนี้ก่อน ถ้าเวลาและพื้นที่ตรงกัน</small></span></div>`;
   }
   function intakeBody(s) {
     const p = s.patient, st = p.intakeStep || 0;
@@ -1156,7 +1156,7 @@
       ${sec('กิจวัตรประจำวัน', 4, `<p>${answered === 10 ? (unsure ? `ตอบครบ 10 ข้อ · ไม่แน่ใจ ${unsure} ข้อ ทีมจะช่วยดู` : 'ตอบครบ 10 ข้อแล้ว') : `ตอบแล้ว ${answered} / 10 ข้อ`}</p>`)}
       ${sec('ที่อยู่', 5, `<p>${esc(a.line || '—')}</p>${a.landmark ? `<p class="small">จุดสังเกต: ${esc(a.landmark)}</p>` : ''}<p class="small">${esc([a.subdistrict, a.district, a.province, a.postal].filter(Boolean).join(' '))} · ${a.pin ? 'ยืนยันหมุดแล้ว' : 'ยังไม่ยืนยันหมุด'}</p>`)}
       ${sec('เวลาที่สะดวก', 6, (p.windows || []).length ? p.windows.map((x, i) => `<p>${i ? 'สำรอง' : 'หลัก'} · ${esc(x)} น.</p>`).join('') : '<p class="small">ยังไม่ได้เลือก</p>')}
-      <p class="pp-hint">ส่งแล้วจะเห็นผลประเมินเบื้องต้น และขั้นตอนชำระ ClairConnect Trial</p>`;
+      <p class="pp-hint">ส่งแล้วจะเห็นผลประเมินเบื้องต้น และขั้นตอนชำระ Clair Match</p>`;
   }
   function intakeNeed(s) {
     const p = s.patient, st = p.intakeStep || 0;
@@ -1255,13 +1255,13 @@
           <p class="pp-hint">เป็นการประเมินเบื้องต้นจากคำตอบ ไม่ใช่การวินิจฉัย นักกายภาพจะประเมินจริงที่บ้าน</p>
           <div class="card"><b class="sec-h">${I('route')}ขั้นต่อไป</b><div class="steps">
             ${rv ? `<div class="step ${hold || declined ? 'now' : 'done'}"><span class="dot">${hold || declined ? I('stethoscope') : I('check')}</span><div><div class="t">ทีมคลินิกดูข้อมูลก่อน</div><div class="s">${hold ? (paid ? 'ไม่ต้องชำระซ้ำ รอทีมแจ้งใน LINE' : 'ยังไม่ต้องชำระเงิน รอทีมแจ้งใน LINE') : declined ? 'ทีมจะโทรคุยก่อน' : 'ทีมอนุมัติเฉพาะกิจกรรมตามรายการ'}</div></div></div>` : ''}
-            <div class="step ${pending ? 'now' : (hold || declined) && !paid ? '' : 'done'}"><span class="dot">${pending || ((hold || declined) && !paid) ? 1 : I('check')}</span><div><div class="t">ชำระ ClairConnect Trial ฿1,599</div><div class="s">ประเมินและรักษาครั้งแรก ไม่เกิน 1 ชั่วโมงครึ่ง</div></div></div>
+            <div class="step ${pending ? 'now' : (hold || declined) && !paid ? '' : 'done'}"><span class="dot">${pending || ((hold || declined) && !paid) ? 1 : I('check')}</span><div><div class="t">ชำระ Clair Match ฿1,599</div><div class="s">ประเมินและรักษาครั้งแรก ไม่เกิน 1 ชั่วโมงครึ่ง</div></div></div>
             <div class="step"><span class="dot">2</span><div><div class="t">${chosen ? `ทีมส่งงานให้ ${esc(chosen)} ก่อน` : 'ทีมจับคู่นักกายภาพใกล้บ้าน'}</div><div class="s">${chosen ? 'ถ้าเวลาและพื้นที่ไม่ตรง ทีมจะหาคนที่ใกล้เคียงให้' : 'มีใบประกอบวิชาชีพ ตรวจสอบแล้วทุกคน'}</div></div></div>
             <div class="step"><span class="dot">3</span><div><div class="t">ยืนยันนัดใน LINE</div><div class="s">เห็นชื่อ รูป และเวลาของนักกายภาพก่อนวันนัด</div></div></div>
           </div></div>
         </div>
         <div class="foot">${quiet ? `<button class="btn" data-go="p.chat">${I('message-circle')}คุยกับทีม</button>${hold ? `<button class="btn ghost" data-act="toClinical">${I('stethoscope')}ห้องซ้อม: ไปฝั่งทีมคลินิก</button>` : ''}`
-          : `${pending ? `<button class="btn" data-go="p.pay">${I('qr-code')}ClairConnect Trial ฿1,599</button>` : `<button class="btn" data-go="p.paywait">${I('hourglass')}ดูสถานะคำขอ</button>`}<button class="btn ghost" data-go="p.chat">${I('message-circle')}ถามทีมก่อน</button>`}</div>
+          : `${pending ? `<button class="btn" data-go="p.pay">${I('qr-code')}Clair Match ฿1,599</button>` : `<button class="btn" data-go="p.paywait">${I('hourglass')}ดูสถานะคำขอ</button>`}<button class="btn ghost" data-go="p.chat">${I('message-circle')}ถามทีมก่อน</button>`}</div>
       </div>`;
     }
   });
@@ -1276,11 +1276,11 @@
       if (r.status !== 'PAYMENT_PENDING') return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('circle-check', 'ส่งสลิปแล้ว', 'ทีมกำลังดูแลขั้นต่อไป ดูความคืบหน้าได้เลย', '<button class="btn auto" data-go="p.paywait">ดูสถานะ</button>')}</div></div>`;
       const slip = r.slipDraft;
       return `<div class="scr pp">
-        ${ui.bar('ชำระ ClairConnect Trial')}
+        ${ui.bar('ชำระ Clair Match')}
         <div class="body">
           ${scopeCard(s)}${r.review ? '<p class="note" style="margin:0">ห้องซ้อม: ฿1,599 เป็นราคาตัวอย่าง ยังไม่ใช่ราคาที่อนุมัติสำหรับการประเมินอย่างเดียว</p>' : ''}
           <div class="card"><div class="row between"><span class="small">ใบแจ้งชำระ ${esc(r.ref)}</span><span class="pill wait">รอชำระ</span></div>
-            <dl class="kv"><dt>ClairConnect Trial</dt><dd>${money(SC.TRIAL)}</dd><dt>รายละเอียด</dt><dd>ประเมินและรักษาครั้งแรก</dd><dt>ผู้รับบริการ</dt><dd>${esc(s.patient.name || '—')}</dd></dl>
+            <dl class="kv"><dt>Clair Match</dt><dd>${money(SC.TRIAL)}</dd><dt>รายละเอียด</dt><dd>ประเมินและรักษาครั้งแรก</dd><dt>ผู้รับบริการ</dt><dd>${esc(s.patient.name || '—')}</dd></dl>
             <div class="sep"></div><div class="row between"><b class="sec-h">${I('receipt')}ยอดชำระ</b><span class="price">${money(SC.TRIAL)}</span></div></div>
           <div class="card center" style="justify-items:center">
             <b class="sec-h">${I('qr-code')}สแกนจ่ายด้วยแอปธนาคาร</b><span class="small">พร้อมเพย์ · ${money(SC.TRIAL)}.00</span>
@@ -1532,7 +1532,7 @@
   });
   function receiptHtml(s, k) {
     const co = s.course, trial = k === 'trial';
-    const amt = trial ? SC.TRIAL : co.total, item = trial ? 'ClairConnect Trial · ประเมินและรักษาครั้งแรก' : `คอร์สกายภาพบำบัด ${co.sessions} ครั้ง${co.bonus ? ` + โบนัส ${co.bonus} ครั้ง` : ''}`;
+    const amt = trial ? SC.TRIAL : co.total, item = trial ? 'Clair Match · ประเมินและรักษาครั้งแรก' : `คอร์สกายภาพบำบัด ${co.sessions} ครั้ง${co.bonus ? ` + โบนัส ${co.bonus} ครั้ง` : ''}`;
     return `<div class="row between"><b class="h2">ใบเสร็จรับเงิน</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
       <div class="card flat"><dl class="kv"><dt>เลขที่</dt><dd>${esc((s.request && s.request.ref) || 'HPT')}-${trial ? 1 : 2}</dd><dt>ผู้รับบริการ</dt><dd>${esc(s.patient.name || '—')}</dd><dt>รายการ</dt><dd>${esc(item)}</dd><dt>ชำระโดย</dt><dd>โอนผ่านพร้อมเพย์</dd></dl>
       <div class="sep"></div><div class="row between"><b>รวม</b><span class="price" style="font-size:22px">${money(amt)}</span></div></div>
@@ -1545,7 +1545,7 @@
     if (/ใบรับรอง/.test(text)) return 'ได้ค่ะ ใบรับรองออกได้หลังจบนัด ทีมจะแจ้งนักกายภาพให้ และส่งไฟล์เข้า LINE นี้ค่ะ';
     if (/ปัญหา/.test(text)) return 'ขอโทษค่ะ เล่าให้ทีมฟังได้เลยว่าเกิดอะไรขึ้น ทีมจะโทรกลับภายใน 15 นาทีในเวลาทำการค่ะ';
     if (/เลื่อน|เวลา|นัด/.test(text)) return 'ได้เลยค่ะ เปิดแท็บ "นัดของฉัน" แล้วกด "ขอเลื่อนนัด" หรือพิมพ์วันเวลาที่สะดวกไว้ที่นี่ ทีมจะเช็กกับนักกายภาพแล้วยืนยันใน LINE ค่ะ';
-    if (/ค่า|ราคา|บริการ|จ่าย/.test(text)) return 'ครั้งแรกเป็น ClairConnect Trial ฿1,599 รวมประเมินและรักษาไม่เกิน 1 ชั่วโมงครึ่งค่ะ หลังจากนั้นนักกายภาพจะเสนอคอร์สตามแผนการดูแล ตัดสินใจหน้างานได้เลย';
+    if (/ค่า|ราคา|บริการ|จ่าย/.test(text)) return 'ครั้งแรกเป็น Clair Match ฿1,599 รวมประเมินและรักษาไม่เกิน 1 ชั่วโมงครึ่งค่ะ หลังจากนั้นนักกายภาพจะเสนอคอร์สตามแผนการดูแล ตัดสินใจหน้างานได้เลย';
     if (/ใบเสร็จ/.test(text)) return 'ใบเสร็จอยู่ที่เมนู "ฉัน" > การชำระเงินและใบเสร็จ ค่ะ ทีมส่งเข้า LINE ให้ทุกครั้งหลังตรวจเงิน';
     return 'รับทราบค่ะ ทีมจะตอบเรื่องนี้ภายใน 15 นาทีในเวลาทำการ 08:00–22:00 นะคะ';
   }
@@ -1601,7 +1601,7 @@
     const t = trialState(s), c = courseState(s);
     const row = (title, sub, st, k, go) => `<div class="li"><span class="grow"><span class="t" style="display:block">${title}</span><span class="s">${sub}</span></span><span class="pill ${PAY_PILL[st][1]}">${PAY_PILL[st][0]}</span>${st === 'paid' ? `<button class="btn sm ghost" data-act="showReceipt" data-k="${k}">ใบเสร็จ</button>` : st === 'due' && go ? `<button class="btn sm" data-go="${go}">ชำระ</button>` : ''}</div>`;
     return `<div class="row between"><b class="h2">การชำระเงินและใบเสร็จ</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
-      ${t || c ? `<div class="list">${t ? row('ClairConnect Trial', money(SC.TRIAL) + ' · ' + esc(s.request.ref), t, 'trial', 'p.pay') : ''}${c ? row(`คอร์ส ${s.course.sessions} ครั้ง`, money(s.course.total), c, 'course', null) : ''}</div>` : ui.empty('receipt', 'ยังไม่มีรายการ', 'รายการจ่ายและใบเสร็จจะขึ้นที่นี่')}`;
+      ${t || c ? `<div class="list">${t ? row('Clair Match', money(SC.TRIAL) + ' · ' + esc(s.request.ref), t, 'trial', 'p.pay') : ''}${c ? row(`คอร์ส ${s.course.sessions} ครั้ง`, money(s.course.total), c, 'course', null) : ''}</div>` : ui.empty('receipt', 'ยังไม่มีรายการ', 'รายการจ่ายและใบเสร็จจะขึ้นที่นี่')}`;
   }
   function peopleSheet(s) {
     const p = s.patient, list = [...(p.bookingFor === 'SOMEONE_ELSE' && p.name ? [p.name] : []), ...(p.people || [])];
@@ -1628,7 +1628,7 @@
             ${row('map-pin', 'ที่อยู่', a.district ? esc([a.subdistrict, a.district].filter(Boolean).join(' ')) : 'ยังไม่มีที่อยู่', 'data-act="meAddress"')}
           </div>
           <div class="list">
-            ${row('receipt', 'การชำระเงินและใบเสร็จ', s.request ? 'ClairConnect Trial' + (s.course ? ' · คอร์ส' : '') : 'ยังไม่มีรายการ', 'data-act="mePayments"')}
+            ${row('receipt', 'การชำระเงินและใบเสร็จ', s.request ? 'Clair Match' + (s.course ? ' · คอร์ส' : '') : 'ยังไม่มีรายการ', 'data-act="mePayments"')}
             ${row('ticket', 'คอร์สของฉัน', s.course ? `เหลือ ${Math.max(0, s.course.sessions + (s.course.bonus || 0) - (s.course.used || 0))} ครั้ง` : 'ยังไม่มีคอร์ส', 'data-go="p.course"')}
             ${row('file-check-2', 'ใบรับรองกายภาพบำบัด', certSub, s.cert.issued ? 'data-go="p.cert"' : 'data-go="p.certreq"')}
             ${row('star', 'รีวิวของฉัน', s.review ? `ให้คะแนน ${esc(SC.me().name)} แล้ว ${'★'.repeat(s.review.stars)}` : s.visits.some(v => v.step >= 4) ? `ยังไม่ได้ให้คะแนน ${esc(SC.me().name)}` : 'ให้คะแนนได้หลังทำเคส', 'data-go="p.review"')}
@@ -1667,7 +1667,7 @@
   SC.action('toggleReviewConsent', (s, c) => { s.review.consent = !s.review.consent; ppSheet(c, privacySheet(s)); c.toast(s.review.consent ? 'ยินยอมให้แสดงความเห็นแล้ว' : 'ถอนความยินยอมแล้ว ความเห็นจะไม่แสดงบนหน้าเว็บ'); });
   SC.action('askDelete', (s, c) => { s.line.patient.push({ me: true, text: 'ขอลบข้อมูลของฉัน' }); SC.line('patient', { text: 'รับคำขอลบข้อมูลแล้วค่ะ ทีมจะโทรยืนยันตัวตนก่อนดำเนินการนะคะ' }); c.close(); c.toast('ส่งคำขอลบข้อมูลแล้ว ทีมจะติดต่อกลับใน LINE'); });
   SC.action('meHelp', (s, c) => ppSheet(c, `<div class="row between"><b class="h2">ช่วยเหลือ</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
-    ${[['เลือกนักกายภาพเองได้ไหม', 'ได้ค่ะ กด "ขอคนนี้" แล้วทำแบบประเมินตามปกติ ครั้งแรกจ่ายราคา ฿1,599 ทีมส่งงานให้คนนั้นก่อน ถ้าเวลาและพื้นที่ตรงกัน'], ['ครั้งแรกจ่ายเท่าไหร่', 'ClairConnect Trial ฿1,599 รวมประเมินและรักษาครั้งแรก'], ['ทักนักกายภาพตรงได้ไหม', 'ทุกเรื่องผ่านทีม เพื่อดูแลความปลอดภัยและนัดให้ตรงเวลา กดแท็บ "คุยกับทีม" ได้เลย']].map(([q, a]) => `<div class="card flat"><b class="h3">${q}</b><p class="p">${a}</p></div>`).join('')}
+    ${[['เลือกนักกายภาพเองได้ไหม', 'ได้ค่ะ กด "ขอคนนี้" แล้วทำแบบประเมินตามปกติ ครั้งแรกจ่ายราคา ฿1,599 ทีมส่งงานให้คนนั้นก่อน ถ้าเวลาและพื้นที่ตรงกัน'], ['ครั้งแรกจ่ายเท่าไหร่', 'Clair Match ฿1,599 รวมประเมินและรักษาครั้งแรก'], ['ทักนักกายภาพตรงได้ไหม', 'ทุกเรื่องผ่านทีม เพื่อดูแลความปลอดภัยและนัดให้ตรงเวลา กดแท็บ "คุยกับทีม" ได้เลย']].map(([q, a]) => `<div class="card flat"><b class="h3">${q}</b><p class="p">${a}</p></div>`).join('')}
     <button class="btn" data-open-line>${I('message-circle')}คุยกับทีมใน LINE</button>`));
   SC.action('meLogout', (s, c) => ppDialog(c, `<b class="h2">ออกจากระบบ?</b><p class="p">ข้อมูลและนัดของคุณยังอยู่ เปิดจาก LINE เมื่อไหร่ก็กลับมาได้</p>
     <div class="grid2"><button class="btn ghost" data-close>ยกเลิก</button><button class="btn danger" data-act="logout">ออกจากระบบ</button></div>`));
