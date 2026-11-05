@@ -198,7 +198,7 @@
         pt: [['t.work', 'briefcase-medical', 'งาน'], ['t.schedule', 'calendar-range', 'ตาราง'], ['t.earn', 'wallet', 'รายได้'], ['t.hub', 'user-round', 'หน้าของฉัน']]
       }[role];
       const badge = id => {
-        if (id === 't.work') { const n = (s.request && s.request.status === 'OFFERED' ? 1 : 0); return n ? `<span class="dotn">${n}</span>` : ''; }
+        if (id === 't.work') { const n = (s.request && s.request.status === 'OFFERED' && !SC.offerBlock(s) ? 1 : 0); return n ? `<span class="dotn">${n}</span>` : ''; }
         if (id === 'p.me') { const n = s.visits.filter(x => x.step < 4).length; return n ? `<span class="dotn">${n}</span>` : ''; }
         return '';
       };
@@ -337,7 +337,7 @@
     const lines = [`เลขงาน: ${m.offerId || '—'}`, `เขต/อำเภอ: ${sn.area || '—'}`, sn.when, `เป้าหมายที่คนไข้เลือก: ${sn.want || '—'}`, (sn.allow || []).length ? `ทีมคลินิกอนุมัติเฉพาะ: ${sn.allow.join(' · ')}` : '', (sn.not || []).length ? `ไม่รวม: ${sn.not.join(' · ')}` : '', sn.limits ? `ข้อจำกัด: ${sn.limits}` : '', ...(sn.prec || []), `รายได้สุทธิ: ${SC.money(1199)}`, live ? 'ตอบรับภายใน 30 นาที' : ''].filter(Boolean);
     const body = lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('');
     return `<div class="fx-card"><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">ข้อเสนองานใหม่</div>${live ? '' : '<div class="fx-t" style="font-size:13px;font-weight:600;color:#8a5a1f;margin-top:4px">ขอบเขตหรือสถานะงานเปลี่ยนแล้ว การ์ดนี้ใช้รับงานไม่ได้</div>'}${body}</div>
-      <div class="fx-foot" style="padding:10px 14px 14px;display:grid;gap:6px">${live ? `<button class="fx-b" style="background:#00543C;color:#fff" data-card="ptOffer:accept" data-offer="${esc(m.offerId)}">รับงาน</button><button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูรายละเอียด</button>` : '<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูข้อมูลล่าสุด</button>'}</div></div>`;
+      <div class="fx-foot" style="padding:10px 14px 14px;display:grid;gap:6px">${live ? `${SC.offerBlock(s) ? `<div class="fx-t" data-offer-state="blocked" style="font-size:13px;color:#8a3b2a">ยังรับงานนี้ไม่ได้ · ${esc(SC.offerBlock(s))}</div>` : `<button class="fx-b" style="background:#00543C;color:#fff" data-card="ptOffer:accept" data-offer="${esc(m.offerId)}">รับงาน</button>`}<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูรายละเอียด</button>` : '<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูข้อมูลล่าสุด</button>'}</div></div>`;
   }
   /* Cards the real templates do not cover yet (same look as premiumCard). */
   const CUSTOM = {

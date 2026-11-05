@@ -1026,7 +1026,7 @@
       ['calendar-range', 'ตารางเวลาว่าง', p.schedule.sent ? 1 : 0, p.schedule.sent ? 'ส่งแล้ว' : 'ยังไม่ส่ง'],
       ['star', 'รีวิวจากผู้รับบริการ', rv ? 1 : 0, rv ? '1 รีวิว' : 'ยังไม่มี']
     ];
-    const offers = s.request && s.request.status === 'OFFERED' ? 1 : 0;
+    const offers = s.request && s.request.status === 'OFFERED' && !SC.offerBlock(s) ? 1 : 0;
     const missions = [
       { t: 'แชร์โน้ตสั้น ๆ วันนี้', done: p.noteXpDay === today, xp: p.noteXpDay === today ? 0 : XP.note, attr: 'data-act="noteOpen"' },
       { t: offers ? 'ตอบงานที่เสนอเข้ามา' : 'เช็กงานที่เสนอเข้ามา', done: !offers, attr: 'data-go="t.work"' },
@@ -1570,10 +1570,12 @@
           <p class="p">ทีมกำลังตรวจเลขใบประกอบวิชาชีพของคุณ ปกติภายใน 1 วันทำการ ผลแจ้งใน LINE</p>
           <p class="small">ระหว่างนี้แต่งโปรไฟล์และลงเวลาว่างไว้เลย ต้องส่งตารางก่อน ถึงจะได้รับงาน (แนะนำสัปดาห์ละ 1 สล็อต)</p>
           <div class="grid2" style="width:100%"><button class="btn ghost" style="width:100%" data-go="t.hub">แต่งโปรไฟล์</button><button class="btn ghost" style="width:100%" data-go="t.schedule">ลงเวลาว่าง</button></div></div></div>${ui.tabs('pt', 't.work')}</div>`;
-      const secs = [], B = { answer: [], upcoming: [], docs: [] }, put = (k, h) => { B[k].push(h); secs.push(h); };
+      const secs = [], B = { answer: [], blocked: [], upcoming: [], docs: [] }, put = (k, h) => { B[k].push(h); secs.push(h); };
       const needSched = !p.schedule.sent;
       if (needSched) put('answer', `<button class="card tap tt-cardbtn" data-go="t.schedule"><div class="row"><span class="tile gold">${I('calendar-plus')}</span><span class="grow"><b class="sec-h">${I('calendar-plus')}ลงเวลาว่างเดือน พ.ย.</b><br><span class="small">แนะนำสัปดาห์ละ 1 สล็อต (สล็อตละ 3 ชม.) · ยังไม่ส่งตาราง งานเสนอจะยังไม่มา</span></span>${I('chevron-right')}</div></button>`);
-      if (!needSched && offerForMe(s)) {
+      const offerStop = !needSched && offerForMe(s) ? SC.offerBlock(s) : '';
+      if (offerStop) put('blocked', `<button class="card tap tt-cardbtn" data-act="openOffer" data-offer-state="blocked"><div class="row"><span class="tile">${I('lock')}</span><b class="h3 grow">งานเสนอที่ยังรับไม่ได้</b><span class="pill gray">รอทีม</span></div><div class="small">${esc(offerStop)}</div><div class="small row wrap"><span class="row" style="gap:4px">${I('calendar-days')}${esc(SC.VISIT1.short)}</span><span class="row" style="gap:4px">${I('map-pin')}${esc(districtOf(s))}</span></div></button>`);
+      else if (!needSched && offerForMe(s)) {
         const mins = remainMin(s);
         put('answer', `<button class="card tap tt-cardbtn" data-act="openOffer">
           <div class="row"><span class="tile gold">${I('bell-ring')}</span><b class="h3 grow">งานเสนอใหม่</b><span class="pill wait">${I('clock')}${mins} นาที</span></div>
@@ -1605,10 +1607,10 @@
       if (s.renewal && s.renewal.sent) secs.push(`<div class="card flat"><div class="row"><span class="tile">${I(s.renewal.decided === 'renew' ? 'repeat' : s.renewal.decided ? 'flag' : 'hourglass')}</span><span class="grow"><b class="h3">${s.renewal.decided === 'renew' ? 'คนไข้ต่อคอร์สแล้ว' : s.renewal.decided === 'pervisit' ? 'คนไข้ขอนัดเป็นครั้ง' : s.renewal.decided === 'stop' ? 'จบการรักษา' : 'ส่งสรุปจบคอร์สแล้ว รอคนไข้ตัดสินใจ'}</b><br><span class="small">${s.renewal.decided === 'renew' ? `คอร์สใหม่ ${s.course.sessions} ครั้ง เปิดสิทธิ์แล้ว · นัดถัดไป ${esc(s.renewal.next || '')}` : s.renewal.decided ? 'ทีมทักถามอาการคนไข้ใน 30 วัน' : 'ระบบเตือนคนไข้ใน 3 วัน ถ้ายังไม่ตอบ ทีมโทรถาม'}</span></span></div></div>`);
       const tab = p.workTab || 'all', q = (p.q || '').trim().toLowerCase(), pts = myPatients(s);
       const tiles = [['answer', 'bell-ring', 'ต้องตอบ', B.answer.length], ['upcoming', 'calendar-clock', 'กำลังจะมาถึง', next.length], ['docs', 'file-pen-line', 'เอกสารค้าง', B.docs.length], ['patients', 'folder-heart', 'คนไข้ของฉัน', pts.length]];
-      const sec = (k, ic, t, items, none) => `<section class="tt-bsec"><h2 class="tt-bh">${I(ic)}${t}<span>${items.length}</span></h2>${items.length ? items.join('') : `<p class="tt-bnone">${none}</p>`}</section>`;
+      const sec = (k, ic, t, items, none, count = items.length) => `<section class="tt-bsec"><h2 class="tt-bh">${I(ic)}${t}<span>${count}</span></h2>${items.length ? items.join('') : `<p class="tt-bnone">${none}</p>`}</section>`;
       const board = tab === 'patients' ? chartList(s, pts)
-        : `${tab === 'all' || tab === 'answer' ? sec('answer', 'bell-ring', 'ต้องตอบ', B.answer, 'ไม่มีงานที่ต้องตอบ งานเสนอใหม่แจ้งใน LINE ทันที') : ''}
-          ${tab === 'all' || tab === 'upcoming' ? sec('upcoming', 'calendar-clock', 'งานที่กำลังจะมาถึง', B.upcoming, 'ยังไม่มีนัดที่จะถึง') : ''}
+        : `${tab === 'all' || tab === 'answer' ? sec('answer', 'bell-ring', 'ต้องตอบ', [...B.answer, ...B.blocked], 'ไม่มีงานที่ต้องตอบ งานเสนอใหม่แจ้งใน LINE ทันที', B.answer.length) : ''}
+          ${tab === 'all' || tab === 'upcoming' ? sec('upcoming', 'calendar-clock', 'งานที่กำลังจะมาถึง', B.upcoming, 'ยังไม่มีนัดที่จะถึง', next.length) : ''}
           ${tab === 'all' || tab === 'docs' ? sec('docs', 'file-pen-line', 'งานเอกสารที่ค้างอยู่', B.docs, 'ส่งเอกสารครบแล้ว') : ''}
           ${tab === 'all' ? `<section class="tt-bsec"><h2 class="tt-bh">${I('folder-heart')}คนไข้ของฉัน<span>${pts.length}</span><button class="link" data-pick="pt.workTab" data-value="patients">ดูทั้งหมด</button></h2>${chartRows(s, pts.slice(0, 3))}</section>` : ''}`;
       const found = q ? pts.filter(x => [x.hn, x.hn.replace(/\s/g, ''), x.name].join(' ').toLowerCase().includes(q.replace(/^hn\s*/, ''))) : null;
@@ -1649,6 +1651,14 @@
       ${o.family ? `<div class="bubble">${esc(o.family)}</div>` : ''}<button class="btn ghost" data-close>ปิด</button>`; }); });
 
   /* ---------- t.offer ---------- */
+  /* FIX-R4-01: one panel for Offer and Visit, read from the latest approved scope. Thai wording stays PROPOSED until Q-G sign-off. */
+  function scopePanel(s, ref) {
+    const r = s.request, rv = r && r.review, c = SC.clinScope(s); if (!(rv && rv.cleared) && !c.prec.length) return '';
+    return `<div class="card" data-scope="panel">${rv && rv.cleared ? `<b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b>${c.assessOnly ? '<p class="note" style="margin:0">อนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}<ul class="tt-ok">${c.allowPt.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
+      ${c.notPt.length ? `<p class="note warn" style="margin:0"><b>ไม่รวม:</b> ${c.notPt.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : ''}
+      ${c.prec.length ? `<b class="h3">${I('shield-check')} ข้อควรระวังจากคำสั่งแพทย์</b>${c.prec.map(x => `<p class="small" style="margin:0;color:var(--forest);font-weight:600">${esc(x)}${/Unknown$/.test(x) ? ' · ยังไม่ทราบ ห้ามถือว่าลงน้ำหนักได้เต็มที่' : ''}</p>`).join('')}` : ''}
+      <p class="small" style="margin:0">Screening v${esc(r.screeningVersion || 1)}${r.offerId ? ` · Offer ${esc(r.offerId)}` : ''}${rv && rv.cleared ? ` · อนุมัติโดย ${esc(rv.by || '')} ${esc(rv.at || '')}` : ''}${ref && ref.offerId !== r.offerId ? ` · อัปเดตจาก Offer ${esc(ref.offerId)} ตอนจอง` : ''}</p></div>`;
+  }
   scr('t.offer', {
     render(s) {
       if (!offerForMe(s)) {
@@ -1665,11 +1675,10 @@
             <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">เป้าหมายที่คนไข้เลือก</span><br><span class="s">${esc(goalText(s))}${s.patient.bookingFor === 'SOMEONE_ELSE' ? ' · ญาติจองให้' : ''}</span></span></div>
             ${yes ? `<div class="li"><span class="tile gold">${I('shield-check')}</span><span class="grow"><span class="t">ข้อควรระวังจากการคัดกรอง ${yes} ข้อ</span><br><span class="s">ดูรายละเอียดได้หลังรับงาน</span></span></div>` : ''}
           </div></div>
-        ${s.request.review && s.request.review.cleared ? `<div class="card"><b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b><ul class="tt-ok">${s.request.review.allow.map(id => `<li>${I('check')}${esc(SC.CLIN.label(id))}</li>`).join('')}</ul>${SC.clinScope(s).notPt.length ? `<p class="note warn" style="margin:0">ไม่รวม: ${SC.clinScope(s).notPt.map(esc).join(' · ')}</p>` : ''}${s.request.review.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(s.request.review.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ถามทีมก่อนทำ</p></div>` : ''}
-        ${SC.clinScope(s).prec.length ? `<div class="card"><b class="h3">${I('shield-check')} ข้อควรระวังจากคำสั่งแพทย์</b>${SC.clinScope(s).prec.map(x => `<p class="small" style="margin:0">${esc(x)}</p>`).join('')}</div>` : ''}
+        ${scopePanel(s)}
         <div class="card cream"><span class="small" style="color:var(--gink)">รายได้สุทธิของคุณ</span><span class="price">${money(NET_TRIAL)}</span><span class="small" style="color:var(--gink)">โอนรอบถัดไปหลังส่งสรุปการดูแล · ไม่มีค่าใช้จ่ายอื่นที่ต้องจ่ายเพิ่ม</span></div>
         ${s.pt.agreement ? '' : `<p class="note row tt-top">${I('file-text')}<span>งานแรกของคุณ: กดรับแล้วจะพาไปอ่านข้อตกลงการรับงาน 1 ครั้งก่อน</span></p>`}
-      </div><div class="foot row2"><button class="btn ghost" data-act="declineOffer">ปฏิเสธ</button><button class="btn" data-act="acceptOffer" data-offer="${esc(s.request.offerId || '')}">${I('check')}รับงานนี้</button></div></div>`;
+      ${SC.offerBlock(s) ? `<p class="note warn" role="status" style="margin:0 16px 12px">ยังรับงานนี้ไม่ได้ · ${esc(SC.offerBlock(s))}</p>` : ''}</div><div class="foot row2"><button class="btn ghost" data-act="declineOffer">ปฏิเสธ</button><button class="btn" data-act="acceptOffer" data-offer="${esc(s.request.offerId || '')}" ${SC.offerBlock(s) ? 'disabled' : ''}>${I('check')}รับงานนี้</button></div></div>`;
     },
     mount(root, s) { const el = root.querySelector('#ttCount'); if (el) tt.timers.push(setInterval(() => { el.textContent = remainMin(s); }, 15000)); }
   });
@@ -1681,7 +1690,7 @@
     const gate = SC.meCandidate(s);
     if (gate && !gate.ok) { ctx.toast(`ยังรับงานนี้ไม่ได้: ${gate.reason}`); return 't.work'; }
     s.request.status = 'BOOKED';
-    s.visits = [{ n: 1, date: SC.VISIT1.date, time: SC.VISIT1.time, step: 0, soap: {}, published: false }];
+    s.visits = [{ n: 1, date: SC.VISIT1.date, time: SC.VISIT1.time, step: 0, soap: {}, published: false, scopeRef: { offerId: s.request.offerId, screeningVersion: s.request.screeningVersion || 1, approvedBy: (s.request.review || {}).byId || '', approvedAt: (s.request.review || {}).at || '' } }];
     ctx.line('patient', { key: 'ptIntro' }); ctx.line('patient', { key: 'confirmed' });
     ctx.toast('รับงานแล้ว นัดอยู่ในแท็บงานและตาราง');
     return 't.work';
@@ -1738,7 +1747,7 @@
       let main;
       if (v.step < 4) {
         const [t, sub, ic] = STEPS[v.step];
-        main = `${v.step === 3 ? `<div class="card mint tt-c"><span class="small">ดูแลไปแล้ว</span><span class="tt-timer" id="ttTimer">${fmtClock(Date.now() - (s.pt.clock[n] || Date.now()))}</span></div>` : ''}
+        main = `${scopePanel(s, v.scopeRef)}${v.step === 3 ? `<div class="card mint tt-c"><span class="small">ดูแลไปแล้ว</span><span class="tt-timer" id="ttTimer">${fmtClock(Date.now() - (s.pt.clock[n] || Date.now()))}</span></div>` : ''}
           ${SC.visitHold(s) ? `<p class="note warn" role="status">${esc(SC.visitHold(s))}</p>` : `<button class="tt-big" data-act="visitNext" data-n="${n}"><span class="grow"><b>${t}</b><small>${sub}</small></span><span class="arw">${I(ic)}</span></button>`}`;
       } else if (n === 1 && !planDone(s)) {
         // First visit order (Boss 21 Oct): finish care → plan treatment with the patient → book → OPD within 2 h.

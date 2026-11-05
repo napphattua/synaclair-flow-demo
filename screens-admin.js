@@ -154,7 +154,7 @@
   function waiting(s) {
     const w = [], r = s.request;
     if (r && r.status === 'PAYMENT_PENDING') w.push({ icon: 'hourglass', title: `${patientName(s)} · รอชำระ Clair Match`, sub: `${r.ref} · ระบบส่งลิงก์ชำระให้ใน LINE แล้ว`, go: 'a.patients', cta: 'ดูคนไข้' });
-    if (r && r.status === 'OFFERED') w.push({ icon: 'send', title: `รอ PT ตอบรับข้อเสนอ · ${patientName(s)}`, sub: `${r.auto ? 'ระบบจับคู่ให้อัตโนมัติ · ' : ''}ส่งให้ ${(r.offerTo || []).map(id => ptName(s, id)).join(', ') || '—'} · ภายใน 30 นาที`, go: 'a.match', cta: 'ดูข้อเสนอ' });
+    if (r && r.status === 'OFFERED') w.push({ icon: SC.offerBlock(s) ? 'lock' : 'send', title: `${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${SC.offerBlock(s)}` : 'รอ PT ตอบรับข้อเสนอ'} · ${patientName(s)}`, sub: `${r.auto ? 'ระบบจับคู่ให้อัตโนมัติ · ' : ''}ส่งให้ ${(r.offerTo || []).map(id => ptName(s, id)).join(', ') || '—'} · ภายใน 30 นาที`, go: 'a.match', cta: 'ดูข้อเสนอ' });
     s.visits.filter(x => x.step < 4).forEach(x => w.push({ icon: 'calendar-days', title: `นัดครั้งที่ ${x.n} · ${patientName(s)}`, sub: `${x.date} ${x.time} · ${STEP[x.step]}`, go: 'a.appts', cta: 'ดูนัด' }));
     return w;
   }
@@ -485,6 +485,8 @@
   }
   /* FIX-01/02: rechecked when the PT accepts or starts, never trusted from the card. */
   SC.meCandidate = meCandidate;
+  /* FIX-R4-03: why this offer can't be accepted right now, for cards and counts. acceptOffer keeps its own check. Terms stay out: accepting leads to the Terms screen. */
+  SC.offerBlock = s => { const g = s.request && meCandidate(s); if (!g || g.ok) return ''; if (g.cannot.length) return `ยังไม่ผ่านการพิจารณา: ${g.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; return s.pt.agreement ? g.reason : ''; };
   SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck || r.status === 'BOOKED') { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; } return ''; };
   SC.screen('a.match', {
     role: 'admin',
@@ -507,7 +509,7 @@
       if (r.status === 'OFFERED' || r.status === 'BOOKED') {
         const names = (r.offerTo || []).map(id => esc(ptName(s, id))).join(', ') || '—';
         const sent = r.status === 'OFFERED'
-          ? `<article class="card flat"><div class="row"><span class="tile">${I('send')}</span><div class="grow"><b class="h3">ส่งข้อเสนอแล้ว รอ PT ตอบรับภายใน 30 นาที</b><p class="p">ส่งให้ ${names} · ${esc(wins[a.win] || wins[0] || '')}</p>${r.auto ? `<span class="pill info">${I('zap')}ระบบส่งให้เอง · ${esc(r.auto)}</span>` : ''}</div></div>
+          ? `<article class="card flat"><div class="row"><span class="tile">${I('send')}</span><div class="grow"><b class="h3">${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${esc(SC.offerBlock(s))}` : 'ส่งข้อเสนอแล้ว รอ PT ตอบรับภายใน 30 นาที'}</b><p class="p">ส่งให้ ${names} · ${esc(wins[a.win] || wins[0] || '')}</p>${r.auto ? `<span class="pill info">${I('zap')}ระบบส่งให้เอง · ${esc(r.auto)}</span>` : ''}</div></div>
               <p class="small">ถ้าไม่มีใครตอบใน 30 นาที ระบบขยายการค้นหา ครบสองรอบแล้วทีมช่วยประสานเอง</p>
               <div class="aa-acts"><button class="btn ghost" data-act="remindOffer">${I('bell')}เตือน PT ใน LINE อีกครั้ง</button></div></article>`
           : `<article class="card flat"><div class="row"><span class="tile">${I('circle-check')}</span><div class="grow"><b class="h3">PT รับงานแล้ว</b><p class="p">${names} · ${esc(SC.VISIT1.date)} ${esc(SC.VISIT1.time)}</p></div></div>
