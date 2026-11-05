@@ -734,7 +734,7 @@
   SC.goalLabels = s => { const p = s.patient; return (p.goals || []).map(g => g === 'OTHER' ? (p.goalOther || 'อื่น ๆ') : (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean); };
   const scopeCard = s => { const c = SC.clinScope(s); if (!c.allow.length) return ''; return `<div class="card"><b class="sec-h">${I('clipboard-check')}ขอบเขตที่ทีมคลินิกอนุมัติ</b>${c.assessOnly ? '<p class="note" style="margin:0">ได้รับอนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}
     ${c.want ? `<p class="small" style="margin:0">สิ่งที่คุณขอ: ${esc(c.want)}</p>` : ''}<ul class="pp-ul">${c.allow.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
-    ${c.not.length ? `<p class="note warn" style="margin:0">ไม่รวม: ${c.not.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(c.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ทีมต้องตรวจก่อน</p></div>`; };
+    ${c.not.length ? `<p class="note warn" style="margin:0">ไม่อนุมัติ: ${c.not.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(c.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ทีมต้องตรวจก่อน</p></div>`; };
   // data-pick turns "05" into a number, so the patient side uses names; CLIN uses the handoff's service ids.
   const SVC_ID = { MSK: '01', ORTHO: '02', NEURO: '03', GERI: '04', BED: '05', CARDIO: '06', UNSURE: 'UNSURE' };
   SC.clinGroup = s => { const p = s.patient, g = GROUPS.find(x => x[0] === p.group); return { id: SVC_ID[p.group] || '', name: g ? g[1] : '', answers: branchQs(p).map(q => [q.t, ((q.o.find(o => o[0] === (p.branch || {})[q.k]) || [])[1]) || '—']) }; };
