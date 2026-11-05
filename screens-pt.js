@@ -397,7 +397,6 @@
   SC.XP = XP;
   const lvl = xp => { let i = 0; FLOORS.forEach((f, k) => { if (xp >= f) i = k; }); return { level: i + 1, floor: FLOORS[i], next: FLOORS[i + 1] ?? null }; };
   const NET_TRIAL = 1199;
-  const GOALS = { WALK: 'ฝึกลุกนั่งและเดิน', PAIN: 'ลดปวด', BALANCE: 'ทรงตัว กันล้ม', FALL: 'กันล้ม', STROKE: 'ฟื้นฟูหลังหลอดเลือดสมอง', NEURO: 'ฟื้นฟูระบบประสาท', SURGERY: 'ฟื้นฟูหลังผ่าตัด', POST_SURGERY: 'ฟื้นฟูหลังผ่าตัด', POST_HOSPITAL: 'ฟื้นตัวหลังออกจากโรงพยาบาล', NECK: 'ปวดคอ บ่า ไหล่', OFFICE: 'ปวดคอ บ่า ไหล่', BACK: 'ปวดหลัง', BREATH: 'ฝึกหายใจ', CAREGIVER: 'สอนญาติดูแล', ELDERLY: 'ดูแลผู้สูงอายุ' };
   const BIO_IDEAS = [['ดูแลมากี่ปี', 'เช่น ดูแลผู้สูงอายุที่บ้านมา 8 ปี'], ['ถนัดเคสแบบไหน', 'เช่น ถนัดฟื้นฟูหลังหลอดเลือดสมอง หรือปวดหลังเรื้อรัง'], ['สไตล์การดูแล', 'เช่น ชอบสอนผู้ดูแลให้ฝึกต่อได้ทุกวัน']];
   const POST_IDEAS = [['ท่าออกกำลังกายง่าย ๆ ที่แนะนำบ่อย', 'ท่าอะไร เหมาะกับใคร ทำวันละกี่ครั้ง และข้อควรระวัง 1 ข้อ'], ['สิ่งที่เพิ่งอ่านแล้วอยากแชร์', 'อ่านเรื่องอะไรมา สรุปให้คนไข้เข้าใจใน 2–3 บรรทัด และบอกแหล่งที่มา'], ['ทำไมถึงชอบดูแลคนไข้ที่บ้าน', 'เล่าเหตุผลหรือเรื่องที่ประทับใจของคุณเอง โดยไม่ระบุตัวคนไข้']];
   const VIDEO_HOSTS = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'tiktok.com', 'www.tiktok.com', 'vt.tiktok.com'];
@@ -406,7 +405,7 @@
 
   const pname = s => { const n = (s.patient.name || '').trim() || 'ผู้รับบริการ'; return /^คุณ/.test(n) ? n : 'คุณ' + n; };
   const districtOf = s => s.patient.address.district || s.patient.district || 'บางนา';
-  const goalText = s => { const g = [...new Set((s.patient.goals || []).map(k => GOALS[k]).filter(Boolean))]; if (s.patient.goalOther) g.push(s.patient.goalOther); return g.length ? g.join(' · ') : 'กายภาพบำบัดที่บ้าน'; };
+  const goalText = s => SC.goalLabels(s).join(' · ') || 'กายภาพบำบัดที่บ้าน';
   const offerForMe = s => !!(s.request && s.request.status === 'OFFERED' && (s.request.offerTo || []).includes('me'));
   const visitOf = (s, n) => s.visits.find(x => x.n == n);
   const zoneNamesFor = list => SC.ZONES.filter(z => z.districts.some(d => list.includes(d))).map(z => z.name);
@@ -914,9 +913,9 @@
   function capsStep(p) {
     const list = capTasks(p), done = list.filter(id => CLIN.restricted.includes(id) || p.caps[id]).length;
     const row = id => CLIN.restricted.includes(id)
-      ? `<div class="tt-cap lock"><div class="grow"><b>${esc(CLIN.tasks[id])}</b><small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
-      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.tasks[id])}</b>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}</div>
-          <div class="tt-seg" role="group" aria-label="${esc(CLIN.tasks[id])}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-pick="pt.caps.${id}" data-value="${v}">${l}</button>`).join('')}</div></div>`;
+      ? `<div class="tt-cap lock"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
+      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${esc(CLIN.tasks[id])}</small>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}</div>
+          <div class="tt-seg" role="group" aria-label="${esc(CLIN.label(id))}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-pick="pt.caps.${id}" data-value="${v}">${l}</button>`).join('')}</div></div>`;
     return `<div class="stack"><span class="kick">งานที่รับ</span><h1 class="h1">รับงานกลุ่มไหนบ้าง</h1><p class="small">เลือกกลุ่มก่อน แล้วตอบเฉพาะงานในกลุ่มนั้น ไม่ต้องทำได้ทุกข้อ ตอบตามจริงช่วยให้ได้เคสที่เหมาะ</p></div>
       <div class="tt-svc">${CLIN.services.map(x => { const on = p.services.includes(x.id); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.services" data-value="${x.id}">${I(x.icon)}${esc(x.name)}</button>`; }).join('')}</div>
       ${list.length ? `<div class="card flat"><div class="row between"><b class="h3">งานในกลุ่มที่เลือก ${list.length} ข้อ</b><span class="pill ${done === list.length ? '' : 'wait'}">ตอบแล้ว ${done}/${list.length}</span></div>${list.map(row).join('')}</div>
@@ -1659,10 +1658,11 @@
           <div class="list" style="box-shadow:none;border-radius:0">
             <div class="li"><span class="tile">${I('calendar-days')}</span><span class="grow"><span class="t">${esc(SC.VISIT1.date)}</span><br><span class="s">${esc(SC.VISIT1.time)}</span></span></div>
             <div class="li"><span class="tile">${I('map-pin')}</span><span class="grow"><span class="t">เขต${esc(districtOf(s))}</span><br><span class="s">ที่อยู่เต็มแสดงหลังคุณรับงาน</span></span></div>
-            <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">ความช่วยเหลือที่ขอ</span><br><span class="s">${esc(goalText(s))}${s.patient.bookingFor === 'SOMEONE_ELSE' ? ' · ญาติจองให้' : ''}</span></span></div>
+            <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">เป้าหมายที่คนไข้เลือก</span><br><span class="s">${esc(goalText(s))}${s.patient.bookingFor === 'SOMEONE_ELSE' ? ' · ญาติจองให้' : ''}</span></span></div>
             ${yes ? `<div class="li"><span class="tile gold">${I('shield-check')}</span><span class="grow"><span class="t">ข้อควรระวังจากการคัดกรอง ${yes} ข้อ</span><br><span class="s">ดูรายละเอียดได้หลังรับงาน</span></span></div>` : ''}
           </div></div>
-        ${s.request.review && s.request.review.cleared ? `<div class="card"><b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b><ul class="tt-ok">${s.request.review.allow.map(id => `<li>${I('check')}${esc(SC.CLIN.tasks[id])}</li>`).join('')}</ul>${SC.clinScope(s).not.length ? `<p class="note warn" style="margin:0">ไม่รวม: ${SC.clinScope(s).not.map(esc).join(' · ')}</p>` : ''}${s.request.review.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(s.request.review.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ถามทีมก่อนทำ</p></div>` : ''}
+        ${s.request.review && s.request.review.cleared ? `<div class="card"><b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b><ul class="tt-ok">${s.request.review.allow.map(id => `<li>${I('check')}${esc(SC.CLIN.label(id))}</li>`).join('')}</ul>${SC.clinScope(s).notPt.length ? `<p class="note warn" style="margin:0">ไม่รวม: ${SC.clinScope(s).notPt.map(esc).join(' · ')}</p>` : ''}${s.request.review.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(s.request.review.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ถามทีมก่อนทำ</p></div>` : ''}
+        ${SC.clinScope(s).prec.length ? `<div class="card"><b class="h3">${I('shield-check')} ข้อควรระวังจากคำสั่งแพทย์</b>${SC.clinScope(s).prec.map(x => `<p class="small" style="margin:0">${esc(x)}</p>`).join('')}</div>` : ''}
         <div class="card cream"><span class="small" style="color:var(--gink)">รายได้สุทธิของคุณ</span><span class="price">${money(NET_TRIAL)}</span><span class="small" style="color:var(--gink)">โอนรอบถัดไปหลังส่งสรุปการดูแล · ไม่มีค่าใช้จ่ายอื่นที่ต้องจ่ายเพิ่ม</span></div>
         ${s.pt.agreement ? '' : `<p class="note row tt-top">${I('file-text')}<span>งานแรกของคุณ: กดรับแล้วจะพาไปอ่านข้อตกลงการรับงาน 1 ครั้งก่อน</span></p>`}
       </div><div class="foot row2"><button class="btn ghost" data-act="declineOffer">ปฏิเสธ</button><button class="btn" data-act="acceptOffer" data-offer="${esc(s.request.offerId || '')}">${I('check')}รับงานนี้</button></div></div>`;

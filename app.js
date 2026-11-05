@@ -75,6 +75,10 @@
     },
     restricted: ['S06']
   };
+  /* พี่ปาล์ม Fix Brief round 2 (Q-G): PT and clinical screens show the code and English term; Thai is secondary. IDs, mapping and PT answers do not change. */
+  CLIN.en = { C01: 'Safety Screening', C02: 'MSK Assessment', C03: 'Neuro Assessment', C04: 'Functional Assessment', C05: 'Balance Assessment', C06: 'ROM & Mobility Exercise', C07: 'Strength Training', C08: 'Endurance & Aerobic Training', C09: 'Postural Control', C10: 'Bed Mobility', C11: 'Transfer Training', C12: 'Gait & Stair Training', C13: 'Balance Training', C14: 'Upper Limb Function', C15: 'Manual Therapy', C16: 'Home Program & Education', C17: 'Physical Modalities',
+    S01: 'Post-operative Rehabilitation', S02: 'Orthotics & Prosthetics', S03: 'Neurological Rehabilitation', S04: 'Respiratory Rehabilitation', S05: 'Airway Clearance', S06: 'Airway Suction (Restricted)', S08: 'Cardiac Rehabilitation' };
+  CLIN.label = id => `${id} — ${CLIN.en[id]}`;
   // Blood pressure categories (AHA chart Boss sent, 23 Oct). sys/dia in mmHg; the higher category of the two wins.
   const BP_CATS = [
     { key: 'normal', label: 'ปกติ', tone: 'ok', note: 'ต่ำกว่า 120/80' },
@@ -326,11 +330,11 @@
     const r = s.request; if (!r) return m;
     if (!r.offerId) SC.bumpOffer(r);
     const sc = SC.clinScope(s);
-    return Object.assign({}, m, { offerId: r.offerId, snap: { area: (s.patient.address && s.patient.address.district) || s.patient.district || '—', when: `${VISIT1.date} · ${VISIT1.time}`, want: sc.want, allow: sc.allow, not: sc.not, limits: sc.limits } });
+    return Object.assign({}, m, { offerId: r.offerId, snap: { area: (s.patient.address && s.patient.address.district) || s.patient.district || '—', when: `${VISIT1.date} · ${VISIT1.time}`, want: sc.want, allow: sc.allowPt, not: sc.notPt, limits: sc.limits, prec: sc.prec } });
   }
   function offerCard(m) {
     const r = s.request, sn = m.snap || {}, live = !!r && r.status === 'OFFERED' && r.offerId === m.offerId && (r.offerTo || []).includes('me');
-    const lines = [`เลขงาน: ${m.offerId || '—'}`, `เขต/อำเภอ: ${sn.area || '—'}`, sn.when, `ความช่วยเหลือที่ขอ: ${sn.want || '—'}`, (sn.allow || []).length ? `ทีมคลินิกอนุมัติเฉพาะ: ${sn.allow.join(' · ')}` : '', (sn.not || []).length ? `ไม่รวม: ${sn.not.join(' · ')}` : '', sn.limits ? `ข้อจำกัด: ${sn.limits}` : '', `รายได้สุทธิ: ${SC.money(1199)}`, live ? 'ตอบรับภายใน 30 นาที' : ''].filter(Boolean);
+    const lines = [`เลขงาน: ${m.offerId || '—'}`, `เขต/อำเภอ: ${sn.area || '—'}`, sn.when, `เป้าหมายที่คนไข้เลือก: ${sn.want || '—'}`, (sn.allow || []).length ? `ทีมคลินิกอนุมัติเฉพาะ: ${sn.allow.join(' · ')}` : '', (sn.not || []).length ? `ไม่รวม: ${sn.not.join(' · ')}` : '', sn.limits ? `ข้อจำกัด: ${sn.limits}` : '', ...(sn.prec || []), `รายได้สุทธิ: ${SC.money(1199)}`, live ? 'ตอบรับภายใน 30 นาที' : ''].filter(Boolean);
     const body = lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('');
     return `<div class="fx-card"><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">ข้อเสนองานใหม่</div>${live ? '' : '<div class="fx-t" style="font-size:13px;font-weight:600;color:#8a5a1f;margin-top:4px">ขอบเขตหรือสถานะงานเปลี่ยนแล้ว การ์ดนี้ใช้รับงานไม่ได้</div>'}${body}</div>
       <div class="fx-foot" style="padding:10px 14px 14px;display:grid;gap:6px">${live ? `<button class="fx-b" style="background:#00543C;color:#fff" data-card="ptOffer:accept" data-offer="${esc(m.offerId)}">รับงาน</button><button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูรายละเอียด</button>` : '<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูข้อมูลล่าสุด</button>'}</div></div>`;

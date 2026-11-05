@@ -620,23 +620,49 @@
     ['GERI', 'ผู้สูงอายุ เดินไม่มั่นคง หรือเคยหกล้ม', 'person-standing'], ['BED', 'ติดเตียง หรือลุกจากเตียงเองไม่ได้', 'bed'], ['CARDIO', 'โรคหัวใจ ปอด หรือมีเสมหะ', 'heart-pulse'], ['UNSURE', 'ไม่แน่ใจ ให้ทีมช่วยดู', 'circle-help']];
   const BRANCH = {
     MSK: [{ k: 'pain', t: 'ปวดมานานแค่ไหนแล้ว', o: [['SHORT', 'ไม่ถึง 6 สัปดาห์'], ['MID', '6 สัปดาห์ ถึง 3 เดือน'], ['LONG', 'เกิน 3 เดือน'], ['UNSURE', 'ไม่แน่ใจ']] }],
-    ORTHO: [{ k: 'wb', t: 'หมอให้ข้างที่ผ่าตัดลงน้ำหนักได้แค่ไหน', o: [['FULL', 'ลงน้ำหนักได้เต็มที่'], ['PART', 'ลงได้บางส่วน'], ['NONE', 'ห้ามลงน้ำหนัก'], ['UNSURE', 'ไม่แน่ใจ / หมอยังไม่ได้บอก']] }],
+    ORTHO: [{ k: 'op', t: 'ผ่าตัดอะไรมา', o: [['TKA', 'เปลี่ยนข้อเข่า'], ['THA', 'เปลี่ยนข้อสะโพก'], ['ORIF', 'ดามเหล็กหรือใส่เหล็กกระดูก'], ['OTHER', 'อื่น ๆ'], ['UNSURE', 'ไม่แน่ใจ']] },
+      { k: 'wb', t: 'หมอให้ข้างที่ผ่าตัดลงน้ำหนักได้แค่ไหน', o: [['WBAT', 'ลงได้เท่าที่ไหว'], ['FULL', 'ลงน้ำหนักได้เต็มที่'], ['PART', 'ลงได้บางส่วน'], ['NONE', 'ห้ามลงน้ำหนัก'], ['OTHER', 'หมอสั่งแบบอื่น'], ['UNSURE', 'ไม่แน่ใจ / หมอยังไม่ได้บอก']] },
+      { k: 'proto', t: 'มีแผนฟื้นฟูหรือคำสั่งจากหมอเป็นเอกสารไหม', o: [['YES', 'มี'], ['NO', 'ไม่มี'], ['UNSURE', 'ไม่แน่ใจ']] },
+      { k: 'prec', t: 'หมอห้ามท่าไหนเป็นพิเศษไหม', o: [['NONE', 'ไม่มีข้อห้าม'], ['HAS', 'มี และรู้ว่าห้ามอะไร'], ['UNCLEAR', 'มี แต่ไม่แน่ใจว่าห้ามอะไร หรือไม่แน่ใจ']] },
+      { k: 'gear', t: 'อุปกรณ์ที่หมอสั่ง มีครบไหม', o: [['YES', 'ครบ'], ['NA', 'ไม่ได้สั่งอะไร'], ['NO', 'ยังไม่ครบ'], ['UNSURE', 'ไม่แน่ใจ']] }],
     NEURO: [{ k: 'neuro', t: 'เป็นโรคอะไร', o: [['STROKE', 'หลอดเลือดสมอง (Stroke)'], ['PD', 'พาร์กินสัน'], ['SCI', 'บาดเจ็บไขสันหลัง'], ['TBI', 'บาดเจ็บที่สมอง'], ['UNSURE', 'อื่น ๆ หรือไม่แน่ใจ']] }],
     GERI: [{ k: 'falls', t: 'หนึ่งปีที่ผ่านมา หกล้มกี่ครั้ง', o: [['N0', 'ไม่เคยล้ม'], ['N1', '1 ครั้ง'], ['N2', '2 ครั้งขึ้นไป'], ['UNSURE', 'ไม่แน่ใจ']] }],
     BED: [{ k: 'lift', t: 'ย้ายจากเตียงไปเก้าอี้ ต้องมีคนช่วยกี่คน', o: [['N0', 'ทำเองได้'], ['N1', '1 คน'], ['N2', '2 คน หรือต้องใช้เครื่องยก'], ['UNSURE', 'ไม่แน่ใจ']] },
-      { k: 'helpers', t: 'วันนัด ที่บ้านมีคนช่วยได้กี่คน', o: [['N0', 'ไม่มี'], ['N1', '1 คน'], ['N2', '2 คนขึ้นไป'], ['HOIST', 'มีเครื่องยกที่บ้าน']] }],
+      { k: 'helpers', t: 'วันนัด ที่บ้านมีคนช่วยได้กี่คน', o: [['N0', 'ไม่มี'], ['N1', '1 คน'], ['N2', '2 คนขึ้นไป'], ['HOIST', 'มีเครื่องยกที่บ้าน']] },
+      { k: 'pneu', t: 'ช่วงนี้เพิ่งเป็นปอดอักเสบหรือปอดติดเชื้อไหม', o: [['YES', 'เพิ่งเป็น หรือเพิ่งหาย'], ['NO', 'ไม่ได้เป็น'], ['UNSURE', 'ไม่แน่ใจ']] },
+      { k: 'phlegm', t: 'ตอนนี้มีเสมหะค้างไหม', o: [['NONE', 'ไม่มี'], ['HAS', 'มี'], ['UNSURE', 'ไม่แน่ใจ']] },
+      { k: 'cough', when: b => b.phlegm && b.phlegm !== 'NONE', t: 'ไอเอาเสมหะออกเองได้ไหม', o: [['ABLE', 'ไอออกเองได้'], ['WEAK', 'ไอออกเองไม่ค่อยได้'], ['SUCTION', 'ต้องดูดเสมหะ หรือมีท่อเจาะคอ'], ['UNSURE', 'ไม่แน่ใจ']] },
+      { k: 'clear', when: b => b.phlegm && b.phlegm !== 'NONE', t: 'อยากให้นักกายภาพช่วยเรื่องระบายเสมหะไหม', o: [['YES', 'อยาก'], ['NO', 'ไม่ต้อง'], ['UNSURE', 'ไม่แน่ใจ']] }],
     CARDIO: [{ k: 'airway', t: 'เรื่องเสมหะ ตอนนี้เป็นแบบไหน', o: [['NONE', 'ไม่มีเสมหะ'], ['COUGH', 'มีเสมหะ ไอออกเองได้'], ['WEAK', 'มีเสมหะ ไอออกเองไม่ค่อยได้'], ['SUCTION', 'ต้องดูดเสมหะ หรือมีท่อเจาะคอ'], ['UNSURE', 'ไม่แน่ใจ']] }]
   };
-  const branchQs = p => BRANCH[p.group] || [];
+  const branchQs = p => (BRANCH[p.group] || []).filter(q => !q.when || q.when(p.branch || {}));
+  /* Q-B = A, but its minimum criteria are not clinically validated: Proposed and off. Turning it on is a Clinical Leads decision. */
+  SC.RULES = { version: 'sim-rules-2026-11-04', postOpRoutine: { state: 'Proposed', enabled: false } };
+  const WB_TERM = { WBAT: 'WBAT', FULL: 'FWB', PART: 'PWB', NONE: 'NWB', OTHER: 'Other (per surgeon)', UNSURE: 'Unknown' };
+  // Q-C: BED-04 needs review before the first matching; sputum alone does not (RESP-02 can stay routine).
+  SC.clinBed04 = p => p.group === 'BED' && (p.branch || {}).pneu === 'YES' && (p.branch || {}).phlegm === 'HAS' && (p.branch || {}).cough === 'WEAK';
+  SC.clinExtraTasks = s => { const p = s.patient, b = p.branch || {}; return p.group === 'BED' && b.phlegm && b.phlegm !== 'NONE' ? ['S05', 'S06'] : []; };
   /* Why this request needs the clinical team before payment. Empty = routine: pay first, then matching (unchanged). */
   SC.clinReasons = s => {
-    const p = s.patient, h = p.health || {}, b = p.branch || {}, out = [];
-    const named = { q3: 'มีสายหรืออุปกรณ์ช่วยดูแล', q4: 'เพิ่งออกจากโรงพยาบาล หรือมีข้อห้ามแพทย์', q5: 'เคยผ่าตัด หรือมีอุปกรณ์ในร่างกาย', q6: 'มีโรคประจำตัว' };
+    const p = s.patient, h = p.health || {}, b = p.branch || {}, out = [], ortho = p.group === 'ORTHO';
+    const named = { q3: 'มีสายหรืออุปกรณ์ช่วยดูแล', q4: 'เพิ่งออกจากโรงพยาบาล หรือมีข้อห้ามแพทย์', q6: 'มีโรคประจำตัว' };
     Object.keys(named).forEach(k => { if (h[k] === 'YES') out.push(named[k]); });
+    if (h.q5 === 'YES' && !ortho) out.push('เคยผ่าตัด หรือมีอุปกรณ์ในร่างกาย');
+    if (ortho && h.q5 === 'YES') {
+      if (b.op === 'UNSURE') out.push('ไม่แน่ใจว่าผ่าตัดอะไร');
+      if (b.wb === 'OTHER') out.push('หมอสั่งการลงน้ำหนักแบบอื่น ต้องอ่านคำสั่งก่อน');
+      if (['NO', 'UNSURE'].includes(b.proto)) out.push('ยังไม่มีแผนฟื้นฟูหรือคำสั่งหมอเป็นเอกสาร');
+      if (b.prec === 'UNCLEAR') out.push('ข้อห้ามจากหมอยังไม่ชัด');
+      if (['NO', 'UNSURE'].includes(b.gear)) out.push('อุปกรณ์ที่หมอสั่งยังไม่ครบ หรือไม่แน่ใจ');
+      if (!SC.RULES.postOpRoutine.enabled) out.push(`หลังผ่าตัด (${WB_TERM[b.wb] || 'ยังไม่ระบุ'}): กฎ Routine ตาม Q-B ยังรอ Clinical Validation`);
+    }
     if (['stage2', 'severe'].includes((SC.bpCat(p.bp) || {}).key)) out.push('ความดันสูง');
     if (p.group === 'ORTHO' && b.wb === 'UNSURE') out.push('ยังไม่รู้ว่าหมอให้ลงน้ำหนักได้แค่ไหน');
     if (p.group === 'BED' && b.lift === 'UNSURE') out.push('ไม่แน่ใจว่าย้ายตัวต้องใช้คนช่วยกี่คน');
     if (p.group === 'BED' && b.lift === 'N2' && !['N2', 'HOIST'].includes(b.helpers)) out.push('ต้องย้ายตัว 2 คนหรือใช้เครื่องยก แต่ที่บ้านมีคนช่วยไม่พอ');
+    if (SC.clinBed04(p)) out.push('BED-04: Post-Pneumonia + Retained Secretions + Ineffective Cough');
+    if (p.group === 'BED' && b.cough === 'SUCTION') out.push('ต้องดูดเสมหะ (งานจำกัด ยังไม่เปิดจับคู่อัตโนมัติ)');
+    else if (p.group === 'BED' && (b.phlegm === 'UNSURE' || (b.phlegm === 'HAS' && b.cough === 'UNSURE') || (b.pneu === 'UNSURE' && b.phlegm === 'HAS' && b.cough === 'WEAK'))) out.push('เคสติดเตียง ไม่แน่ใจเรื่องปอดอักเสบ เสมหะ หรือการไอ');
     if (p.group === 'CARDIO' && b.airway === 'SUCTION') out.push('ต้องดูดเสมหะ (งานจำกัด ยังไม่เปิดจับคู่อัตโนมัติ)');
     if (p.group === 'CARDIO' && b.airway === 'UNSURE') out.push('ไม่แน่ใจเรื่องเสมหะ');
     if (Object.values(p.barthel || {}).filter(v => v === null).length >= 4) out.push('ไม่แน่ใจเรื่องกิจวัตรหลายข้อ');
@@ -672,10 +698,12 @@
   /* FIX-04: what was asked for vs what the team approved. S06 is named only when the answers ask for it. */
   SC.clinScope = s => {
     const r = s.request || {}, rv = r.review, p = s.patient, on = !!(rv && rv.cleared);
-    const goals = (p.goals || []).map(g => g === 'OTHER' ? p.goalOther : (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean).join(' · ');
-    const asksSuction = p.group === 'CARDIO' && ['SUCTION', 'UNSURE'].includes((p.branch || {}).airway);
-    return { want: goals, allow: on ? rv.allow.map(id => SC.CLIN.tasks[id]) : [], not: on && asksSuction ? [SC.CLIN.tasks.S06] : [], limits: on ? rv.limits : '' };
+    const b = p.branch || {}, asksSuction = (p.group === 'CARDIO' && ['SUCTION', 'UNSURE'].includes(b.airway)) || SC.clinExtraTasks(s).length > 0, notIds = on && asksSuction ? ['S06'] : [], allowIds = on ? rv.allow : [];
+    const prec = p.group === 'ORTHO' && b.wb ? [`Weight-bearing: ${WB_TERM[b.wb]}`, ...(b.prec === 'HAS' ? ['มีข้อห้ามจากหมอ ดูรายละเอียดหลังรับงาน'] : [])] : [];
+    return { want: SC.goalLabels(s).join(' · '), allow: allowIds.map(id => SC.CLIN.tasks[id]), not: notIds.map(id => SC.CLIN.tasks[id]), allowPt: allowIds.map(SC.CLIN.label), notPt: notIds.map(SC.CLIN.label), limits: on ? rv.limits : '', prec };
   };
+  // P0-02: one source for what the patient actually chose. Never rebuilt from service mapping or a sample.
+  SC.goalLabels = s => { const p = s.patient; return (p.goals || []).map(g => g === 'OTHER' ? (p.goalOther || 'อื่น ๆ') : (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean); };
   const scopeCard = s => { const c = SC.clinScope(s); if (!c.allow.length) return ''; return `<div class="card"><b class="sec-h">${I('clipboard-check')}ขอบเขตที่ทีมคลินิกอนุมัติ</b>
     ${c.want ? `<p class="small" style="margin:0">สิ่งที่คุณขอ: ${esc(c.want)}</p>` : ''}<ul class="pp-ul">${c.allow.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
     ${c.not.length ? `<p class="note warn" style="margin:0">ไม่รวม: ${c.not.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0">ข้อจำกัด: ${esc(c.limits)}</p>` : ''}<p class="small" style="margin:0">นอกเหนือจากนี้ ทีมต้องตรวจก่อน</p></div>`; };

@@ -118,8 +118,7 @@
   const REQ = { CLINICAL_REVIEW: ['รอทีมคลินิกตรวจ', 'wait'], REVIEW_DECLINED: ['ทีมโทรคุยก่อน', 'warn'], PAYMENT_PENDING: ['รอชำระเงิน', 'wait'], SLIP_SENT: ['รอตรวจสลิป', 'wait'], PAID: ['รอจับคู่ PT', 'info'], OFFERED: ['รอ PT ตอบรับ', 'info'], BOOKED: ['นัดแล้ว', ''] };
   const reqPill = r => { const x = REQ[r.status] || [r.status, 'gray']; return `<span class="pill ${x[1]}">${esc(x[0])}</span>`; };
   const STEP = ['นัดแล้ว', 'PT กำลังเดินทาง', 'PT ถึงแล้ว', 'กำลังดูแล', 'เสร็จแล้ว'];
-  const GOALS = { WALK: 'เดินได้มั่นคงขึ้น', PAIN: 'ลดปวด', TRANSFER: 'ลุกนั่งเองได้', STAND: 'ลุกยืนเองได้', BALANCE: 'ทรงตัวดี ไม่หกล้ม', FALL: 'ป้องกันหกล้ม', STRENGTH: 'แข็งแรงขึ้น', SURGERY: 'ฟื้นตัวหลังผ่าตัด', POST_SURGERY: 'ฟื้นตัวหลังผ่าตัด', STROKE: 'ฟื้นฟูหลังอัมพฤกษ์', SELF_CARE: 'ดูแลตัวเองได้', BREATH: 'หายใจได้ดีขึ้น', OFFICE: 'ลดปวดจากการทำงาน' };
-  const goalText = s => (s.patient.goals || []).map(g => g === 'OTHER' ? (s.patient.goalOther || 'อื่น ๆ') : (GOALS[g] || g)).join(' · ');
+  const goalText = s => SC.goalLabels(s).join(' · ');
   const reports = (s, id) => (s.suspicion.reports || []).filter(r => r.pt === id && !r.cleared);
   const score = (s, id) => reports(s, id).reduce((t, r) => t + (r.evidence ? 60 : 20), 0);
   const LEVEL = { NORMAL: ['ปกติ', 'gray', ''], WATCH: ['เฝ้าดู', 'wait', 'สุ่มโทรถามคนไข้ของ PT คนนี้ ถามตามปกติ ไม่กล่าวหา'], WARNING: ['เตือน', 'warn', 'ส่งหนังสือเตือนถึง PT · ระบบเรียงไว้ท้ายรายชื่อตอนจับคู่'], PAUSED: ['พักรับงานใหม่', 'warn', 'ระบบหยุดส่งงานใหม่ นัดเดิมยังดำเนินต่อ · ทีมทบทวนภายใน 3 วันทำการ'] };
@@ -202,11 +201,11 @@
   function capsCard(s) {
     const p = s.pt, caps = p.caps || {}, ids = Object.keys(caps); if (!ids.length) return '';
     const names = (p.services || []).map(id => (SC.CLIN.services.find(x => x.id === id) || {}).name).filter(Boolean);
-    const by = v => ids.filter(id => caps[id] === v).map(id => esc(SC.CLIN.tasks[id]));
+    const by = v => ids.filter(id => caps[id] === v).map(id => esc(SC.CLIN.label(id)));
     const spec = ids.filter(id => (id[0] === 'S' && caps[id] === 'can') || caps[id] === 'ask'), rev = p.capReviewed || {};
     return `<div class="card flat"><b class="h3">${I('list-checks')}งานที่ PT แจ้งว่ารับได้</b><p class="small" style="margin:0">กลุ่ม: ${esc(names.join(' · ') || '—')} · ที่ติ๊กเป็นข้อมูลจาก PT ยังไม่ใช่การอนุมัติ</p>
       ${kv([['ทำได้', by('can').join(' · ') || '—'], ['ยังไม่ถนัด', by('no').join(' · ') || '—'], ['ขอคุยก่อน (รอทีมพิจารณา)', by('ask').join(' · ') || '—'], ['อุปกรณ์', esc((p.equip || []).join(' · ') || '—')]])}
-      ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง</span>${spec.map(id => `<button class="aa-pick" data-act="capReview" data-id="${id}" aria-pressed="${!!rev[id]}"><span class="aa-box">${rev[id] ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span><span class="s">${caps[id] === 'ask' ? (rev[id] ? 'คุยแล้ว อนุมัติให้รับงานแบบนี้' : 'PT ขอคุยก่อน · ยังไม่ผ่าน') : (rev[id] ? 'ทีมดูหลักฐานแล้ว' : 'ยังไม่ได้ดูหลักฐาน (ใบอบรม ประสบการณ์)')}</span></span></button>`).join('')}` : ''}
+      ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง</span>${spec.map(id => `<button class="aa-pick" data-act="capReview" data-id="${id}" aria-pressed="${!!rev[id]}"><span class="aa-box">${rev[id] ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.label(id))}</span><span class="s">${caps[id] === 'ask' ? (rev[id] ? 'คุยแล้ว อนุมัติให้รับงานแบบนี้' : 'PT ขอคุยก่อน · ยังไม่ผ่าน') : (rev[id] ? 'ทีมดูหลักฐานแล้ว' : 'ยังไม่ได้ดูหลักฐาน (ใบอบรม ประสบการณ์)')}</span></span></button>`).join('')}` : ''}
       <p class="small" style="margin:0">${I('lock')} ดูดเสมหะ (Suction) ยังไม่เปิดให้ PT แจ้งรับ ต้องตรวจขอบเขตวิชาชีพไทยก่อน</p></div>`;
   }
   SC.action('capReview', (s, ctx) => { const r = s.pt.capReviewed = s.pt.capReviewed || {}; r[ctx.data.id] = !r[ctx.data.id]; });
@@ -402,15 +401,16 @@
       const r = s.request, head = { kick: 'ก่อนเก็บเงิน', title: 'ตรวจทางคลินิก', sub: 'เคสที่มีข้อสงสัยด้านความปลอดภัย ตรวจก่อนส่งลิงก์ชำระ · เคสทั่วไปไม่ผ่านหน้านี้' };
       if (!r || !r.review) return shell(s, 'a.clinical', head, `<div class="card flat">${ui.empty('clipboard-plus', 'ไม่มีเคสรอตรวจ', 'เคสทั่วไปชำระก่อนแล้วจับคู่เหมือนเดิม หน้านี้มีงานเมื่อคำตอบคัดกรองมีข้อที่ทีมต้องดู', '')}</div>`);
       const rv = r.review, g = SC.clinGroup(s), svc = SC.CLIN.services.find(x => x.id === g.id);
-      const list = svc ? svc.tasks : ['C01', 'C02', 'C04', 'C06', 'C07', 'C11', 'C12', 'C16'];
+      const list = [...new Set([...(svc ? svc.tasks : ['C01', 'C02', 'C04', 'C06', 'C07', 'C11', 'C12', 'C16']), ...SC.clinExtraTasks(s)])];
       const open = reviewOpen(r), declined = r.status === 'REVIEW_DECLINED' || !!rv.declined;
       const row = id => SC.CLIN.restricted.includes(id)
-        ? `<div class="aa-pick off" aria-disabled="true"><span class="aa-box">${I('lock')}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span><span class="s">ปิดอยู่ · รอตรวจขอบเขตวิชาชีพไทย ห้ามจับคู่อัตโนมัติ อนุมัติงานอื่นไม่ได้หมายถึงอนุมัติดูดเสมหะ</span></span></div>`
-        : open ? `<button class="aa-pick" data-toggle="request.review.allow" data-value="${id}" aria-pressed="${rv.allow.includes(id)}"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span></span></button>`
-        : `<div class="aa-pick off"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.tasks[id])}</span></span></div>`;
+        ? `<div class="aa-pick off" aria-disabled="true"><span class="aa-box">${I('lock')}</span><span class="grow"><span class="t">${esc(SC.CLIN.label(id))}</span><span class="s">ปิดอยู่ · รอตรวจขอบเขตวิชาชีพไทย ห้ามจับคู่อัตโนมัติ อนุมัติงานอื่นไม่ได้หมายถึงอนุมัติดูดเสมหะ</span></span></div>`
+        : open ? `<button class="aa-pick" data-toggle="request.review.allow" data-value="${id}" aria-pressed="${rv.allow.includes(id)}"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.label(id))}</span><span class="s">${esc(SC.CLIN.tasks[id])}</span></span></button>`
+        : `<div class="aa-pick off"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.label(id))}</span></span></div>`;
       const caseCard = `<article class="card flat">
         <div class="row between wrap"><b class="h2">${esc(patientName(s))}</b><span class="pill ${open ? 'wait' : declined ? 'warn' : ''}">${open ? (r.scopeHold ? 'รอตรวจ · พักกิจกรรม นัดเดิมยังอยู่' : r.paid ? 'รอตรวจ · ชำระแล้ว ไม่เก็บซ้ำ' : 'รอตรวจ · ยังไม่เก็บเงิน') : declined ? 'โทรคุยก่อน' : 'อนุมัติแล้ว'}</span></div>
-        ${kv([['เลขคำขอ', esc(r.ref)], ['ข้อมูลคัดกรองฉบับที่', esc(String(r.screeningVersion || 1))], ['กลุ่มอาการ', esc(g.name || 'ยังไม่ระบุ')], ...g.answers.map(([q, a]) => [q, esc(a)]), ['เป้าหมาย', esc(goalText(s) || '—')], ['เขต', esc(district(s) || '—')]])}
+        ${kv([['เลขคำขอ', esc(r.ref)], ['ข้อมูลคัดกรองฉบับที่', esc(String(r.screeningVersion || 1))], ['กลุ่มอาการ', esc(g.name || 'ยังไม่ระบุ')], ['เป้าหมาย', esc(goalText(s) || '—')], ['เขต', esc(district(s) || '—')]])}
+        ${g.answers.length ? `<div class="stack"><span class="label">คำตอบคัดกรอง</span>${g.answers.map(([q, a]) => `<span class="small">${esc(q)}<br><b>${esc(a)}</b></span>`).join('')}</div>` : ''}
         <div class="stack"><span class="label">เหตุผลที่ต้องตรวจ</span>${rv.reasons.map(x => `<span class="small">${I('triangle-alert')} ${esc(x)}</span>`).join('')}</div>
         ${s.patient.medNote ? `<p class="small">ข้อห้ามแพทย์: ${esc(s.patient.medNote)}</p>` : ''}${s.patient.surgeryNote ? `<p class="small">ผ่าตัด: ${esc(s.patient.surgeryNote)}</p>` : ''}
         <p class="small" style="margin:0">PT ที่ยังไม่รับงานจะไม่เห็นข้อมูลส่วนนี้และที่อยู่เต็ม</p>
@@ -424,7 +424,7 @@
         <div class="aa-acts"><button class="btn" data-act="clinApprove" data-need="request.review.allow,request.review.byId,request.review.reason">${I('check')}${r.paid || r.scopeHold ? 'อนุมัติที่ติ๊ก' : 'อนุมัติที่ติ๊ก แล้วส่งลิงก์ชำระ'}</button><button class="btn ghost" data-act="clinDecline" data-need="request.review.byId,request.review.reason">${I('phone')}ยังไม่รับ · โทรคุยก่อน</button></div>`
         : `<p class="small">ผู้ตรวจ ${esc(rv.by || '—')} · ${esc(rv.at || '')}${rv.limits ? ` · ข้อจำกัด: ${esc(rv.limits)}` : ''}</p>`}
         <p class="small" style="margin:0">ผู้มีอำนาจตรวจ: ${SC.CLIN_LEADS.map(x => `${esc(x.name)} (${esc(x.role)})`).join(' · ')} · ทุกการตัดสินบันทึกชื่อ เวลา เหตุผล และฉบับข้อมูล</p>
-        ${(r.reviewLog || []).length ? `<div class="stack"><span class="label">ประวัติการตรวจ</span>${r.reviewLog.map(l => `<span class="small">ฉบับที่ ${esc(String(l.version))} · ${{ APPROVED: 'ผ่านตรวจ', DECLINED: 'ขอโทรคุย', SUPERSEDED: 'ผลเดิมถูกพัก' }[l.decision]} · ${esc(l.reviewer)} · ${esc(l.at)}${l.allow.length ? ` · ${l.allow.map(id => esc(SC.CLIN.tasks[id])).join(', ')}` : ''} · ${esc(l.reason)}</span>`).join('')}</div>` : ''}
+        ${(r.reviewLog || []).length ? `<div class="stack"><span class="label">ประวัติการตรวจ</span>${r.reviewLog.map(l => `<span class="small">ฉบับที่ ${esc(String(l.version))} · ${{ APPROVED: 'ผ่านตรวจ', DECLINED: 'ขอโทรคุย', SUPERSEDED: 'ผลเดิมถูกพัก' }[l.decision]} · ${esc(l.reviewer)} · ${esc(l.at)}${l.allow.length ? ` · ${l.allow.map(id => esc(SC.CLIN.label(id))).join(', ')}` : ''} · ${esc(l.reason)}</span>`).join('')}</div>` : ''}
       </article>`;
       return shell(s, 'a.clinical', head, `<div class="aa-split">${caseCard}<div class="stack lg">${decide}</div></div>`);
     }
@@ -451,7 +451,7 @@
     else if (!s.pt.schedule || !s.pt.schedule.sent) { ok = false; reason = 'ยังไม่ส่งตาราง · ร่างตารางยังใช้จับคู่ไม่ได้'; }
     else if (r.review && !r.review.cleared) { ok = false; reason = 'เคสนี้รอทีมคลินิกตรวจ'; }
     else if (allow.some(id => SC.CLIN.restricted.includes(id))) { ok = false; reason = 'มีงานดูดเสมหะ · ไม่จับคู่อัตโนมัติ ทีมคลินิกประสานเอง'; }
-    else if (cannot.length) { ok = false; reason = `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.tasks[id]).join(' · ')}`; }
+    else if (cannot.length) { ok = false; reason = `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; }
     else if (st === 'PAUSED') { ok = false; reason = 'พักรับงานใหม่ชั่วคราว · รอทีมทบทวน'; }
     else if (zoneOk) reason = `ตรงพื้นที่ · รับงานใน${d}`;
     else { reason = `รับงาน: ${(s.pt.zones || []).join(' · ') || 'ยังไม่ระบุ'}`; warn = preferred ? `ผู้รับบริการขอคนนี้ แต่ PT ไม่ได้ลงเขต${d} · โทรถาม PT ก่อนส่ง` : `PT ไม่ได้ลงเขต${d} · โทรถามก่อนส่ง`; }
@@ -460,7 +460,7 @@
   }
   /* FIX-01/02: rechecked when the PT accepts or starts, never trusted from the card. */
   SC.meCandidate = meCandidate;
-  SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck) { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.tasks[id]).join(' · ')}`; } return ''; };
+  SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck) { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; } return ''; };
   SC.screen('a.match', {
     role: 'admin',
     render(s) {
@@ -506,7 +506,7 @@
       const picks = `<article class="card flat">
         <div class="row between wrap"><b class="h3">เลือก PT พร้อมกัน 1–4 คน</b><span class="small">แนะนำ ${recCount} คน</span></div>
         <p class="small" style="margin:0">ส่งได้เฉพาะ PT ที่ผ่านด่าน: ใบประกอบผ่าน · ส่งตารางแล้ว · ทำงานที่ทีมคลินิกอนุมัติได้ แล้วจึงเรียงตามเขตและเวลา ขยายการค้นหาตอน 30/90 นาทีก็ยังใช้ด่านเดิม</p>
-        ${r.review && r.review.cleared ? `<div class="note mint">${I('clipboard-check')} ทีมคลินิกอนุมัติเฉพาะ: ${r.review.allow.map(id => esc(SC.CLIN.tasks[id])).join(' · ')}${r.review.limits ? `<br>ข้อจำกัด: ${esc(r.review.limits)}` : ''}</div>` : ''}
+        ${r.review && r.review.cleared ? `<div class="note mint">${I('clipboard-check')} ทีมคลินิกอนุมัติเฉพาะ: ${r.review.allow.map(id => esc(SC.CLIN.label(id))).join(' · ')}${r.review.limits ? `<br>ข้อจำกัด: ${esc(r.review.limits)}` : ''}</div>` : ''}
         ${banner}
         ${meRow ? `<div class="stack"><span class="label">แนะนำให้ส่ง</span>${meRow}</div>` : `<p class="p">ยังไม่มี PT ที่ส่งได้ในเขตนี้</p>`}
       </article>`;
@@ -521,6 +521,7 @@
   });
   SC.action('sendOffer', (s, ctx) => {
     const a = A(s), r = s.request; if (!r || r.status !== 'PAID' || !a.tick || !a.tick.length) return;
+    if (a.tick.includes('me')) { const mc = meCandidate(s); if (!mc || !mc.ok) { ctx.toast(`ส่งไม่ได้: ${mc ? mc.reason : 'ไม่พบ PT'}`); return; } }
     r.status = 'OFFERED'; r.offerTo = a.tick.slice();
     ctx.line('pt', { key: 'ptOffer' });
     ctx.toast(`ส่งข้อเสนอให้ PT ${r.offerTo.length} คนแล้ว รอตอบรับภายใน 30 นาที`);
