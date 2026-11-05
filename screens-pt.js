@@ -1079,6 +1079,7 @@
           ${cvBlock(p)}
           <p class="small row" style="color:var(--em)">${I('map-pin')}<span>${esc(p.zones.join(' · '))}</span></p>
           ${SC.ptBoard(s)}
+          <button class="btn sm ghost" style="width:100%" data-go="t.caps">${I('list-checks')}งานที่รับ และผลจากทีม</button>
           <div class="grid2"><button class="btn sm ghost" style="width:100%" data-act="editBio">${I('pencil')}แก้แนะนำตัว</button><button class="btn sm ghost" style="width:100%" data-act="previewMe">${I('eye')}ดูหน้าที่คนไข้เห็น</button></div>
         </div>
         <section class="pd">
@@ -1652,13 +1653,21 @@
 
   /* ---------- t.offer ---------- */
   /* FIX-R4-01: one panel for Offer and Visit, read from the latest approved scope. Thai wording stays PROPOSED until Q-G sign-off. */
-  function scopePanel(s, ref) {
-    const r = s.request, rv = r && r.review, c = SC.clinScope(s); if (!(rv && rv.cleared) && !c.prec.length) return '';
-    return `<div class="card" data-scope="panel">${rv && rv.cleared ? `<b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b>${c.assessOnly ? '<p class="note" style="margin:0">อนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}<ul class="tt-ok">${c.allowPt.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
-      ${c.notPt.length ? `<p class="note warn" style="margin:0"><b>ไม่รวม:</b> ${c.notPt.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : ''}
+  const scopeKey = r => `S${r.screeningVersion || 1}${r.offerId ? '-' + r.offerId : ''}`;
+  /* CLIN-ACK-01 Option B: reviewed or limited cases, and whenever the scope changes. Once per scope version. It releases nothing and approves nothing. */
+  const needAck = s => { const r = s.request, rv = r && r.review; return !!(rv && rv.cleared && !r.scopeHold && !(r.acks || {})[scopeKey(r)]); };
+  SC.needAck = needAck;
+  function scopePanel(s, ref, forVisit) {
+    const r = s.request, rv = r && r.review, c = SC.clinScope(s), on = rv && rv.cleared; if (!on && !c.prec.length && !forVisit) return '';
+    const hold = forVisit && SC.visitHold(s);
+    return `<div class="card" data-scope="panel">${on ? `<b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b>${c.assessOnly ? '<p class="note" style="margin:0">อนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}<ul class="tt-ok">${c.allowPt.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
+      ${c.notPt.length ? `<p class="note warn" style="margin:0"><b>ไม่อนุมัติ:</b> ${c.notPt.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : forVisit ? `<b class="h3">${I('clipboard-check')} ขอบเขตงาน</b><p class="small" style="margin:0">เคสทั่วไป ไม่มีการอนุมัติเฉพาะกิจกรรมจากทีมคลินิก</p>` : ''}
       ${c.prec.length ? `<b class="h3">${I('shield-check')} ข้อควรระวังจากคำสั่งแพทย์</b>${c.prec.map(x => `<p class="small" style="margin:0;color:var(--forest);font-weight:600">${esc(x)}${/Unknown$/.test(x) ? ' · ยังไม่ทราบ ห้ามถือว่าลงน้ำหนักได้เต็มที่' : ''}</p>`).join('')}` : ''}
-      <p class="small" style="margin:0">Screening v${esc(r.screeningVersion || 1)}${r.offerId ? ` · Offer ${esc(r.offerId)}` : ''}${rv && rv.cleared ? ` · อนุมัติโดย ${esc(rv.by || '')} ${esc(rv.at || '')}` : ''}${ref && ref.offerId !== r.offerId ? ` · อัปเดตจาก Offer ${esc(ref.offerId)} ตอนจอง` : ''}</p></div>`;
+      ${forVisit ? `<div class="row wrap" style="gap:6px"><span class="pill ${on ? '' : 'gray'}">${on ? 'ทีมคลินิกอนุมัติแล้ว' : 'ไม่ต้องตรวจเฉพาะเคส'}</span><span class="pill ${hold ? 'warn' : 'gray'}">${hold ? 'พักการดูแลอยู่' : 'ไม่มีการพักการดูแล'}</span></div>` : ''}
+      <p class="small" style="margin:0">Screening v${esc(r.screeningVersion || 1)}${r.offerId ? ` · Offer ${esc(r.offerId)}` : ''}${on ? ` · อนุมัติโดย ${esc(rv.by || '')} ${esc(rv.at || '')}` : ''}${ref && ref.offerId !== r.offerId ? ` · อัปเดตจาก Offer ${esc(ref.offerId)} ตอนจอง` : ''}</p>
+      ${forVisit && !hold && needAck(s) ? `<button class="btn" data-act="scopeAck">${I('check')}รับทราบขอบเขตนี้ ก่อนเริ่มงาน</button>` : ''}${forVisit && on && (r.acks || {})[scopeKey(r)] ? `<p class="small" style="margin:0;color:var(--em)">${I('check')} รับทราบแล้ว ${esc(r.acks[scopeKey(r)].at)}</p>` : ''}</div>`;
   }
+  act('scopeAck', (s, ctx) => { const r = s.request; if (!r || !needAck(s)) return; const n = +(ctx.param.n || 1); (r.acks = r.acks || {})[scopeKey(r)] = { ptId: 'me', visit: n, key: scopeKey(r), at: new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) }; ctx.toast('รับทราบขอบเขตแล้ว · ไม่ได้ปลดการพักหรืออนุมัติเพิ่ม'); });
   scr('t.offer', {
     render(s) {
       if (!offerForMe(s)) {
@@ -1747,8 +1756,8 @@
       let main;
       if (v.step < 4) {
         const [t, sub, ic] = STEPS[v.step];
-        main = `${scopePanel(s, v.scopeRef)}${v.step === 3 ? `<div class="card mint tt-c"><span class="small">ดูแลไปแล้ว</span><span class="tt-timer" id="ttTimer">${fmtClock(Date.now() - (s.pt.clock[n] || Date.now()))}</span></div>` : ''}
-          ${SC.visitHold(s) ? `<p class="note warn" role="status">${esc(SC.visitHold(s))}</p>` : `<button class="tt-big" data-act="visitNext" data-n="${n}"><span class="grow"><b>${t}</b><small>${sub}</small></span><span class="arw">${I(ic)}</span></button>`}`;
+        main = `${scopePanel(s, v.scopeRef, true)}${v.step === 3 ? `<div class="card mint tt-c"><span class="small">ดูแลไปแล้ว</span><span class="tt-timer" id="ttTimer">${fmtClock(Date.now() - (s.pt.clock[n] || Date.now()))}</span></div>` : ''}
+          ${SC.visitHold(s) ? `<p class="note warn" role="status">${esc(SC.visitHold(s))}</p>` : needAck(s) ? '' : `<button class="tt-big" data-act="visitNext" data-n="${n}"><span class="grow"><b>${t}</b><small>${sub}</small></span><span class="arw">${I(ic)}</span></button>`}`;
       } else if (n === 1 && !planDone(s)) {
         // First visit order (Boss 21 Oct): finish care → plan treatment with the patient → book → OPD within 2 h.
         main = `<div class="note mint row">${I('badge-check')}<span>จบการดูแลแล้ว · คุยแผนการรักษากับคนไข้ต่อเลย</span></div>
@@ -1786,6 +1795,7 @@
   });
   act('visitNext', (s, ctx) => {
     if (SC.visitHold(s)) { ctx.toast(SC.visitHold(s)); return; }
+    if (needAck(s)) { ctx.toast('กดรับทราบขอบเขตงานก่อนเริ่ม'); return; }
     const n = +(ctx.data.n || ctx.param.n || 1), v = visitOf(s, n); if (!v || v.step >= 4) return;
     v.step += 1;
     if (v.step === 1) { ctx.line('patient', { key: 'enRoute' }); ctx.toast('แจ้งคนไข้ใน LINE แล้ว: กำลังเดินทาง'); }

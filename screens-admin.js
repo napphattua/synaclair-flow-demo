@@ -115,7 +115,7 @@
   const district = s => (s.patient.address && s.patient.address.district) || s.patient.district || '';
   const zoneOf = d => SC.ZONES.find(z => z.districts.includes(d));
   const covers = (zones, d) => { if (!d) return false; const z = zoneOf(d); return zones.includes(d) || (!!z && (zones.includes(z.name) || zones.includes(z.code))); };
-  const REQ = { CLINICAL_REVIEW: ['รอทีมคลินิกตรวจ', 'wait'], REVIEW_DECLINED: ['ทีมโทรคุยก่อน', 'warn'], PAYMENT_PENDING: ['รอชำระเงิน', 'wait'], SLIP_SENT: ['รอตรวจสลิป', 'wait'], PAID: ['รอจับคู่ PT', 'info'], OFFERED: ['รอ PT ตอบรับ', 'info'], BOOKED: ['นัดแล้ว', ''] };
+  const REQ = { ASSESS_HOLD: ['ประเมินอย่างเดียว · พักจ่าย', 'wait'], CLINICAL_REVIEW: ['รอทีมคลินิกตรวจ', 'wait'], REVIEW_DECLINED: ['ทีมโทรคุยก่อน', 'warn'], PAYMENT_PENDING: ['รอชำระเงิน', 'wait'], SLIP_SENT: ['รอตรวจสลิป', 'wait'], PAID: ['รอจับคู่ PT', 'info'], OFFERED: ['รอ PT ตอบรับ', 'info'], BOOKED: ['นัดแล้ว', ''] };
   const reqPill = r => { const x = REQ[r.status] || [r.status, 'gray']; return `<span class="pill ${x[1]}">${esc(x[0])}</span>`; };
   const STEP = ['นัดแล้ว', 'PT กำลังเดินทาง', 'PT ถึงแล้ว', 'กำลังดูแล', 'เสร็จแล้ว'];
   const goalText = s => SC.goalLabels(s).join(' · ');
@@ -141,7 +141,8 @@
   function tasks(s) {
     const a = A(s), t = [], r = s.request;
     if (s.pt.status === 'PENDING') t.push({ icon: 'badge-check', tag: 'ตรวจใบประกอบ', title: s.pt.legalName || meName(s), sub: `เลขใบประกอบ ${s.pt.license || '—'} · แสดงเป็น ${meName(s)}${s.pt.photo ? ' · มีรูปโปรไฟล์รอตรวจ' : ''}`, go: 'a.license', cta: 'ตรวจใบประกอบ' });
-    if (r && r.scopeHold && !(r.review || {}).declined) t.push({ icon: 'clipboard-plus', tag: 'พักกิจกรรม · นัดเดิมยังอยู่', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
+    if (r && r.status === 'ASSESS_HOLD') t.push({ icon: 'phone', tag: 'ประเมินอย่างเดียว · พักจ่าย', title: `${patientName(s)} · ${r.ref}`, sub: 'ทีมประสานงานติดต่อกลับ · ยังไม่ตั้งราคา ไม่ส่ง Offer ไม่คืนเงินอัตโนมัติ', go: 'a.clinical', cta: 'ดูขอบเขต' });
+    if (r && r.scopeHold && !(r.review || {}).declined) t.push({ icon: 'clipboard-plus', tag: 'พักกิจกรรม · นัดเดิมยังอยู่', title: `${patientName(s)} · ${r.ref}`, sub: `Admin ติดตาม · Clinical Lead ตัดสินความปลอดภัย · Finance ดูเรื่องเงิน · ${(r.review.reasons || []).join(' · ')}`, go: 'a.clinical', cta: 'ตรวจเคสนี้' });
     if (r && r.status === 'CLINICAL_REVIEW') t.push({ icon: 'clipboard-plus', tag: r.paid ? 'ตรวจซ้ำ · ชำระแล้ว ไม่เก็บซ้ำ' : 'ตรวจก่อนเก็บเงิน', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
     if (r && r.check && r.check.state === 'open') t.push({ icon: 'receipt', tag: 'สลิปผิดปกติ', title: `สลิป Clair Match · ${r.ref}`, sub: `${patientName(s)} · ${r.check.reasons.join(' · ')} · จับคู่ PT ต่อไปแล้ว`, go: 'a.payments', cta: 'ดูสลิป' });
     if (r && r.status === 'PAID') t.push({ icon: 'users-round', tag: 'จับคู่ PT', title: `${patientName(s)} · ${district(s) || 'ยังไม่ระบุเขต'}`, sub: `${r.preferredPt ? `ผู้รับบริการขอ ${ptName(s, r.preferredPt)} · ` : ''}ระบบหา PT ที่ตรงเขตไม่ได้ ต้องเลือกเอง`, go: 'a.match', cta: 'เลือก PT' });
@@ -160,7 +161,7 @@
   }
 
   /* ---------- Shared admin layout ---------- */
-  const NAV = [['a.queue', 'inbox', 'งานรอจัดการ'], ['a.clinical', 'clipboard-plus', 'ตรวจทางคลินิก'], ['a.license', 'badge-check', 'ตรวจใบประกอบ'], ['a.payments', 'wallet', 'การเงิน'], ['a.match', 'users-round', 'จับคู่ PT'], ['a.appts', 'calendar-days', 'นัดหมาย'], ['a.pts', 'stethoscope', 'ทีม PT'], ['a.patients', 'heart-handshake', 'คนไข้'], ['a.reviews', 'star', 'รีวิว'], ['a.suspicion', 'shield-alert', 'เฝ้าระวัง']];
+  const NAV = [['a.dash', 'layout-dashboard', 'Dashboard'], ['a.queue', 'inbox', 'งานรอจัดการ'], ['a.clinical', 'clipboard-plus', 'ตรวจทางคลินิก'], ['a.license', 'badge-check', 'ตรวจใบประกอบ'], ['a.caps', 'list-checks', 'ความสามารถ PT'], ['a.payments', 'wallet', 'การเงิน'], ['a.match', 'users-round', 'จับคู่ PT'], ['a.appts', 'calendar-days', 'นัดหมาย'], ['a.pts', 'stethoscope', 'ทีม PT'], ['a.patients', 'heart-handshake', 'คนไข้'], ['a.reviews', 'star', 'รีวิว'], ['a.suspicion', 'shield-alert', 'เฝ้าระวัง']];
   function counts(s) {
     const t = tasks(s), c = { 'a.queue': t.length };
     t.forEach(x => { c[x.go] = (c[x.go] || 0) + 1; });
@@ -170,12 +171,13 @@
   /* Main comes first in the DOM so the rehearsal pulses the task button, not the sidebar item; CSS puts the sidebar on the left (or on top at 390px). */
   function shell(s, active, head, body) {
     const c = counts(s);
-    const nav = NAV.map(([id, ic, label]) => `<button data-go="${id}" class="${id === active ? 'on' : ''}" ${id === active ? 'aria-current="page"' : ''}>${I(ic)}${label}${c[id] ? `<span class="n">${c[id]}</span>` : ''}</button>`).join('');
+    const nav = NAV.map(([id, ic, label]) => `<button data-go="${id}" class="${id === active ? 'on' : ''}" ${id === active ? 'aria-current="page"' : ''}>${I(ic)}${label}${SC.isNewScreen && SC.isNewScreen(id) ? '<span class="nw">ใหม่</span>' : ''}${c[id] ? `<span class="n">${c[id]}</span>` : ''}</button>`).join('');
     return `<div class="scr aa"><div class="adm">
       <main class="adm-main"><header class="adm-head"><div class="grow">${head.kick ? `<div class="kick">${esc(head.kick)}</div>` : ''}<h1>${esc(head.title)}</h1>${head.sub ? `<p class="aa-sub">${esc(head.sub)}</p>` : ''}</div>${head.right || ''}</header>${body}</main>
       <nav class="adm-side" aria-label="เมนูแอดมิน"><div class="brand"><img src="a/synaclair-icon.svg" alt="">SynaClair</div>${nav}</nav>
     </div></div>`;
   }
+  SC.adminShell = shell;
   const taskRow = (x, hot) => `<div class="aa-task ${hot ? 'hot' : ''}"><span class="tile ${hot ? 'gold' : ''}">${I(x.icon)}</span><div class="grow">${x.tag ? `<span class="pill ${hot ? 'wait' : 'gray'}">${esc(x.tag)}</span>` : ''}<div class="t">${esc(x.title)}</div><div class="s">${esc(x.sub)}</div></div><button class="btn ${hot ? '' : 'ghost'}" data-go="${x.go}">${esc(x.cta)}${I('chevron-right')}</button></div>`;
 
   /* ================= a.queue ================= */
@@ -220,18 +222,20 @@
       ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง · อนุมัติเคสไม่เท่ากับอนุมัติ PT</span>
         <div class="field"><span>พิจารณาในบัญชี</span><div class="chips">${REVIEW_ACCOUNTS.map(x => `<button class="chip ${p.capBy === x.id ? 'on' : ''}" data-pick="pt.capBy" data-value="${x.id}">${esc(x.name)} · ${esc(x.role)}</button>`).join('')}</div></div>
         <label class="field"><span>เหตุผล</span><textarea class="in" style="min-height:64px" maxlength="200" data-bind="pt.capReason" placeholder="เช่น คุยกับ PT แล้ว เคยดูแลเคสแบบนี้">${esc(p.capReason || '')}</textarea></label>
+        <label class="field"><span>หลักฐานอ้างอิง (ถ้ามี)</span><input class="in" maxlength="120" data-bind="pt.capEvidence" value="${esc(p.capEvidence || '')}" placeholder="เช่น ประสบการณ์หรือใบอบรมที่ดู"></label>
         ${spec.map(id => { const x = dec[id], st = x ? x.status : ''; return `<div class="aa-capd" data-cap="${id}"><div class="grow"><b>${esc(SC.CLIN.label(id))}</b><small>PT ตอบ: ${esc(CAP_WORD[caps[id]] || '—')}${x && x.by ? ` · ${esc((leadOf(x.by) || {}).name || x.by)} · ${esc(x.at || '')}${x.reason ? ` · ${esc(x.reason)}` : ''}` : ''}</small></div><span class="pill ${st === 'APPROVED' ? '' : st === 'REJECTED' ? 'warn' : 'wait'}">${st === 'APPROVED' ? 'อนุมัติแล้ว' : st === 'REJECTED' ? 'ไม่อนุมัติ' : 'รอพิจารณา'}</span><div class="row"><button class="btn sm" data-act="capDecide" data-id="${id}" data-d="APPROVED">อนุมัติ</button><button class="btn sm ghost" data-act="capDecide" data-id="${id}" data-d="REJECTED">ไม่อนุมัติ</button></div></div>`; }).join('')}
         ${(p.capLog || []).length ? `<details class="small"><summary>ประวัติการเปลี่ยน ${p.capLog.length} รายการ</summary>${p.capLog.slice().reverse().map(l => `<p style="margin:4px 0">${esc(l.at)} · ${esc(l.id)} · ${l.kind === 'decide' ? `${esc((leadOf(l.by) || {}).name || l.by)}: ${esc(l.to)} · ${esc(l.reason || '')}` : `PT แก้คำตอบ ${esc(CAP_WORD[l.from] || '—')} → ${esc(CAP_WORD[l.to] || '—')}${l.note ? ` · ${esc(l.note)}` : ''}`}</p>`).join('')}</details>` : ''}` : ''}
       <p class="small" style="margin:0">${I('lock')} ดูดเสมหะ (Suction) ยังไม่เปิดให้ PT แจ้งรับ ต้องตรวจขอบเขตวิชาชีพไทยก่อน</p></div>`;
   }
   /* พี่ปาล์ม's P0 fix (5 Nov): what the PT says (pt.caps) and what a reviewer decides (pt.capDecisions) are separate. Only capDecide can approve. */
+  SC.capsCard = s => capsCard(s);
   SC.action('capDecide', (s, ctx) => {
     const p = s.pt, lead = leadOf(p.capBy), id = ctx.data.id, why = (p.capReason || '').trim();
     if (!lead) { ctx.toast('บัญชีนี้ไม่มีสิทธิ์พิจารณาความสามารถ PT'); return; }
     if (SC.CLIN.restricted.includes(id)) { ctx.toast('งานนี้ล็อกอยู่ อนุมัติจากหน้านี้ไม่ได้'); return; }
     if (!why) { ctx.toast('ใส่เหตุผลก่อน'); return; }
-    const at = capNow(); (p.capDecisions = p.capDecisions || {})[id] = { status: ctx.data.d, by: lead.id, at, reason: why };
-    (p.capLog = p.capLog || []).push({ kind: 'decide', id, to: ctx.data.d, by: lead.id, at, reason: why }); p.capReason = '';
+    const at = capNow(), version = ((p.capDecisions || {})[id] || {}).version + 1 || 1, evidence = (p.capEvidence || '').trim(); (p.capDecisions = p.capDecisions || {})[id] = { ptId: 'me', task: id, declared: (p.caps || {})[id] || '', status: ctx.data.d, by: lead.id, at, reason: why, evidence, version };
+    (p.capLog = p.capLog || []).push({ kind: 'decide', id, to: ctx.data.d, by: lead.id, at, reason: why, evidence, version }); p.capReason = ''; p.capEvidence = '';
     ctx.toast(ctx.data.d === 'APPROVED' ? 'บันทึกผลอนุมัติแล้ว' : 'บันทึกว่าไม่อนุมัติแล้ว');
   });
   SC.screen('a.license', {
@@ -382,6 +386,7 @@
      Real build: slip-reading service (bank slip verify API / QR payload) + the same candidate rules as a.match. */
   const ODD = 'ยอดในสลิป ฿1,500 ไม่ตรงกับยอดที่ต้องชำระ ฿1,599';
   SC.autoPay = (s, line) => {
+    if (s.request && s.request.status === 'ASSESS_HOLD') return;
     const r = s.request; if (!r) return;
     const odd = r.slip === 'odd';
     r.check = odd ? { ok: false, reasons: [ODD], state: 'open' } : { ok: true, reasons: [], state: 'auto' };
@@ -416,6 +421,8 @@
     logReview(r, lead, 'APPROVED');
     if (r.offerId) SC.bumpOffer(r);
     const scope = SC.clinScope(s), said = `ทีมคลินิกตรวจแล้ว · อนุมัติเฉพาะ: ${scope.allow.join(' · ')}${scope.not.length ? ` · ไม่รวม: ${scope.not.join(' · ')}` : ''}`;
+    /* D6 (CEO, 5 Nov): assessment only means no automatic payment or offer. No price, refund or cancel is decided here; the team follows up. */
+    if (!r.scopeHold && r.status !== 'BOOKED' && scope.assessOnly && SC.RULES.assessHold !== false) { r.status = 'ASSESS_HOLD'; r.offerTo = []; if (line) line('patient', { key: 'clinOk', text: `${said} · ยังไม่เปิดชำระเงิน ทีมจะติดต่อกลับเรื่องขั้นตอนถัดไป` }); return; }
     if (r.scopeHold) { r.scopeHold = false; if (line) { line('patient', { key: 'clinOk', text: `${said} · นัดเดิมยังอยู่ ไม่มีค่าใช้จ่ายเพิ่ม` }); line('pt', { key: 'teamReply', text: `ทีมคลินิกตรวจเคส ${r.ref} แล้ว · ทำได้เฉพาะ: ${scope.allow.join(' · ')}${scope.limits ? ` · ข้อจำกัด: ${scope.limits}` : ''}` }); } return; }
     if (r.paid) { r.status = 'PAID'; if (line) { line('patient', { key: 'clinOk', text: `${said} · ชำระแล้ว ไม่ต้องชำระซ้ำ ทีมกำลังหานักกายภาพ` }); offerIfFits(s, line); } return; }
     r.status = 'PAYMENT_PENDING';
@@ -475,6 +482,7 @@
     else if (!s.pt.agreement) { ok = false; reason = 'ยังไม่ยอมรับข้อตกลงการรับงาน'; }
     else if (!s.pt.schedule || !s.pt.schedule.sent) { ok = false; reason = 'ยังไม่ส่งตาราง · ร่างตารางยังใช้จับคู่ไม่ได้'; }
     else if (r.review && !r.review.cleared) { ok = false; reason = 'เคสนี้รอทีมคลินิกตรวจ'; }
+    else if (r.status === 'ASSESS_HOLD') { ok = false; reason = 'อนุมัติเฉพาะการประเมิน · พักการจับคู่อัตโนมัติ ทีมประสานเอง'; }
     else if (allow.some(id => SC.CLIN.restricted.includes(id))) { ok = false; reason = 'มีงานดูดเสมหะ · ไม่จับคู่อัตโนมัติ ทีมคลินิกประสานเอง'; }
     else if (cannot.length) { ok = false; reason = `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; }
     else if (st === 'PAUSED') { ok = false; reason = 'พักรับงานใหม่ชั่วคราว · รอทีมทบทวน'; }
@@ -493,7 +501,7 @@
     render(s) {
       const r = s.request, a = A(s);
       const head = { kick: r && r.auto ? 'ระบบจับคู่ให้อัตโนมัติ' : 'เลือก PT ด้วยตนเอง', title: 'จับคู่ PT', sub: 'แสดงเฉพาะเขตและเวลาที่ผู้รับบริการสะดวก ไม่มีที่อยู่เต็มในหน้านี้' };
-      if (!r || ['CLINICAL_REVIEW', 'REVIEW_DECLINED', 'PAYMENT_PENDING', 'SLIP_SENT'].includes(r.status)) {
+      if (!r || ['CLINICAL_REVIEW', 'REVIEW_DECLINED', 'ASSESS_HOLD', 'PAYMENT_PENDING', 'SLIP_SENT'].includes(r.status)) {
         const cta = r && r.status === 'SLIP_SENT' ? '<button class="btn" data-go="a.payments">ไปตรวจสลิป</button>' : '';
         return shell(s, 'a.match', head, `<div class="card flat">${ui.empty('users-round', 'ยังไม่มีคำขอที่รอจับคู่', r ? `คำขอ ${r.ref} ${'รอผู้รับบริการชำระเงินก่อน'} ระบบจับคู่ให้ทันทีที่ได้สลิป` : 'เมื่อผู้รับบริการประเมินอาการและชำระ Clair Match แล้ว คำขอจะขึ้นที่นี่', cta)}</div>`);
       }

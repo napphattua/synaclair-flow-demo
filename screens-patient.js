@@ -1236,11 +1236,11 @@
     render(s) {
       if (!s.request) return `<div class="scr pp">${ui.bar('ผลประเมินเบื้องต้น')}<div class="body">${ui.empty('clipboard-check', 'ยังไม่มีผลประเมิน', 'ตอบคำถามสั้น ๆ ไม่ถึง 3 นาที แล้วจะเห็นผลที่นี่', '<button class="btn auto" data-go="p.intake">ประเมินอาการ</button>')}</div></div>`;
       const r = profileOf(s), chosen = s.request.preferredPt && ptName(s, s.request.preferredPt), pending = s.request.status === 'PAYMENT_PENDING';
-      const rv = s.request.review, scopeHold = !!s.request.scopeHold, hold = s.request.status === 'CLINICAL_REVIEW' || (scopeHold && !(rv && rv.declined)), declined = s.request.status === 'REVIEW_DECLINED' || !!(scopeHold && rv && rv.declined), quiet = hold || declined, paid = !!s.request.paid;
+      const rv = s.request.review, scopeHold = !!s.request.scopeHold, hold = s.request.status === 'CLINICAL_REVIEW' || (scopeHold && !(rv && rv.declined)), declined = s.request.status === 'REVIEW_DECLINED' || !!(scopeHold && rv && rv.declined), assessHold = s.request.status === 'ASSESS_HOLD', quiet = hold || declined || assessHold, paid = !!s.request.paid;
       return `<div class="scr pp glow">
         ${ui.bar('ผลประเมินเบื้องต้น')}
         <div class="body enter">
-          ${hold ? `<div class="note" role="status"><b class="h3">${I('stethoscope')} ทีมคลินิกขอดูข้อมูลก่อน</b><p style="margin:4px 0 0">มีบางข้อที่ทีมขอดูให้แน่ใจว่าปลอดภัย ทีมจะแจ้งใน LINE ภายในวันนี้</p></div>` : ''}
+          ${assessHold ? `<div class="note" role="status"><b class="h3">${I('stethoscope')} ทีมอนุมัติเฉพาะการประเมิน</b><p style="margin:4px 0 0">ยังไม่เปิดชำระเงินในระบบ ทีมจะติดต่อกลับเรื่องขั้นตอนถัดไป</p></div>${scopeCard(s)}` : ''}${hold ? `<div class="note" role="status"><b class="h3">${I('stethoscope')} ทีมคลินิกขอดูข้อมูลก่อน</b><p style="margin:4px 0 0">มีบางข้อที่ทีมขอดูให้แน่ใจว่าปลอดภัย ทีมจะแจ้งใน LINE ภายในวันนี้</p></div>` : ''}
           ${quiet ? `<div class="card"><b class="sec-h">${I('list-checks')}สิ่งที่ต้องทำตอนนี้</b><ul class="pp-ul">${[declined ? 'รอทีมโทรหาคุณ' : 'รอทีมคลินิกแจ้งผลใน LINE', paid ? 'ยอดชำระเดิมยังอยู่ ไม่ต้องชำระซ้ำ' : 'ยังไม่ต้องชำระเงิน', scopeHold ? 'นัดเดิมยังอยู่ แต่พักกิจกรรมที่เกี่ยวข้องจนกว่าทีมจะแจ้ง' : '', 'ถ้ามีอาการฉุกเฉิน โทร 1669 ทันที'].filter(Boolean).map(t => `<li>${I('check')}${t}</li>`).join('')}</ul></div>` : ''}
           ${declined ? `<div class="note warn" role="status"><b class="h3">ทีมขอโทรคุยก่อนนะคะ</b><p style="margin:4px 0 0">${esc(rv && rv.note || 'ทีมคลินิกอยากคุยรายละเอียดเพิ่ม เพื่อหาทางดูแลที่ปลอดภัยที่สุด')}</p></div>` : ''}
           ${quiet ? '' : `${scopeCard(s)}<div class="stack center" style="justify-items:center">
@@ -1274,7 +1274,8 @@
     render(s) {
       const r = s.request;
       if (!r) return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('wallet', 'ยังไม่มีรายการที่ต้องชำระ', 'ประเมินอาการก่อน แล้วจะเห็นใบแจ้งชำระที่นี่', '<button class="btn auto" data-go="p.intake">ประเมินอาการ</button>')}</div></div>`;
-      if (r.paid && ['CLINICAL_REVIEW', 'REVIEW_DECLINED'].includes(r.status)) return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('circle-check', 'ชำระแล้ว ไม่ต้องชำระซ้ำ', 'ยอดเดิมยังอยู่ ทีมคลินิกกำลังดูข้อมูลใหม่ และจะแจ้งใน LINE', '<button class="btn auto" data-go="p.result">ดูสถานะ</button>')}</div></div>`;
+      if (r.paid && ['CLINICAL_REVIEW', 'REVIEW_DECLINED', 'ASSESS_HOLD'].includes(r.status)) return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('circle-check', 'ชำระแล้ว ไม่ต้องชำระซ้ำ', 'ยอดเดิมยังอยู่ ทีมคลินิกกำลังดูข้อมูลใหม่ และจะแจ้งใน LINE', '<button class="btn auto" data-go="p.result">ดูสถานะ</button>')}</div></div>`;
+      if (r.status === 'ASSESS_HOLD') return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('stethoscope', 'ยังไม่เปิดชำระเงิน', 'ทีมอนุมัติเฉพาะการประเมิน และจะติดต่อกลับเรื่องขั้นตอนถัดไป', '')}${scopeCard(s)}</div></div>`;
       if (['CLINICAL_REVIEW', 'REVIEW_DECLINED'].includes(r.status)) return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('stethoscope', 'ยังไม่ต้องชำระเงิน', 'ทีมคลินิกขอดูข้อมูลก่อน ถ้าดูแลที่บ้านได้ ทีมจะส่งลิงก์ชำระใน LINE', '<button class="btn auto" data-go="p.result">ดูผลประเมิน</button>')}</div></div>`;
       if (r.status !== 'PAYMENT_PENDING') return `<div class="scr pp">${ui.bar('ชำระเงิน')}<div class="body">${ui.empty('circle-check', 'ส่งสลิปแล้ว', 'ทีมกำลังดูแลขั้นต่อไป ดูความคืบหน้าได้เลย', '<button class="btn auto" data-go="p.paywait">ดูสถานะ</button>')}</div></div>`;
       const slip = r.slipDraft;
@@ -1325,7 +1326,7 @@
     render(s) {
       const r = s.request;
       if (!r) return `<div class="scr pp">${ui.bar('สถานะคำขอ')}<div class="body">${ui.empty('hourglass', 'ยังไม่มีคำขอ', 'ประเมินอาการก่อน แล้วติดตามสถานะได้ที่นี่', '<button class="btn auto" data-go="p.intake">ประเมินอาการ</button>')}</div></div>`;
-      if (['CLINICAL_REVIEW', 'REVIEW_DECLINED'].includes(r.status)) return `<div class="scr pp">${ui.bar('สถานะคำขอ')}<div class="body"><div class="card hero"><span class="small" style="color:#d6e8de">คำขอ ${esc(r.ref)}</span><b class="h2">${r.status === 'CLINICAL_REVIEW' ? 'ทีมคลินิกกำลังดูข้อมูล' : 'ทีมขอโทรคุยก่อน'}</b><p class="p">${r.paid ? 'ยอดชำระเดิมยังอยู่ ไม่ต้องชำระซ้ำ' : 'ยังไม่ต้องชำระเงิน'} ทีมจะแจ้งใน LINE</p></div></div><div class="foot"><button class="btn" data-go="p.chat">${I('message-circle')}คุยกับทีม</button></div></div>`;
+      if (['CLINICAL_REVIEW', 'REVIEW_DECLINED', 'ASSESS_HOLD'].includes(r.status)) return `<div class="scr pp">${ui.bar('สถานะคำขอ')}<div class="body"><div class="card hero"><span class="small" style="color:#d6e8de">คำขอ ${esc(r.ref)}</span><b class="h2">${r.status === 'CLINICAL_REVIEW' ? 'ทีมคลินิกกำลังดูข้อมูล' : 'ทีมขอโทรคุยก่อน'}</b><p class="p">${r.paid ? 'ยอดชำระเดิมยังอยู่ ไม่ต้องชำระซ้ำ' : 'ยังไม่ต้องชำระเงิน'} ทีมจะแจ้งใน LINE</p></div></div><div class="foot"><button class="btn" data-go="p.chat">${I('message-circle')}คุยกับทีม</button></div></div>`;
       const order = ['PAYMENT_PENDING', 'SLIP_SENT', 'PAID', 'OFFERED', 'BOOKED'], k = order.indexOf(r.status);
       const now = k <= 0 ? 0 : k === 1 ? 1 : k <= 3 ? 2 : 4;
       const chosen = r.preferredPt && ptName(s, r.preferredPt), m = SC.me();

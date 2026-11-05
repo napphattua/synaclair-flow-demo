@@ -8,6 +8,7 @@
     { lane: 'T', n: 2, label: 'ใส่รูป', screen: 't.photo' },
     { lane: 'T', n: 2, label: 'ลงเวลาว่าง', screen: 't.schedule' },
     { lane: 'X', n: 3, label: 'ตรวจใบประกอบ', screen: 'a.license' },
+    { lane: 'X', n: 3, label: 'ความสามารถ PT', screen: 'a.caps' },
     { lane: 'P', n: 4, label: 'เปิดแอป', screen: 'p.loading' },
     { lane: 'P', n: 4, label: 'ฟีดนักกายภาพ', screen: 'p.feed' },
     { lane: 'P', n: 4, label: 'ขอคนนี้', screen: 'p.pt' },
@@ -24,6 +25,7 @@
     { lane: 'P', n: 12, label: 'รีวิว', screen: 'p.review' },
     { lane: 'X', n: 13, label: 'ตรวจเงินคอร์ส', screen: 'a.payments' },
     { lane: 'X', n: 13, label: 'อนุมัติรีวิว', screen: 'a.reviews' },
+    { lane: 'X', n: 13, label: 'Dashboard', screen: 'a.dash' },
     { lane: 'T', n: 14, label: 'ครั้งที่ 2', screen: 't.visit' },
     { lane: 'T', n: 14, label: 'ทำใบรับรอง', screen: 't.cert' },
     { lane: 'P', n: 14, label: 'ได้ใบรับรอง', screen: 'p.cert' },
@@ -70,6 +72,7 @@
       el('rect', { class: 'body', width: W, height: H, rx: 7 }, g);
       const t1 = el('text', { class: 'n', x: 9, y: 13 }, g); t1.textContent = String(i + 1).padStart(2, '0');
       const t2 = el('text', { class: 'l', x: 9, y: 28 }, g); t2.textContent = n.label;
+      const rv = el('g', { 'data-rv-screen': n.screen, style: 'display:none', transform: `translate(${W - 50} -13)` }, g); el('rect', { width: 56, height: 20, rx: 10 }, rv); el('text', { x: 28, y: 14, 'text-anchor': 'middle' }, rv);
       return g;
     });
     comet = el('path', { class: 'comet', d: '', opacity: 0 }, svg);
