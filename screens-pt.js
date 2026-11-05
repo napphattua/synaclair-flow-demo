@@ -1076,6 +1076,7 @@
           ${at('bio')}
           ${cvBlock(p)}
           <p class="small row" style="color:var(--em)">${I('map-pin')}<span>${esc(p.zones.join(' · '))}</span></p>
+          ${SC.ptBoard(s)}
           <div class="grid2"><button class="btn sm ghost" style="width:100%" data-act="editBio">${I('pencil')}แก้แนะนำตัว</button><button class="btn sm ghost" style="width:100%" data-act="previewMe">${I('eye')}ดูหน้าที่คนไข้เห็น</button></div>
         </div>
         <section class="pd">
@@ -1227,6 +1228,7 @@
         <div class="tt-pvhead">${avStack(p, 84, { mainShown: p.photoApproved || !ok })}<div class="grow"><b class="h3">${esc(p.displayName)}</b><div class="small">นักกายภาพบำบัด · ${esc(p.zones.slice(0, 3).join(' · '))}</div></div></div>
         ${ok ? `<span class="ver">${I('badge-check')}ตรวจสอบโดย SynaClair</span><span class="small" style="display:block">ใบอนุญาต ก. ${esc(p.license)}</span>` : ''}
         ${p.bio ? `<p class="p">${esc(p.bio)}</p>` : '<p class="small">ยังไม่มีแนะนำตัว</p>'}
+        ${SC.ptBoard(st)}
         ${rv ? `<div class="bubble">${ui.stars(rv.stars)} “${esc(rv.text)}”</div>${ui.rateTags(rv.liked)}` : ''}
         ${p.posts.length ? `<div class="tt-thumbs">${p.posts.slice(0, 3).map(x => x.image ? `<span style="width:64px;height:64px;border-radius:12px;overflow:hidden;display:block"><img src="${esc(x.image)}" alt="" style="width:100%;height:100%;object-fit:cover"></span>` : '').join('')}</div>` : ''}
         <span class="btn" style="pointer-events:none">ขอคนนี้</span>

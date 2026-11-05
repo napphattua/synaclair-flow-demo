@@ -407,27 +407,40 @@
   .pl-bdg.rec { background: linear-gradient(135deg, #f6e7cc, #E9CDA1); color: #6b4a1c; } .pl-bdg.near { background: var(--mint); color: var(--em); }
   .pl-fopen { width: 100%; padding: 0; border: 0; background: none; text-align: left; align-items: flex-start; } .pl-fn { font: 600 17px/1.3 var(--display); color: var(--forest); }
   .pl-fopen .pl-chev { align-self: center; width: 20px; height: 20px; color: var(--mute); flex: none; }
-  .pl-idfol { margin-top: 8px; justify-self: start; min-height: 42px; padding: 0 18px; }
   @media (prefers-reduced-motion: reduce) { html:not(.motion-on) .pl-post { animation: none; } }
   /* ---------- Palm's board: Level 1 detail + Level 2 profile ---------- */
-  .pl-hero { position: relative; height: 230px; flex: none; overflow: hidden; background: linear-gradient(150deg, hsl(var(--h) 40% 90%), hsl(var(--h) 35% 78%)); }
-  .pl-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
-  .pl-hero .ini { display: grid; place-items: center; height: 100%; font: 600 96px var(--display); color: hsl(var(--h) 45% 30%); opacity: .55; }
-  .pl-hero::after { content: ''; position: absolute; inset: auto 0 0; height: 70px; background: linear-gradient(#fff0, #fff); }
-  .pl-hero .ib { position: absolute; top: 12px; left: 12px; background: #ffffffe6; box-shadow: 0 4px 12px #04392820; z-index: 1; }
-  .pl-hero .smp { position: absolute; top: 20px; right: 16px; z-index: 1; }
-  .pl-body { margin-top: -46px; position: relative; z-index: 1; }
-  .pl-id { display: grid; gap: 5px; padding: 16px; border-radius: 22px; background: #fff; box-shadow: 0 0 0 1px var(--line), 0 14px 30px #04392814; }
-  .pl-id h1 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 23px; line-height: 1.25; color: var(--forest); }
-  .pl-id h1 i { width: 24px; height: 24px; border-radius: 50%; background: var(--em); color: #fff; display: grid; place-items: center; flex: none; } .pl-id h1 i svg { width: 14px; height: 14px; stroke-width: 3; }
-  .pl-id .pl-tags { margin-top: 6px; }
+  .pf-cover { position: relative; height: 148px; flex: none; background: linear-gradient(120deg, #00583e, #4f9a7a 55%, #f2e3c6) center / cover; }
+  .pf-cover .ib { position: absolute; top: 12px; left: 12px; background: #ffffffe6; box-shadow: 0 4px 12px #04392820; }
+  .pf-cover .smp { position: absolute; top: 20px; right: 16px; }
+  .scr .body.pf-body { padding-top: 0; }
+  .pf-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: -48px; position: relative; }
+  .pf-top .pl-av, .pf-top .pl-av img, .pf-top .pl-av .ini { border-radius: 50%; }
+  .pf-top .pl-av img, .pf-top .pl-av .ini { box-shadow: 0 0 0 4px #fff, 0 8px 18px #07302322; }
+  .pf-top .pl-av i { right: 2px; bottom: 2px; }
+  .pf-top .pl-fol { min-height: 42px; padding: 0 18px; }
+  .pf-id { display: grid; gap: 6px; min-width: 0; }
+  .pf-id h1 { margin: 6px 0 0; font-size: 24px; line-height: 1.25; color: var(--forest); }
+  .pf-sub { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
+  .pf-loc { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: 14.5px; color: var(--sub); } .pf-loc svg { width: 16px; height: 16px; flex: none; margin-top: 3px; color: var(--em); }
+  .pf-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 8px 0 0; padding: 12px 2px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1px var(--line); }
+  .pf-board div { display: grid; gap: 1px; justify-items: center; align-content: start; min-width: 0; padding: 0 2px; text-align: center; }
+  .pf-board dd { margin: 0; order: -1; font: 600 20px/1.3 var(--display); color: var(--forest); }
+  .pf-board dt { font-size: 13px; line-height: 1.3; color: var(--sub); }
+  .pf-tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: 20px; overflow-x: auto; background: #fff; box-shadow: inset 0 -1px 0 var(--line); }
+  .pf-tabs button { flex: none; min-height: 46px; padding: 0 2px; border: 0; background: none; font: 500 16px var(--text); color: var(--mute); white-space: nowrap; }
+  .pf-tabs button.on { font-weight: 600; color: var(--forest); box-shadow: inset 0 -2.5px 0 var(--forest); }
+  .pf-grid { columns: 2; column-gap: 8px; }
+  .pf-work { position: relative; display: block; width: 100%; margin: 0 0 8px; padding: 0; border: 0; border-radius: 16px; overflow: hidden; break-inside: avoid; background: var(--cream); text-align: left; }
+  .pf-work img { display: block; width: 100%; height: auto; }
+  .pf-work.tall img { aspect-ratio: 3 / 4; object-fit: cover; }
+  .pf-work .t { display: block; padding: 8px 10px 10px; font: 500 13.5px/1.45 var(--text); color: var(--forest); }
+  .pf-work .pl { position: absolute; right: 8px; top: 8px; width: 30px; height: 30px; border-radius: 50%; background: #000000a6; color: #fff; display: grid; place-items: center; } .pf-work .pl svg { width: 15px; height: 15px; }
+  .pf-praise { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .pf-praise li { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--ink); } .pf-praise img { width: 30px; height: 30px; flex: none; object-fit: contain; } .pf-praise b { margin-left: auto; flex: none; font: 600 15px var(--display); color: var(--forest); }
   .pl-why { padding: 14px 16px; border-radius: 20px; background: var(--g-goldglow), linear-gradient(150deg, #f3f8f5, #fbf6ec); box-shadow: 0 0 0 1px #e8dcc4; }
   .pl-why h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 16.5px; color: var(--forest); } .pl-why h2 svg { color: var(--gold); }
   .pl-why ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .pl-why li { display: flex; gap: 8px; align-items: flex-start; font-size: 15px; color: var(--ink); } .pl-why li svg { color: var(--em); margin-top: 3px; }
-  .pl-tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: 4px; padding: 4px; border-radius: 99px; background: var(--mint); overflow-x: auto; }
-  .pl-tabs button { flex: 1 0 auto; min-height: 40px; padding: 0 12px; border: 0; border-radius: 99px; background: none; font: 600 14.5px var(--text); color: var(--sub); white-space: nowrap; }
-  .pl-tabs button.on { background: #fff; color: var(--forest); box-shadow: 0 4px 12px #04392818; }
   .pl-tab { display: grid; gap: 12px; }
   .pl-sec { padding: 14px 16px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1px var(--line), 0 8px 20px #0439280c; display: grid; gap: 10px; min-width: 0; }
   .pl-sec > h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16.5px; color: var(--forest); }
@@ -563,15 +576,27 @@
     const m = SC.me();
     const r = s.review;
     return { id: 'me', name: m.name, tags: meTags(s.pt.cv), zones: s.pt.zones || [], bio: s.pt.bio, photo: s.pt.photo, hue: ptHue, license: s.pt.license, cv: s.pt.cv,
-      rating: r ? { average: r.stars, count: 1 } : null,
-      cases: s.visits.some(v => v.published) ? 1 : 0,
+      rating: r ? { average: r.stars, count: 1 } : null, cover: s.pt.cover || '', followers: 0, liked: Object.fromEntries(((r && r.liked) || []).map(k => [k, 1])),
+      cases: s.visits.some(v => v.published) ? 1 : 0, treatments: s.visits.filter(v => v.published).length,
       posts: (s.pt.posts || []).map(p => ({ text: p.text, image: p.image ? img(p.image) : '', video: p.video || '' })),
       quotes: r && r.approved && r.consent && !r.hidden && r.text ? [{ text: r.text, area: s.patient.address.district || s.patient.district || 'กรุงเทพฯ', stars: r.stars }] : [] };
   }
   // Specialty chips in Palm's cards: the PT's own patient groups, said the short way patients search for them.
   const meTags = cv => ((cv && cv.groups) || []).map(g => /stroke|ประสาท/i.test(g) ? 'สโตรก' : /กระดูก/.test(g) ? 'กระดูกและข้อ' : g);
+  // Sample numbers for Boss's profile board (5 Nov). Labelled ตัวอย่าง on screen, never real data.
+  const SAMPLE_FOLLOWERS = { s1: 342, s2: 86, s3: 512, s4: 198, s5: 127, s6: 64, s7: 233, s8: 151 };
+  const SAMPLE_WORKS = [
+    { text: 'ท่าลุกจากเตียงให้ปลอดภัย ทำตามได้ที่บ้าน', image: 'a/close-care.jpg', video: 'https://youtu.be/example' },
+    { text: 'จัดบ้านอย่างไรให้เดินสะดวกขึ้น' },
+    { text: 'ฟื้นฟูหลังผ่าตัด สัปดาห์แรกควรทำอะไร', image: 'a/post-surgery.jpg' },
+    { text: 'ญาติช่วยพยุงอย่างไรไม่ให้เจ็บหลัง', image: 'a/companion.jpg' },
+    { text: 'ปวดคอจากการนั่งนาน ลองยืดแบบนี้', image: 'a/neck.jpg', video: 'https://youtu.be/example' }
+  ];
   function sampleItem(p) {
+    const own = p.post ? [{ text: p.post.text, image: p.post.image ? img(p.post.image) : '', video: p.post.video || '' }] : [], n = +p.id.slice(1);
     return { id: p.id, name: p.name, license: p.license, tags: p.tags || [], zones: p.zones, bio: p.bio, photo: null, hue: p.hue, sample: true, rating: p.rating, cases: p.cases,
+      followers: SAMPLE_FOLLOWERS[p.id] || 0, treatments: (p.cases || 0) * (3 + n % 3), gallery: [...own, ...SAMPLE_WORKS.slice(0, 2 + (n % 4))],
+      liked: Object.fromEntries(SC.RATE.slice(0, 5).map(([k], i) => [k, Math.round(((p.rating && p.rating.count) || 0) * (.9 - i * .15))])),
       posts: p.post ? [{ text: p.post.text, image: p.post.image ? img(p.post.image) : '', video: p.post.video || '' }] : [], quotes: p.quote ? [p.quote] : [] };
   }
   const meVisible = s => s.pt.status === 'VERIFIED' && s.pt.photoApproved;
@@ -896,7 +921,7 @@
   SC.action('openDistrict', (s, c) => { ppSheet(c, districtSheet(s)); });
   SC.action('districtChosen', (s, c) => { s.patient.geo = false; c.close(); c.toast(`เรียงนักกายภาพใกล้ ${s.patient.district} ขึ้นก่อนแล้ว`); });
   SC.action('clearDistrict', (s, c) => { s.patient.district = null; s.patient.geo = false; s.patient.geoOff = true; c.close(); c.toast('ไม่ระบุย่าน: เรียงตามรีวิว'); });
-  const openPt = (s, c) => { s.patient.viewPt = c.data.id; s.patient.ptTab = 'about'; return 'p.pt'; };
+  const openPt = (s, c) => { s.patient.viewPt = c.data.id; s.patient.ptTab = 'work'; return 'p.pt'; };
   SC.action('openPt', openPt);
   SC.action('openPtCover', openPt);
   SC.action('choosePt', (s, c) => {
@@ -954,7 +979,11 @@
   /* ================================================================ p.pt */
   /* Palm's Level 1 detail + Level 2 "Personal Professional Profile" (board 23 Oct): photo header, identity card with licence check and
      rating, "why this PT fits you", then tabs for about / specialties / history / reviews. Booking still goes through the team. */
-  const PT_TABS = [['about', 'เกี่ยวกับ'], ['skill', 'ความเชี่ยวชาญ'], ['cv', 'ประวัติ'], ['review', 'รีวิว']];
+  const PT_TABS = [['work', 'คอนเทนต์'], ['review', 'รีวิว'], ['skill', 'ความเชี่ยวชาญ'], ['about', 'เกี่ยวกับ']];
+  const worksOf = p => p.gallery || p.posts;
+  /* Boss (5 Nov, second list): stats the app collects as the PT works: score, patients, treatments, followers. No income on this board. */
+  const ptBoard = (s, p) => `<dl class="pf-board" aria-label="ตัวเลขของ ${esc(p.name)}">${[['คะแนน', p.rating ? `★${p.rating.average.toFixed(1)}` : '–'], ['คนไข้', (p.cases || 0).toLocaleString('en-US')], ['ครั้งที่รักษา', (p.treatments || 0).toLocaleString('en-US')], ['ผู้ติดตาม', ((p.followers || 0) + (isFol(s, p.id) ? 1 : 0)).toLocaleString('en-US')]].map(([t, n]) => `<div><dt>${t}</dt><dd>${n}</dd></div>`).join('')}</dl>`;
+  SC.ptBoard = s => ptBoard(s, meItem(s));
   const plSec = (ic, t, body) => `<section class="pl-sec"><h2>${I(ic)}${t}</h2>${body}</section>`;
   const plLine = items => `<ol class="pl-line">${items.map(([a, b, c]) => `<li><b>${esc(a)}</b>${b ? `<span>${esc(b)}</span>` : ''}${c ? `<small>${esc(c)}</small>` : ''}</li>`).join('')}</ol>`;
   function whyFits(s, p) {
@@ -969,25 +998,28 @@
   }
   function ptTab(s, p, tab) {
     const c = p.cv || {};
+    if (tab === 'work') return worksOf(p).length
+      ? `<div class="pf-grid">${worksOf(p).map((w, i) => `<button class="pf-work ${i % 3 === 0 ? 'tall' : ''}" data-act="openWork" data-id="${p.id}" data-i="${i}" aria-label="${w.video ? 'ดูคลิป' : 'ดูคอนเทนต์'}: ${esc(w.text)}">${w.image ? `<img src="${esc(w.image)}" alt="">` : ''}${w.video ? `<span class="pl">${I('play')}</span>` : ''}<span class="t">${esc(w.text)}</span></button>`).join('')}</div>`
+      : `<p class="pl-empty">${I('images')}ยังไม่มีคอนเทนต์ · โพสต์แรกจะขึ้นตรงนี้</p>`;
     if (tab === 'skill') return `${c.primary || (c.more || []).length ? plSec('target', 'ความเชี่ยวชาญ', `<ul class="pl-ul">${c.primary ? `<li class="main">${I('star')}<span><b>${esc(c.primary)}</b><small>ความเชี่ยวชาญหลัก</small></span></li>` : ''}${(c.more || []).map(m => `<li>${I('plus')}<span><b>${esc(m)}</b><small>ความเชี่ยวชาญเพิ่มเติม</small></span></li>`).join('')}</ul>`) : ''}
-      ${plSec('users', 'กลุ่มคนไข้ที่ดูแล', `<ul class="pl-ul">${((c.groups && c.groups.length) ? c.groups : p.tags).map(g => `<li>${I('user-round')}<span><b>${esc(g)}</b></span></li>`).join('')}</ul>`)}
-      ${p.tags.length ? plSec('sparkles', 'ทักษะเด่น', `<div class="pl-tags">${p.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>`) : ''}`;
-    if (tab === 'cv') {
-      const any = (c.edu || []).length || (c.train || []).length;
-      return `${plSec('badge-check', 'ใบอนุญาตประกอบวิชาชีพ', `<p class="pl-lic">${I('shield-check')}<span><b>${p.license ? 'ก. ' + esc(p.license) : 'ตรวจสอบแล้ว'}</b><small>ตรวจสอบโดย SynaClair</small></span></p>`)}
-        ${(c.edu || []).length ? plSec('graduation-cap', 'ประวัติการศึกษา', plLine(c.edu.map(([d, u, y]) => [d, u, y]))) : ''}
-        ${(c.train || []).length ? plSec('award', 'การอบรมและใบ certificate', `${plLine(c.train.map(([y, t, cert]) => [t, cert ? 'มีใบ certificate · ทีมตรวจแล้ว' : '', y]))}<div class="pl-certf" aria-hidden="true"><i>${I('award')}</i><b>Certificate of Attendance</b><small>${esc(c.train[0][1])}</small></div>`) : ''}
-        ${any ? '' : `<p class="pl-empty">${I('file-clock')}นักกายภาพยังไม่ได้เพิ่มประวัติการศึกษาและการอบรม</p>`}`;
-    }
-    if (tab === 'review') return p.quotes.length || p.rating
+      ${plSec('users', 'กลุ่มคนไข้ที่ดูแล', `<ul class="pl-ul">${((c.groups && c.groups.length) ? c.groups : p.tags).map(g => `<li>${I('user-round')}<span><b>${esc(g)}</b></span></li>`).join('')}</ul>`)}`;
+    if (tab === 'review') {
+      const praise = SC.RATE.map(([k, name, n]) => [name, n, (p.liked || {})[k] || 0]).filter(x => x[2] > 0).sort((a, b) => b[2] - a[2]);
+      return p.quotes.length || p.rating
       ? `${plSec('star', 'รีวิวจากผู้รับบริการ', `${p.rating ? `<p class="pl-score"><b>${p.rating.average.toFixed(1)}</b>${ui.stars(p.rating.average)}<span>${p.rating.count} รีวิว</span></p>` : ''}
+          ${praise.length ? `<ul class="pf-praise" aria-label="เรื่องที่ผู้รับบริการชม">${praise.map(([name, n, cnt]) => `<li><img src="a/rate-${n}.png" alt=""><span>${esc(name)}</span><b>${cnt} คน</b></li>`).join('')}</ul>` : ''}
           ${p.quotes.map(q => `<figure class="pl-rv"><span class="stars">${'★'.repeat(q.stars)}</span><blockquote>“${esc(q.text)}”</blockquote><figcaption>ผู้รับบริการ · ${esc(q.area)}</figcaption></figure>`).join('')}
           ${p.rating && p.rating.count > p.quotes.length ? `<p class="small">รีวิวที่ผู้รับบริการยินยอมให้แสดง ${p.quotes.length} จาก ${p.rating.count} รีวิว</p>` : ''}`)}`
       : `<p class="pl-empty">${I('message-square-dashed')}ยังไม่มีรีวิว · รีวิวจะขึ้นหลังผู้รับบริการให้คะแนนและยินยอมให้แสดง</p>`;
+    }
+    const any = (c.edu || []).length || (c.train || []).length;
     return `${p.bio ? plSec('user-round', 'เกี่ยวกับฉัน', `<blockquote class="pl-bio">${esc(p.bio)}</blockquote>`) : ''}
       ${plSec('map-pinned', 'ข้อมูลการให้บริการ', `<dl class="pl-kv"><dt>${I('map-pin')}พื้นที่ให้บริการ</dt><dd>${p.zones.length ? p.zones.map(esc).join(' · ') : 'ทีมแจ้งตอนจับคู่'}</dd>
         <dt>${I('clock-3')}เวลารับเคส</dt><dd>ตามเวลาว่างในตาราง ทีมนัดให้</dd><dt>${I('house')}รูปแบบ</dt><dd>ดูแลที่บ้าน</dd></dl>`)}
-      ${p.posts.length ? plSec('images', 'ผลงาน', `<div class="pp-grid">${p.posts.map((w, i) => `<button class="pp-tile" data-act="openWork" data-id="${p.id}" data-i="${i}" aria-label="${w.video ? 'ดูคลิป' : 'ดูผลงาน'}: ${esc(w.text)}">${w.image ? `<img src="${esc(w.image)}" alt="">` : `<span class="t">${esc(w.text)}</span>`}${w.video ? `<span class="pl">${I('play')}</span>` : ''}</button>`).join('')}</div>`) : ''}`;
+      ${plSec('badge-check', 'ใบอนุญาตประกอบวิชาชีพ', `<p class="pl-lic">${I('shield-check')}<span><b>${p.license ? 'ก. ' + esc(p.license) : 'ตรวจสอบแล้ว'}</b><small>ตรวจสอบโดย SynaClair</small></span></p>`)}
+      ${(c.edu || []).length ? plSec('graduation-cap', 'ประวัติการศึกษา', plLine(c.edu.map(([d, u, y]) => [d, u, y]))) : ''}
+      ${(c.train || []).length ? plSec('award', 'การอบรมและใบ certificate', `${plLine(c.train.map(([y, t, cert]) => [t, cert ? 'มีใบ certificate · ทีมตรวจแล้ว' : '', y]))}<div class="pl-certf" aria-hidden="true"><i>${I('award')}</i><b>Certificate of Attendance</b><small>${esc(c.train[0][1])}</small></div>`) : ''}
+      ${any ? '' : `<p class="pl-empty">${I('file-clock')}นักกายภาพยังไม่ได้เพิ่มประวัติการศึกษาและการอบรม</p>`}`;
   }
   SC.screen('p.pt', {
     role: 'patient',
@@ -996,22 +1028,21 @@
       const p0 = findPt(s, id);
       if (!p0) return `<div class="scr pp">${ui.bar('นักกายภาพ')}<div class="body">${ui.empty('user-round', 'ไม่พบนักกายภาพคนนี้', 'กลับไปเลือกจากหน้าแรกได้เลย', `<button class="btn auto" data-go="p.feed">กลับหน้าแรก</button>`)}</div></div>`;
       const p = ranked(s).find(x => x.id === p0.id) || Object.assign(p0, { tier: 2, near: '' });
-      const tab = s.patient.ptTab || 'about';
-      const photo = p.photo && (p.photo === 'sample' ? 'a/team-player.jpg' : p.photo);
+      const tab = PT_TABS.some(([k]) => k === s.patient.ptTab) ? s.patient.ptTab : 'work';
       return `<div class="scr pp white pl">
-        <div class="pl-hero" style="--h:${p.hue}">${photo ? `<img src="${esc(photo)}" alt="รูป ${esc(p.name)}">` : `<span class="ini">${esc((p.name.replace(/^(กภ\.|PT)\s*/, '')[0]) || '')}</span>`}
+        <div class="pf-cover" ${p.cover ? `style="background-image:url('${esc(p.cover)}')"` : ''}>
           <button class="ib" data-back aria-label="ย้อนกลับ">${I('chevron-left')}</button>${p.sample ? `<span class="smp">${ui.sample()}</span>` : ''}</div>
-        <div class="body pl-body">
-          <section class="pl-id">
-            <h1>${esc(p.name)}<i>${I('check')}</i></h1>
-            <small class="pl-role">นักกายภาพบำบัด</small>
+        <div class="body pf-body">
+          <section class="pf-id">
+            <div class="pf-top">${plAv(p, 96)}${p.id === 'me' && SC.v.role === 'pt' ? '' : folBtn(s, p)}</div>
+            <h1>${esc(p.name)}</h1>
+            ${p.tags.length ? `<p class="pf-sub">นักกายภาพบำบัด / ${p.tags.map(esc).join(' / ')}</p>` : '<p class="pf-sub">นักกายภาพบำบัด</p>'}
+            ${p.zones.length ? `<p class="pf-loc">${I('map-pin')}<span>${p.zones.map(esc).join(' · ')}</span></p>` : ''}
             ${plVer(p)}
-            ${p.cases > 0 ? `<span class="pl-meta"><span>${I('heart-handshake')}ดูแลแล้ว ${p.cases} ครอบครัว</span></span>` : ''}
-            ${p.tags.length ? `<div class="pl-tags">${p.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}
-            ${p.id === 'me' && SC.v.role === 'pt' ? '' : folBtn(s, p, 'pl-idfol')}
+            ${ptBoard(s, p)}
           </section>
           <section class="pl-why"><h2>${I('lightbulb')}ทำไมถึงเหมาะกับคุณ?</h2><ul>${whyFits(s, p).map(([ic, t]) => `<li>${I(ic)}<span>${esc(t)}</span></li>`).join('')}</ul></section>
-          <nav class="pl-tabs" role="tablist" aria-label="ข้อมูลนักกายภาพ">${PT_TABS.map(([k, t]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-pick="patient.ptTab" data-value="${k}">${t}</button>`).join('')}</nav>
+          <nav class="pf-tabs" role="tablist" aria-label="ข้อมูลนักกายภาพ">${PT_TABS.map(([k, t]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-pick="patient.ptTab" data-value="${k}">${t}</button>`).join('')}</nav>
           <div class="pl-tab" role="tabpanel">${ptTab(s, p, tab)}</div>
           <p class="note mint">${I('shield-check')} ทุกนัดผ่านทีม SynaClair: ประเมินอาการก่อน แล้วทีมส่งงานให้นักกายภาพคนนี้ก่อน ถ้าเวลาและพื้นที่ตรงกัน</p>
         </div>
@@ -1019,10 +1050,10 @@
       </div>`;
     }
   });
-  SC.action('openMatchedPt', (s, c) => { s.patient.viewPt = 'me'; s.patient.ptTab = 'about'; return 'p.pt'; });
+  SC.action('openMatchedPt', (s, c) => { s.patient.viewPt = 'me'; s.patient.ptTab = 'work'; return 'p.pt'; });
   SC.action('openWork', (s, c) => {
-    const p = findPt(s, c.data.id); const w = p && p.posts[+c.data.i]; if (!w) return;
-    ppSheet(c, `<div class="row between"><b class="h3">ผลงานของ ${esc(p.name)}</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
+    const p = findPt(s, c.data.id); const w = p && worksOf(p)[+c.data.i]; if (!w) return;
+    ppSheet(c, `<div class="row between"><b class="h3">คอนเทนต์ของ ${esc(p.name)}</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
       ${w.image ? `<img class="pp-bigimg" src="${esc(w.image)}" alt="">` : ''}
       <p class="p" style="font-size:16px;color:var(--ink)">${esc(w.text)}</p>
       ${w.video ? `<div class="card flat"><span class="small">ลิงก์คลิป</span><b style="word-break:break-all">${esc(w.video)}</b><button class="btn" data-act="openVideo" data-url="${esc(w.video)}">${I('play')}เปิดคลิป</button></div>` : ''}
