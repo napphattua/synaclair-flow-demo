@@ -198,17 +198,42 @@
 
   /* ================= a.license ================= */
   /* พี่ปาล์ม v2.4 R1.2–R1.3: what the PT declared. A tick is self-report, not approval; specialty tasks need evidence checked by the team. */
+  const CAP_WORD = { can: 'ทำได้', no: 'ยังไม่ถนัด', ask: 'ขอคุยก่อน' };
+  const capNow = () => new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+  /* A declaration can open a review or keep it open, never close one. First-time "ทำได้" on a core task stays as it was: พี่ปาล์ม's D1 is still open. */
+  SC.capPick = (s, id, v) => {
+    const p = s.pt, caps = p.caps = p.caps || {}, prev = caps[id]; if (prev === v || SC.CLIN.restricted.includes(id)) return;
+    caps[id] = v; if (p.status === 'NONE') return; // still filling in the first sign-up: nothing is under review yet
+    const dec = p.capDecisions = p.capDecisions || {}, d = dec[id]; let note = '';
+    if (v === 'ask' || (prev === 'ask' && !d) || (d && d.status === 'APPROVED' && v === 'no')) { if (!d || d.status !== 'REJECTED') { dec[id] = { status: 'PENDING', at: capNow() }; note = 'รอทีมพิจารณา'; } }
+    (p.capLog = p.capLog || []).push({ kind: 'declare', id, from: prev || '', to: v, at: capNow(), note });
+  };
+  SC.capOpenPending = s => { const dec = s.pt.capDecisions = s.pt.capDecisions || {}; Object.entries(s.pt.caps || {}).forEach(([id, v]) => { if (v === 'ask' && !dec[id]) dec[id] = { status: 'PENDING', at: capNow() }; }); };
+  SC.capEligible = (p, id) => { const c = (p.caps || {})[id], d = (p.capDecisions || {})[id]; if (!c || c === 'no') return false; if (d) return d.status === 'APPROVED'; return c === 'can' && id[0] === 'C'; };
   function capsCard(s) {
     const p = s.pt, caps = p.caps || {}, ids = Object.keys(caps); if (!ids.length) return '';
     const names = (p.services || []).map(id => (SC.CLIN.services.find(x => x.id === id) || {}).name).filter(Boolean);
     const by = v => ids.filter(id => caps[id] === v).map(id => esc(SC.CLIN.label(id)));
-    const spec = ids.filter(id => (id[0] === 'S' && caps[id] === 'can') || caps[id] === 'ask'), rev = p.capReviewed || {};
+    const dec = p.capDecisions || {}, spec = ids.filter(id => (id[0] === 'S' && caps[id] === 'can') || caps[id] === 'ask' || dec[id]);
     return `<div class="card flat"><b class="h3">${I('list-checks')}งานที่ PT แจ้งว่ารับได้</b><p class="small" style="margin:0">กลุ่ม: ${esc(names.join(' · ') || '—')} · ที่ติ๊กเป็นข้อมูลจาก PT ยังไม่ใช่การอนุมัติ</p>
       ${kv([['ทำได้', by('can').join(' · ') || '—'], ['ยังไม่ถนัด', by('no').join(' · ') || '—'], ['ขอคุยก่อน (รอทีมพิจารณา)', by('ask').join(' · ') || '—'], ['อุปกรณ์', esc((p.equip || []).join(' · ') || '—')]])}
-      ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง</span>${spec.map(id => `<button class="aa-pick" data-act="capReview" data-id="${id}" aria-pressed="${!!rev[id]}"><span class="aa-box">${rev[id] ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.label(id))}</span><span class="s">${caps[id] === 'ask' ? (rev[id] ? 'คุยแล้ว อนุมัติให้รับงานแบบนี้' : 'PT ขอคุยก่อน · ยังไม่ผ่าน') : (rev[id] ? 'ทีมดูหลักฐานแล้ว' : 'ยังไม่ได้ดูหลักฐาน (ใบอบรม ประสบการณ์)')}</span></span></button>`).join('')}` : ''}
+      ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง · อนุมัติเคสไม่เท่ากับอนุมัติ PT</span>
+        <div class="field"><span>พิจารณาในบัญชี</span><div class="chips">${REVIEW_ACCOUNTS.map(x => `<button class="chip ${p.capBy === x.id ? 'on' : ''}" data-pick="pt.capBy" data-value="${x.id}">${esc(x.name)} · ${esc(x.role)}</button>`).join('')}</div></div>
+        <label class="field"><span>เหตุผล</span><textarea class="in" style="min-height:64px" maxlength="200" data-bind="pt.capReason" placeholder="เช่น คุยกับ PT แล้ว เคยดูแลเคสแบบนี้">${esc(p.capReason || '')}</textarea></label>
+        ${spec.map(id => { const x = dec[id], st = x ? x.status : ''; return `<div class="aa-capd" data-cap="${id}"><div class="grow"><b>${esc(SC.CLIN.label(id))}</b><small>PT ตอบ: ${esc(CAP_WORD[caps[id]] || '—')}${x && x.by ? ` · ${esc((leadOf(x.by) || {}).name || x.by)} · ${esc(x.at || '')}${x.reason ? ` · ${esc(x.reason)}` : ''}` : ''}</small></div><span class="pill ${st === 'APPROVED' ? '' : st === 'REJECTED' ? 'warn' : 'wait'}">${st === 'APPROVED' ? 'อนุมัติแล้ว' : st === 'REJECTED' ? 'ไม่อนุมัติ' : 'รอพิจารณา'}</span><div class="row"><button class="btn sm" data-act="capDecide" data-id="${id}" data-d="APPROVED">อนุมัติ</button><button class="btn sm ghost" data-act="capDecide" data-id="${id}" data-d="REJECTED">ไม่อนุมัติ</button></div></div>`; }).join('')}
+        ${(p.capLog || []).length ? `<details class="small"><summary>ประวัติการเปลี่ยน ${p.capLog.length} รายการ</summary>${p.capLog.slice().reverse().map(l => `<p style="margin:4px 0">${esc(l.at)} · ${esc(l.id)} · ${l.kind === 'decide' ? `${esc((leadOf(l.by) || {}).name || l.by)}: ${esc(l.to)} · ${esc(l.reason || '')}` : `PT แก้คำตอบ ${esc(CAP_WORD[l.from] || '—')} → ${esc(CAP_WORD[l.to] || '—')}${l.note ? ` · ${esc(l.note)}` : ''}`}</p>`).join('')}</details>` : ''}` : ''}
       <p class="small" style="margin:0">${I('lock')} ดูดเสมหะ (Suction) ยังไม่เปิดให้ PT แจ้งรับ ต้องตรวจขอบเขตวิชาชีพไทยก่อน</p></div>`;
   }
-  SC.action('capReview', (s, ctx) => { const r = s.pt.capReviewed = s.pt.capReviewed || {}; r[ctx.data.id] = !r[ctx.data.id]; });
+  /* พี่ปาล์ม's P0 fix (5 Nov): what the PT says (pt.caps) and what a reviewer decides (pt.capDecisions) are separate. Only capDecide can approve. */
+  SC.action('capDecide', (s, ctx) => {
+    const p = s.pt, lead = leadOf(p.capBy), id = ctx.data.id, why = (p.capReason || '').trim();
+    if (!lead) { ctx.toast('บัญชีนี้ไม่มีสิทธิ์พิจารณาความสามารถ PT'); return; }
+    if (SC.CLIN.restricted.includes(id)) { ctx.toast('งานนี้ล็อกอยู่ อนุมัติจากหน้านี้ไม่ได้'); return; }
+    if (!why) { ctx.toast('ใส่เหตุผลก่อน'); return; }
+    const at = capNow(); (p.capDecisions = p.capDecisions || {})[id] = { status: ctx.data.d, by: lead.id, at, reason: why };
+    (p.capLog = p.capLog || []).push({ kind: 'decide', id, to: ctx.data.d, by: lead.id, at, reason: why }); p.capReason = '';
+    ctx.toast(ctx.data.d === 'APPROVED' ? 'บันทึกผลอนุมัติแล้ว' : 'บันทึกว่าไม่อนุมัติแล้ว');
+  });
   SC.screen('a.license', {
     role: 'admin',
     render(s) {
@@ -242,7 +267,8 @@
       if (p.status === 'VERIFIED') done.push({ cells: [`<div class="row">${ui.avatar(meName(s), p.photo, 36)}<div class="grow"><div class="t">${esc(p.legalName || meName(s))}</div><span class="small">แสดงเป็น ${esc(meName(s))}</span></div></div>`, esc(p.license || '—'), esc((p.zones || []).join(' · ')), `<div class="stack" style="gap:4px">${ok}<span class="small">${p.photoApproved && p.photo ? 'รูปโปรไฟล์อนุมัติแล้ว' : 'ยังไม่มีรูป'}</span></div>`] });
       SAMPLES.forEach(x => done.push({ cells: [`<div class="row">${ui.avatar(x.name, null, 36, x.hue)}<div class="grow"><div class="t">${esc(x.name)}</div>${ui.sample()}</div></div>`, '<span class="small">ข้อมูลตัวอย่าง</span>', esc(x.zones.join(' · ')), ok] }));
       const body = `<section class="aa-sec"><h2 class="h3">รอตรวจ</h2>${queue}</section>
-        <section class="aa-sec"><h2 class="h3">ตรวจแล้ว</h2>${table(['นักกายภาพ', 'เลขใบประกอบ', 'เขต', 'สถานะ'], done)}</section>`;
+        <section class="aa-sec"><h2 class="h3">ตรวจแล้ว</h2>${table(['นักกายภาพ', 'เลขใบประกอบ', 'เขต', 'สถานะ'], done)}</section>
+        ${p.status === 'VERIFIED' && Object.keys(p.caps || {}).length ? `<section class="aa-sec"><h2 class="h3">ความสามารถของ ${esc(meName(s))}</h2>${capsCard(s)}</section>` : ''}`;
       return shell(s, 'a.license', { kick: 'ทีม PT', title: 'ตรวจใบประกอบ + รูปโปรไฟล์', sub: 'นักกายภาพสมัครเองด้วย LINE แล้ว เทียบชื่อจริงกับเลขใบประกอบ แล้วกดอนุมัติ ไม่ต้องสัมภาษณ์' }, body);
     }
   });
@@ -442,10 +468,9 @@
     const st = level(score(s, 'me'));
     let ok = true, reason, warn = '';
     /* พี่ปาล์ม v2.4 (R1.5, R3.1–R3.4): eligibility before ranking. 30/90-minute widening never relaxes these. */
-    const g = (SC.clinGroup(s) || {}).id, caps = s.pt.caps || {}, allow = (r.review && r.review.allow) || [];
-    // Q-E: "ขอคุยก่อน" waits for the team; a specialty "ทำได้" also needs evidence checked. Never approved automatically.
-    const rev = s.pt.capReviewed || {}, approved = id => (caps[id] === 'can' && (id[0] === 'C' || rev[id])) || (caps[id] === 'ask' && rev[id]);
-    const cannot = allow.filter(id => !approved(id));
+    const g = (SC.clinGroup(s) || {}).id, allow = (r.review && r.review.allow) || [];
+    // Q-E: pending, rejected or unreviewed specialty tasks block only the tasks this case needs. Read the decision, not the PT's answer alone.
+    const cannot = allow.filter(id => !SC.capEligible(s.pt, id));
     if (s.pt.status !== 'VERIFIED') { ok = false; reason = 'ใบประกอบยังรอตรวจ · อนุมัติก่อนจึงส่งงานได้'; }
     else if (!s.pt.agreement) { ok = false; reason = 'ยังไม่ยอมรับข้อตกลงการรับงาน'; }
     else if (!s.pt.schedule || !s.pt.schedule.sent) { ok = false; reason = 'ยังไม่ส่งตาราง · ร่างตารางยังใช้จับคู่ไม่ได้'; }
@@ -460,7 +485,7 @@
   }
   /* FIX-01/02: rechecked when the PT accepts or starts, never trusted from the card. */
   SC.meCandidate = meCandidate;
-  SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck) { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; } return ''; };
+  SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck || r.status === 'BOOKED') { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; } return ''; };
   SC.screen('a.match', {
     role: 'admin',
     render(s) {

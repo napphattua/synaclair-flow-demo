@@ -910,12 +910,14 @@
   const capTasks = p => [...new Set(CLIN.services.filter(x => (p.services || []).includes(x.id)).flatMap(x => x.tasks))].sort((a, b) => (a[0] === b[0] ? 0 : a[0] === 'C' ? -1 : 1) || a.localeCompare(b));
   const CAP_OPT = [['can', 'ทำได้'], ['no', 'ยังไม่ถนัด'], ['ask', 'ขอคุยก่อน']];
   const EQUIP = ['ไม้ค้ำ / walker', 'ยางยืดออกกำลัง', 'เครื่องกระตุ้นไฟฟ้า', 'เครื่องอัลตราซาวด์', 'เข็มขัดช่วยพยุง (gait belt)', 'เครื่องวัดออกซิเจนปลายนิ้ว'];
+  const capState = (p, id) => { const d = (p.capDecisions || {})[id]; if (!d) return ''; return d.status === 'PENDING' ? '<small class="tt-capst">รอทีมพิจารณา · แก้คำตอบเองไม่ทำให้อนุมัติ งานอื่นรับได้ตามปกติ</small>' : d.status === 'REJECTED' ? '<small class="tt-capst">ทีมยังไม่อนุมัติงานนี้ · แก้คำตอบเองไม่เปลี่ยนผล</small>' : '<small class="tt-capst">ทีมอนุมัติแล้ว</small>'; };
+  act('capPick', (s, ctx) => { SC.capPick(s, ctx.data.id, ctx.data.v); });
   function capsStep(p) {
     const list = capTasks(p), done = list.filter(id => CLIN.restricted.includes(id) || p.caps[id]).length;
     const row = id => CLIN.restricted.includes(id)
       ? `<div class="tt-cap lock"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
-      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${esc(CLIN.tasks[id])}</small>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}</div>
-          <div class="tt-seg" role="group" aria-label="${esc(CLIN.label(id))}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-pick="pt.caps.${id}" data-value="${v}">${l}</button>`).join('')}</div></div>`;
+      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${esc(CLIN.tasks[id])}</small>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' && !(p.capDecisions || {})[id] ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}${capState(p, id)}</div>
+          <div class="tt-seg" role="group" aria-label="${esc(CLIN.label(id))}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-act="capPick" data-id="${id}" data-v="${v}">${l}</button>`).join('')}</div></div>`;
     return `<div class="stack"><span class="kick">งานที่รับ</span><h1 class="h1">รับงานกลุ่มไหนบ้าง</h1><p class="small">เลือกกลุ่มก่อน แล้วตอบเฉพาะงานในกลุ่มนั้น ไม่ต้องทำได้ทุกข้อ ตอบตามจริงช่วยให้ได้เคสที่เหมาะ</p></div>
       <div class="tt-svc">${CLIN.services.map(x => { const on = p.services.includes(x.id); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.services" data-value="${x.id}">${I(x.icon)}${esc(x.name)}</button>`; }).join('')}</div>
       ${list.length ? `<div class="card flat"><div class="row between"><b class="h3">งานในกลุ่มที่เลือก ${list.length} ข้อ</b><span class="pill ${done === list.length ? '' : 'wait'}">ตอบแล้ว ${done}/${list.length}</span></div>${list.map(row).join('')}</div>
@@ -973,7 +975,7 @@
   act('ptSignup', (s, ctx) => {
     const p = s.pt;
     if (!p.legalName.trim() || !/^\d{3,8}$/.test(p.license) || !p.licenseFile || !p.cv.edu.length || !p.displayName.trim() || !(p.services || []).length || !p.zones.length) { ctx.toast('กรอกข้อมูลให้ครบทุกขั้นก่อนนะคะ'); return; }
-    p.status = 'PENDING'; p.loggedIn = true;
+    p.status = 'PENDING'; p.loggedIn = true; SC.capOpenPending(s);
     ctx.xp(XP.signup, 'สร้างโปรไฟล์');
     return 't.hub';
   });

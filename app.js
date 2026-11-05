@@ -101,7 +101,7 @@
   /* ---------- State ---------- */
   const initial = () => ({
     pt: { status: 'NONE', loggedIn: false, legalName: '', license: '', licenseFile: null, displayName: '', zones: [], photo: null, photoApproved: false, bio: '',
-      posts: [], schedule: { sent: false, blocks: [] }, services: [], caps: {}, equip: [], capReviewed: {},
+      posts: [], schedule: { sent: false, blocks: [] }, services: [], caps: {}, equip: [], capDecisions: {}, capLog: [],
       // Professional profile (Palm's "Design profile PT" Level 2). Sample values for the rehearsal; the PT fills these in the real profile builder.
       cv: { groups: ['ผู้สูงอายุ', 'ระบบประสาท เช่น Stroke', 'กระดูกและกล้ามเนื้อ'], primary: 'ฟื้นฟูผู้ป่วยหลอดเลือดสมอง (Stroke)', more: ['ผู้สูงอายุเสี่ยงล้ม', 'ฟื้นฟูหลังผ่าตัด'],
         edu: [], train: [] }, agreement: false, xp: 0, xpLog: [], earnings: [] },
