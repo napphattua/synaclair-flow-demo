@@ -169,7 +169,7 @@
     }
   });
   /* ---------- "มาใหม่ · รอตรวจ": what the owner should look at next, on the flow and on the screen itself ---------- */
-  const fireAct = (name, data) => { const b = document.createElement('button'); b.dataset.act = name; Object.assign(b.dataset, data || {}); (document.querySelector('#dev .scr') || document.body).appendChild(b); b.click(); };
+  const fireAct = SC.fireAct = (name, data) => { const b = document.createElement('button'); b.dataset.act = name; Object.assign(b.dataset, data || {}); (document.querySelector('#dev .scr') || document.body).appendChild(b); b.click(); };
   /* Start a sample BED-04 case at the point a reviewer wants to see. Replaces the rehearsal in progress. */
   function demoCase({ allow = ['C01', 'C11'], pending = [], book = false, pay = true, limits = 'No suction or airway clearance' } = {}) {
     SC.reset(); SC.jump(4); const s = SC.s;
@@ -185,6 +185,8 @@
     return s;
   }
   const ITEMS = [
+    { id: 'match-v1', st: 'new', role: 'แอดมิน', t: 'จับคู่ PT หลายคน พร้อมเหตุผล', d: 'คนไข้ 1 ราย กับ PT ตัวอย่าง 10 คน ดูว่าใครผ่าน ใครไม่ผ่าน เพราะอะไร', screen: 'a.match', open() { SC.MATCH.demo(); } },
+    { id: 'copy-v1', st: 'new', role: 'พี่ปาล์ม · นัท · บอส', t: 'ตรวจข้อความไทย 52 ข้อ', d: 'อ่านทีละการ์ด กดผ่านหรือขอแก้ แล้วคัดลอกผลส่งกลับ', screen: 'copy', open() { SC.openCopy(); } },
     { id: 'dash-v1', st: 'new', role: 'แอดมิน', t: 'Dashboard 8 มุมมอง', d: 'ดูว่าการจัดหน้าและวิธีอ่านตรงที่พี่ปาล์มขอไหม', screen: 'a.dash', open() { SC.go('a.dash'); } },
     { id: 'caps-admin-v1', st: 'new', role: 'แอดมิน', t: 'ความสามารถ PT', d: 'แยกคำตอบของ PT ออกจากผลอนุมัติ พร้อมคิวรอพิจารณา', screen: 'a.caps', open() { demoCase(); SC.capPick(SC.s, 'C01', 'ask'); SC.go('a.caps'); } },
     { id: 'caps-pt-v1', st: 'new', role: 'นักกายภาพ', t: 'หน้า "งานที่รับ" ของ PT', d: 'PT เห็นคำตอบของตัวเองคู่กับผลจากทีม', screen: 't.caps', open() { demoCase(); SC.capPick(SC.s, 'C01', 'ask'); SC.go('t.caps'); } },

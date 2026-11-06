@@ -113,7 +113,8 @@
 
   function render(canvas, now, loopStart) {
     setup();
-    const size = canvas.clientWidth, dpr = Math.min(3, window.devicePixelRatio || 1), px = Math.round(size * dpr);
+    const size = canvas.clientWidth; if (!size) return; /* hidden page: nothing to draw, and a 0px canvas makes drawImage throw */
+    const dpr = Math.min(3, window.devicePixelRatio || 1), px = Math.round(size * dpr);
     if (canvas.width !== px) { canvas.width = canvas.height = px; canvas._off = null; }
     if (!canvas._off) { canvas._off = document.createElement('canvas'); canvas._off.width = canvas._off.height = px; }
     const ctx = canvas.getContext('2d');
@@ -131,7 +132,8 @@
 
   function renderStatic(canvas) {
     setup();
-    const size = canvas.clientWidth, dpr = Math.min(3, window.devicePixelRatio || 1), px = Math.round(size * dpr);
+    const size = canvas.clientWidth; if (!size) return; /* hidden page: nothing to draw, and a 0px canvas makes drawImage throw */
+    const dpr = Math.min(3, window.devicePixelRatio || 1), px = Math.round(size * dpr);
     canvas.width = canvas.height = px; canvas._off = document.createElement('canvas'); canvas._off.width = canvas._off.height = px;
     const ctx = canvas.getContext('2d'); const k = px / 520; ctx.setTransform(k, 0, 0, k, 0, 0);
     drawRibbon(ctx, canvas._off, lines.L, 0, 0);

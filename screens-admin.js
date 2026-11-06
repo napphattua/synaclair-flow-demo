@@ -398,8 +398,9 @@
     offerIfFits(s, line);
   };
   function offerIfFits(s, line) {
-    const r = s.request, mc = meCandidate(s);
-    if (mc && mc.ok && (mc.zoneOk || mc.preferred) && !mc.warn) { r.status = 'OFFERED'; r.offerTo = ['me']; r.auto = mc.preferred ? 'ผู้รับบริการขอคนนี้' : 'ตรงเขตที่รับงาน'; line('pt', { key: 'ptOffer' }); }
+    const r = s.request; if (s.matchPool) { SC.MATCH.dispatch(s, line); return; }
+    const mc = meCandidate(s); SC.MATCH.evaluate(s);
+    if (mc && mc.ok && (mc.zoneOk || mc.preferred) && !mc.warn) { r.status = 'OFFERED'; r.offerTo = ['me']; r.auto = mc.preferred ? 'ผู้รับบริการขอคนนี้' : 'ตรงเขตที่รับงาน'; line('pt', { key: 'ptOffer' }); SC.MATCH.logOffer(s, ['me'], r.auto); }
   }
 
   /* ================= a.clinical =================
@@ -451,6 +452,7 @@
       const decide = `<article class="card flat">
         <b class="h3">อนุมัติเฉพาะกิจกรรมที่ปลอดภัย</b><p class="small" style="margin:0">ติ๊กเฉพาะที่ทำที่บ้านได้ ไม่ใช่อนุมัติทั้งเคส PT จะเห็นรายการนี้ในงานเสนอ</p>
         <div class="stack">${list.map(row).join('')}</div>
+        ${open && rv.allow.length ? (rv.allow.every(id => SC.ASSESS_TASKS.includes(id)) ? `<p class="note warn" role="status" style="margin:0" data-scope-effect="assess">ที่เลือกตอนนี้เป็นงานประเมินทั้งหมด ถ้าอนุมัติ ระบบจะพักการชำระเงินและการส่งงานตาม D6 ถ้าอนุญาตให้รักษาด้วย ให้เลือกงานรักษาที่ปลอดภัยเพิ่ม</p>` : `<p class="small" style="margin:0" data-scope-effect="treat">ที่เลือกตอนนี้มีงานรักษารวมอยู่ ถ้าอนุมัติ เคสจะไปต่อตามขั้นตอนชำระเงินปกติ</p>`) : ''}
         ${open ? `<label class="field"><span>ข้อจำกัด / ข้อควรระวัง</span><textarea class="in" rows="2" data-bind="request.review.limits" placeholder="เช่น ห้ามลงน้ำหนักขาซ้าย · ย้ายตัวต้องมีผู้ช่วย 2 คน">${esc(rv.limits)}</textarea></label>
         <div class="field"><span>ตรวจในบัญชี</span><div class="chips">${REVIEW_ACCOUNTS.map(x => `<button class="chip ${rv.byId === x.id ? 'on' : ''}" data-pick="request.review.byId" data-value="${x.id}">${esc(x.name)} · ${esc(x.role)}</button>`).join('')}</div></div>
         <label class="field"><span>เหตุผลการตัดสิน</span><textarea class="in" rows="2" data-bind="request.review.reason" placeholder="บันทึกพร้อมชื่อผู้ตรวจ เวลา และฉบับข้อมูล">${esc(rv.reason || '')}</textarea></label>
@@ -474,18 +476,11 @@
     const preferred = r.preferredPt === 'me';
     const st = level(score(s, 'me'));
     let ok = true, reason, warn = '';
-    /* พี่ปาล์ม v2.4 (R1.5, R3.1–R3.4): eligibility before ranking. 30/90-minute widening never relaxes these. */
-    const g = (SC.clinGroup(s) || {}).id, allow = (r.review && r.review.allow) || [];
-    // Q-E: pending, rejected or unreviewed specialty tasks block only the tasks this case needs. Read the decision, not the PT's answer alone.
-    const cannot = allow.filter(id => !SC.capEligible(s.pt, id));
-    if (s.pt.status !== 'VERIFIED') { ok = false; reason = 'ใบประกอบยังรอตรวจ · อนุมัติก่อนจึงส่งงานได้'; }
-    else if (!s.pt.agreement) { ok = false; reason = 'ยังไม่ยอมรับข้อตกลงการรับงาน'; }
-    else if (!s.pt.schedule || !s.pt.schedule.sent) { ok = false; reason = 'ยังไม่ส่งตาราง · ร่างตารางยังใช้จับคู่ไม่ได้'; }
-    else if (r.review && !r.review.cleared) { ok = false; reason = 'เคสนี้รอทีมคลินิกตรวจ'; }
-    else if (r.status === 'ASSESS_HOLD') { ok = false; reason = 'อนุมัติเฉพาะการประเมิน · พักการจับคู่อัตโนมัติ ทีมประสานเอง'; }
-    else if (allow.some(id => SC.CLIN.restricted.includes(id))) { ok = false; reason = 'มีงานดูดเสมหะ · ไม่จับคู่อัตโนมัติ ทีมคลินิกประสานเอง'; }
-    else if (cannot.length) { ok = false; reason = `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; }
-    else if (st === 'PAUSED') { ok = false; reason = 'พักรับงานใหม่ชั่วคราว · รอทีมทบทวน'; }
+    /* One decision for every PT (matching.js). Palm 6 Nov §2.2 order; 30/90-minute widening never relaxes these. Location stays a warning here: the team may call first, and the trace records it. */
+    const g = (SC.clinGroup(s) || {}).id, mctx = SC.MATCH.ctxOf(s), ev = SC.MATCH.evalPt(SC.MATCH.adaptMe(s), mctx), cannot = ev.cannot;
+    /* Payment is the case's gate, checked at dispatch and accept; this answer is about the PT and the clinical state. */
+    const hard = ev.steps.find(x => !x.ok && x.key !== 'LOCATION' && !(x.key === 'CASE' && mctx.code === 'UNPAID'));
+    if (hard) { ok = false; reason = hard.key === 'CAPABILITY' ? `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.label(id)).join(' · ')}` : hard.why; }
     else if (zoneOk) reason = `ตรงพื้นที่ · รับงานใน${d}`;
     else { reason = `รับงาน: ${(s.pt.zones || []).join(' · ') || 'ยังไม่ระบุ'}`; warn = preferred ? `ผู้รับบริการขอคนนี้ แต่ PT ไม่ได้ลงเขต${d} · โทรถาม PT ก่อนส่ง` : `PT ไม่ได้ลงเขต${d} · โทรถามก่อนส่ง`; }
     if (ok && g && g !== 'UNSURE' && !(s.pt.services || []).includes(g)) warn = (warn ? warn + ' · ' : '') + `PT ไม่ได้เลือกรับงานกลุ่ม "${SC.CLIN.services.find(x => x.id === g).name}" · ทีมโทรถามก่อนส่ง`;
@@ -493,6 +488,7 @@
   }
   /* FIX-01/02: rechecked when the PT accepts or starts, never trusted from the card. */
   SC.meCandidate = meCandidate;
+  SC.patientDistrict = district; SC.ptCovers = covers; SC.ptPaused = s => level(score(s, 'me')) === 'PAUSED';
   /* FIX-R4-03: why this offer can't be accepted right now, for cards and counts. acceptOffer keeps its own check. Terms stay out: accepting leads to the Terms screen. */
   SC.offerBlock = s => { const g = s.request && meCandidate(s); if (!g || g.ok) return ''; if (g.cannot.length) return `ยังไม่ผ่านการพิจารณา: ${g.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; return s.pt.agreement ? g.reason : ''; };
   SC.visitHold = s => { const r = s.request; if (!r) return ''; if (r.scopeHold) return 'พักกิจกรรมไว้ก่อน ข้อมูลคนไข้เปลี่ยน รอทีมคลินิกแจ้ง นัดเดิมยังอยู่'; if (r.recheck || r.status === 'BOOKED') { const mc = meCandidate(s); if (mc && mc.cannot.length) return `พักกิจกรรมไว้ก่อน ทีมต้องตรวจงานนี้ก่อน: ${mc.cannot.map(id => SC.CLIN.label(id)).join(' · ')}`; } return ''; };
@@ -515,14 +511,14 @@
         ${wins.length ? `<div class="stack"><span class="label">เวลาที่สะดวก</span>${wins.map((w, i) => `<span class="small">${i === 0 ? 'เวลาหลัก' : 'เวลาสำรอง ' + i} · ${esc(w)}</span>`).join('')}</div>` : ''}
       </article>`;
       if (r.status === 'OFFERED' || r.status === 'BOOKED') {
-        const names = (r.offerTo || []).map(id => esc(ptName(s, id))).join(', ') || '—';
+        const names = (r.offerTo || []).filter(id => r.status !== 'BOOKED' || !r.bookedPt || id === r.bookedPt).map(id => esc(SC.MATCH.nameOf(s, id) || ptName(s, id))).join(', ') || '—';
         const sent = r.status === 'OFFERED'
           ? `<article class="card flat"><div class="row"><span class="tile">${I('send')}</span><div class="grow"><b class="h3">${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${esc(SC.offerBlock(s))}` : 'ส่งข้อเสนอแล้ว รอ PT ตอบรับภายใน 30 นาที'}</b><p class="p">ส่งให้ ${names} · ${esc(wins[a.win] || wins[0] || '')}</p>${r.auto ? `<span class="pill info">${I('zap')}ระบบส่งให้เอง · ${esc(r.auto)}</span>` : ''}</div></div>
               <p class="small">ถ้าไม่มีใครตอบใน 30 นาที ระบบขยายการค้นหา ครบสองรอบแล้วทีมช่วยประสานเอง</p>
               <div class="aa-acts"><button class="btn ghost" data-act="remindOffer">${I('bell')}เตือน PT ใน LINE อีกครั้ง</button></div></article>`
           : `<article class="card flat"><div class="row"><span class="tile">${I('circle-check')}</span><div class="grow"><b class="h3">PT รับงานแล้ว</b><p class="p">${names} · ${esc(SC.VISIT1.date)} ${esc(SC.VISIT1.time)}</p></div></div>
               <div class="aa-acts"><button class="btn ghost" data-go="a.appts">${I('calendar-days')}ดูนัดหมาย</button></div></article>`;
-        return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${sent}</div></div>`);
+        return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${sent}${SC.MATCH.traceCard(s)}</div></div>`);
       }
       const mc = meCandidate(s);
       if (a.tick == null || a.tickRef !== r.ref) { a.tick = mc && mc.ok && mc.preferred && mc.zoneOk ? ['me'] : []; a.tickRef = r.ref; }
@@ -551,14 +547,14 @@
       const send = `<article class="card flat"><div class="row between wrap"><span class="label">ราคา</span><span><b class="money">Clair Match ${money(SC.TRIAL)}</b> <span class="small">· ชำระแล้ว · ไม่มีค่าเดินทางแยก</span></span></div>
         <button class="btn" data-act="sendOffer" data-need="admin.tick">${I('send')}ส่งข้อเสนอให้ PT ที่เลือก${a.tick.length ? ` (${a.tick.length} คน)` : ''}</button>
         <p class="small" style="margin:0">PT ได้การ์ดใน LINE และต้องตอบรับภายใน 30 นาที</p></article>`;
-      return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${picks}${winCard}${send}${notYet}</div></div>`);
+      return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${picks}${SC.MATCH.traceCard(s)}${winCard}${send}${notYet}</div></div>`);
     }
   });
   SC.action('sendOffer', (s, ctx) => {
     const a = A(s), r = s.request; if (!r || r.status !== 'PAID' || !a.tick || !a.tick.length) return;
     if (a.tick.includes('me')) { const mc = meCandidate(s); if (!mc || !mc.ok) { ctx.toast(`ส่งไม่ได้: ${mc ? mc.reason : 'ไม่พบ PT'}`); return; } }
     r.status = 'OFFERED'; r.offerTo = a.tick.slice();
-    ctx.line('pt', { key: 'ptOffer' });
+    ctx.line('pt', { key: 'ptOffer' }); SC.MATCH.evaluate(s); SC.MATCH.logOffer(s, r.offerTo, 'แอดมินส่งเอง');
     ctx.toast(`ส่งข้อเสนอให้ PT ${r.offerTo.length} คนแล้ว รอตอบรับภายใน 30 นาที`);
   });
   SC.action('remindOffer', (s, ctx) => { ctx.line('pt', { key: 'ptOffer' }); ctx.toast('ส่งการ์ดข้อเสนอให้ PT ใน LINE อีกครั้งแล้ว'); });

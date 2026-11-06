@@ -1698,7 +1698,7 @@
     if (!s.pt.agreement) { s.pt.agreeTick = false; return 't.agreement'; }
     const gate = SC.meCandidate(s);
     if (gate && !gate.ok) { ctx.toast(`ยังรับงานนี้ไม่ได้: ${gate.reason}`); return 't.work'; }
-    s.request.status = 'BOOKED';
+    SC.MATCH.book(s, 'me');
     s.visits = [{ n: 1, date: SC.VISIT1.date, time: SC.VISIT1.time, step: 0, soap: {}, published: false, scopeRef: { offerId: s.request.offerId, screeningVersion: s.request.screeningVersion || 1, approvedBy: (s.request.review || {}).byId || '', approvedAt: (s.request.review || {}).at || '' } }];
     ctx.line('patient', { key: 'ptIntro' }); ctx.line('patient', { key: 'confirmed' });
     ctx.toast('รับงานแล้ว นัดอยู่ในแท็บงานและตาราง');
@@ -1800,7 +1800,7 @@
     v.step += 1;
     if (v.step === 1) { ctx.line('patient', { key: 'enRoute' }); ctx.toast('แจ้งคนไข้ใน LINE แล้ว: กำลังเดินทาง'); }
     else if (v.step === 2) ctx.toast('บันทึกเวลาถึงแล้ว');
-    else if (v.step === 3) { s.pt.clock[n] = Date.now(); ctx.toast('เริ่มให้บริการ จับเวลาให้แล้ว'); }
+    else if (v.step === 3) { s.pt.clock[n] = Date.now(); if (s.request && n === 1 && s.request.trace) s.request.trace.visitId = v.id = `${s.request.ref}-V1`; ctx.toast('เริ่มให้บริการ จับเวลาให้แล้ว'); }
     else {
       ctx.line('patient', { key: 'visitDone' }); if (n === 1) ctx.line('patient', { key: 'feedback' });
       // Course deduction (Boss 29 Oct): the visit is cut from the course the moment the PT taps "จบการดูแล"; the patient's LINE slip carries the review button.
