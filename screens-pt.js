@@ -1684,7 +1684,7 @@
             <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">เป้าหมายที่คนไข้เลือก</span><br><span class="s">${esc(goalText(s))}${s.patient.bookingFor === 'SOMEONE_ELSE' ? ' · ญาติจองให้' : ''}</span></span></div>
             ${yes ? `<div class="li"><span class="tile gold">${I('shield-check')}</span><span class="grow"><span class="t">ข้อควรระวังจากการคัดกรอง ${yes} ข้อ</span><br><span class="s">ดูรายละเอียดได้หลังรับงาน</span></span></div>` : ''}
           </div></div>
-        ${scopePanel(s)}
+        ${scopePanel(s)}${SC.MATCH.prepCard(s)}
         <div class="card cream"><span class="small" style="color:var(--gink)">รายได้สุทธิของคุณ</span><span class="price">${money(NET_TRIAL)}</span><span class="small" style="color:var(--gink)">โอนรอบถัดไปหลังส่งสรุปการดูแล · ไม่มีค่าใช้จ่ายอื่นที่ต้องจ่ายเพิ่ม</span></div>
         ${s.pt.agreement ? '' : `<p class="note row tt-top">${I('file-text')}<span>งานแรกของคุณ: กดรับแล้วจะพาไปอ่านข้อตกลงการรับงาน 1 ครั้งก่อน</span></p>`}
       ${SC.offerBlock(s) ? `<p class="note warn" role="status" style="margin:0 16px 12px">ยังรับงานนี้ไม่ได้ · ${esc(SC.offerBlock(s))}</p>` : ''}</div><div class="foot row2"><button class="btn ghost" data-act="declineOffer">ปฏิเสธ</button><button class="btn" data-act="acceptOffer" data-offer="${esc(s.request.offerId || '')}" ${SC.offerBlock(s) ? 'disabled' : ''}>${I('check')}รับงานนี้</button></div></div>`;

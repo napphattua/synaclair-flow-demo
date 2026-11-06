@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   const { esc, ui } = SC, I = ui.icon, ALL = window.SC_COPY || [];
-  const VER = 'Copy v1.0 · PROPOSED', KEY = 'sc-copy-review-v1', COPY_VERSION = 'v1.0-PROPOSED';
+  const VER = 'Copy v1.1 · PROPOSED', KEY = 'sc-copy-review-v1', COPY_VERSION = 'v1.1-PROPOSED';
   const API_URL = 'https://synaclair-copy-review.synaclair-review.workers.dev'; /* tools/copy-review-worker; not a secret */
   /* Only sites the Worker allows can send. Elsewhere, such as a claude.ai Artifact, marks stay on this device and go back by copy. */
   const api = () => window.SC_COPY_API !== undefined ? window.SC_COPY_API : /(^|\.)napphattua\.github\.io$|^127\.0\.0\.1$/.test(location.hostname) ? API_URL : '';
@@ -35,7 +35,7 @@
     return lines.join('\n');
   }
   const card = x => {
-    const [id, role, trigger, title, body, cta, no, dyn, risk] = x, online = !!api(), draft = draftOf(id), sent = online ? sentOf(id) : null, st = online ? draft : stOf(id), isLine = role === 'LINE', rows = remote.rows.filter(r => r.id === id);
+    const [id, role, trigger, title, body, cta, no, dyn, risk, bold, old] = x, online = !!api(), draft = draftOf(id), sent = online ? sentOf(id) : null, st = online ? draft : stOf(id), isLine = role === 'LINE', rows = remote.rows.filter(r => r.id === id);
     const statusPill = (s, tail = '') => s === 'ok' ? `<span class="pill">${I('check')}ผ่าน${tail}</span>` : `<span class="pill warn">ขอแก้${tail}</span>`;
     const badge = online && draft ? '<span class="pill wait">ยังไม่ได้ส่ง</span>' : sent ? statusPill(sent.status, ` · ส่งแล้ว v${sent.v}`) : st ? statusPill(st) : '<span class="pill gray">ยังไม่ตรวจ</span>';
     const noteBox = (online && draft) || (!online && st === 'fix') ? `<label class="ck-note"><span>${draft === 'ok' ? 'โน้ตเพิ่มเติม (ไม่บังคับ)' : 'อยากให้แก้อย่างไร'}</span><textarea rows="2" data-ck-note="${id}" placeholder="${draft === 'ok' ? 'เขียนถ้ามีเรื่องอยากฝากไว้' : 'เขียนคำที่อยากให้ใช้ หรือเหตุผล'}">${esc((mine()[id] || {}).note || '')}</textarea></label>` : '';
@@ -44,7 +44,8 @@
     return `<article class="ck-card ${(online ? draft || (sent || {}).status : st) ? 'is-' + (online ? draft || sent.status : st) : ''}" data-copy-card="${id}">
       <header class="ck-top"><b class="ck-id">${id}</b><span class="ck-role">${esc(role)}</span><span class="grow"></span>${badge}</header>
       <p class="ck-when"><span>แสดงเมื่อ</span> ${esc(trigger)}</p>
-      <div class="ck-msg ${isLine ? 'line' : ''}">${isLine ? '<small>แจ้งเตือนใน LINE</small>' : ''}<b>${fill(title)}</b><p>${fill(body)}</p>${has(cta) ? `<span class="ck-cta">${esc(cta)}</span>` : ''}</div>
+      <div class="ck-msg ${isLine ? 'line' : ''}">${isLine ? '<small>แจ้งเตือนใน LINE</small>' : ''}<b>${fill(title)}</b><p>${bold ? fill(body).replace(esc(bold), `<b>${esc(bold)}</b>`) : fill(body)}</p>${has(cta) ? `<span class="ck-cta">${esc(cta)}</span>` : ''}</div>
+      ${old ? `<details class="ck-old"><summary>ดูข้อความ v1.0 ก่อนนัทแก้</summary><p><b>${fill(old[0])}</b><br>${fill(old[1])}${has(old[2]) ? `<br>ปุ่ม: ${esc(old[2])}` : ''}</p></details>` : ''}
       ${SPECIAL[id] ? `<p class="ck-special">${I('flag')}<span><b>ตรวจเป็นพิเศษ</b> ${esc(SPECIAL[id])}</span></p>` : ''}
       <dl class="ck-meta"><div class="no"><dt>ห้ามใช้</dt><dd>${esc(no)}</dd></div><div><dt>ถ้าสื่อสารผิด</dt><dd>${esc(risk)}</dd></div>${has(dyn) ? `<div><dt>ดึงจากระบบ</dt><dd>${esc(dyn)}</dd></div>` : ''}</dl>
       <div class="ck-acts"><button class="ck-mark ${st === 'ok' ? 'on ok' : ''}" aria-pressed="${st === 'ok'}" data-ck="mark" data-id="${id}" data-st="ok">${I('check')}ผ่าน</button><button class="ck-mark ${st === 'fix' ? 'on fix' : ''}" aria-pressed="${st === 'fix'}" data-ck="mark" data-id="${id}" data-st="fix">${I('pencil-line')}ขอแก้</button></div>

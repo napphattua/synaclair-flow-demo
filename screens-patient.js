@@ -662,7 +662,7 @@
   };
   const branchQs = p => (BRANCH[p.group] || []).filter(q => !q.when || q.when(p.branch || {}));
   /* Q-B = A, but its minimum criteria are not clinically validated: Proposed and off. Turning it on is a Clinical Leads decision. */
-  SC.RULES = { version: 'sim-rules-2026-11-04', postOpRoutine: { state: 'Proposed', enabled: false } };
+  SC.RULES = { version: 'sim-rules-2026-11-06', postOpRoutine: { state: 'Proposed', enabled: false }, unknownGroup: {} };
   const WB_TERM = { WBAT: 'WBAT', FULL: 'FWB', PART: 'PWB', NONE: 'NWB', OTHER: 'Other (per surgeon)', UNSURE: 'Unknown' };
   // Q-C: BED-04 needs review before the first matching; sputum alone does not (RESP-02 can stay routine).
   SC.clinBed04 = p => p.group === 'BED' && (p.branch || {}).pneu === 'YES' && (p.branch || {}).phlegm === 'HAS' && (p.branch || {}).cough === 'WEAK';
@@ -691,6 +691,7 @@
     if (p.group === 'CARDIO' && b.airway === 'SUCTION') out.push('ต้องดูดเสมหะ (งานจำกัด ยังไม่เปิดจับคู่อัตโนมัติ)');
     if (p.group === 'CARDIO' && b.airway === 'UNSURE') out.push('ไม่แน่ใจเรื่องเสมหะ');
     if (Object.values(p.barthel || {}).filter(v => v === null).length >= 4) out.push('ไม่แน่ใจเรื่องกิจวัตรหลายข้อ');
+    if (p.group === 'UNSURE' && !SC.MATCH.unknownResolved(s)) out.push('ยังระบุกลุ่มอาการไม่ได้ ทีมต้องช่วยระบุงานที่เคสนี้จำเป็นก่อนจับคู่');
     return out;
   };
   /* พี่ปาล์ม Fix Brief FIX-01 (3 Nov 2026): an approval belongs to the answers the reviewer saw.
