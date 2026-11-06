@@ -7,7 +7,8 @@
   const { esc, ui } = SC, I = ui.icon, ALL = window.SC_COPY || [];
   const VER = 'Copy v1.0 · PROPOSED', KEY = 'sc-copy-review-v1', COPY_VERSION = 'v1.0-PROPOSED';
   const API_URL = 'https://synaclair-copy-review.synaclair-review.workers.dev'; /* tools/copy-review-worker; not a secret */
-  const api = () => window.SC_COPY_API !== undefined ? window.SC_COPY_API : API_URL;
+  /* Only sites the Worker allows can send. Elsewhere, such as a claude.ai Artifact, marks stay on this device and go back by copy. */
+  const api = () => window.SC_COPY_API !== undefined ? window.SC_COPY_API : /(^|\.)napphattua\.github\.io$|^127\.0\.0\.1$/.test(location.hostname) ? API_URL : '';
   const STAGES = { A: 'ลงทะเบียนและคัดกรอง', B: 'ผลด่านความปลอดภัย', C: 'ตรวจทางคลินิก', D: 'ชำระเงิน', E: 'จับคู่และ Offer', F: 'นัดและการเยี่ยม', G: 'ข้ามบทบาทและ LINE' };
   const WHO = { palm: 'พี่ปาล์ม', nat: 'นัท', boss: 'บอส' };
   const ROLES = ['คนไข้/ญาติ', 'PT', 'LINE', 'Clinical Lead', 'Admin'];

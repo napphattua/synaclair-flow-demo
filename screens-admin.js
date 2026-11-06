@@ -144,7 +144,7 @@
     if (r && r.status === 'ASSESS_HOLD') t.push({ icon: 'phone', tag: 'ประเมินอย่างเดียว · พักจ่าย', title: `${patientName(s)} · ${r.ref}`, sub: 'ทีมประสานงานติดต่อกลับ · ยังไม่ตั้งราคา ไม่ส่ง Offer ไม่คืนเงินอัตโนมัติ', go: 'a.clinical', cta: 'ดูขอบเขต' });
     if (r && r.scopeHold && !(r.review || {}).declined) t.push({ icon: 'clipboard-plus', tag: 'พักกิจกรรม · นัดเดิมยังอยู่', title: `${patientName(s)} · ${r.ref}`, sub: `Admin ติดตาม · Clinical Lead ตัดสินความปลอดภัย · Finance ดูเรื่องเงิน · ${(r.review.reasons || []).join(' · ')}`, go: 'a.clinical', cta: 'ตรวจเคสนี้' });
     if (r && r.status === 'CLINICAL_REVIEW') t.push({ icon: 'clipboard-plus', tag: r.paid ? 'ตรวจซ้ำ · ชำระแล้ว ไม่เก็บซ้ำ' : 'ตรวจก่อนเก็บเงิน', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
-    if (r && r.check && r.check.state === 'open') t.push({ icon: 'receipt', tag: 'สลิปผิดปกติ', title: `สลิป Clair Match · ${r.ref}`, sub: `${patientName(s)} · ${r.check.reasons.join(' · ')} · จับคู่ PT ต่อไปแล้ว`, go: 'a.payments', cta: 'ดูสลิป' });
+    if (r && r.check && r.check.state === 'open') t.push({ icon: 'receipt', tag: 'สลิปผิดปกติ', title: `สลิป ClairMatch · ${r.ref}`, sub: `${patientName(s)} · ${r.check.reasons.join(' · ')} · จับคู่ PT ต่อไปแล้ว`, go: 'a.payments', cta: 'ดูสลิป' });
     if (r && r.status === 'PAID') t.push({ icon: 'users-round', tag: 'จับคู่ PT', title: `${patientName(s)} · ${district(s) || 'ยังไม่ระบุเขต'}`, sub: `${r.preferredPt ? `ผู้รับบริการขอ ${ptName(s, r.preferredPt)} · ` : ''}ระบบหา PT ที่ตรงเขตไม่ได้ ต้องเลือกเอง`, go: 'a.match', cta: 'เลือก PT' });
     if (s.course && s.course.slip && !s.course.approved) t.push({ icon: 'wallet', tag: 'ตรวจเงินคอร์ส', title: `คอร์ส ${s.course.sessions} ครั้ง ${money(s.course.total)}`, sub: `${patientName(s)} · PT ${meName(s)} ส่งสลิปจากหน้างาน`, go: 'a.payments', cta: 'ตรวจสลิปคอร์ส' });
     if (s.review && s.review.consent && !s.review.approved && !s.review.hidden) t.push({ icon: 'star', tag: 'รีวิวรออนุมัติ', title: `รีวิว ${s.review.stars} ดาว ถึง ${meName(s)}`, sub: 'ผู้รับบริการยินยอมให้แสดงบนหน้าเว็บ อ่านก่อนอนุมัติ', go: 'a.reviews', cta: 'อ่านรีวิว' });
@@ -154,7 +154,7 @@
   }
   function waiting(s) {
     const w = [], r = s.request;
-    if (r && r.status === 'PAYMENT_PENDING') w.push({ icon: 'hourglass', title: `${patientName(s)} · รอชำระ Clair Match`, sub: `${r.ref} · ระบบส่งลิงก์ชำระให้ใน LINE แล้ว`, go: 'a.patients', cta: 'ดูคนไข้' });
+    if (r && r.status === 'PAYMENT_PENDING') w.push({ icon: 'hourglass', title: `${patientName(s)} · รอชำระ ClairMatch`, sub: `${r.ref} · ระบบส่งลิงก์ชำระให้ใน LINE แล้ว`, go: 'a.patients', cta: 'ดูคนไข้' });
     if (r && r.status === 'OFFERED') w.push({ icon: SC.offerBlock(s) ? 'lock' : 'send', title: `${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${SC.offerBlock(s)}` : 'รอ PT ตอบรับข้อเสนอ'} · ${patientName(s)}`, sub: `${r.auto ? 'ระบบจับคู่ให้อัตโนมัติ · ' : ''}ส่งให้ ${(r.offerTo || []).map(id => ptName(s, id)).join(', ') || '—'} · ภายใน 30 นาที`, go: 'a.match', cta: 'ดูข้อเสนอ' });
     s.visits.filter(x => x.step < 4).forEach(x => w.push({ icon: 'calendar-days', title: `นัดครั้งที่ ${x.n} · ${patientName(s)}`, sub: `${x.date} ${x.time} · ${STEP[x.step]}`, go: 'a.appts', cta: 'ดูนัด' }));
     return w;
@@ -304,7 +304,7 @@
   }
   function payItems(s) {
     const out = [], r = s.request, c = s.course;
-    if (r && r.check && r.check.state === 'open') out.push({ kind: 'trial', title: 'Clair Match', amount: SC.TRIAL, slipAmount: 1500, ref: r.ref, src: r.slip, from: patientName(s), when: SC.TODAY, by: 'ผู้รับบริการส่งสลิปเองใน LINE', flag: r.check.reasons, cta: 'เช็กบัญชีแล้ว ยอดถูก', rej: 'แจ้งคนไข้ให้โอนเพิ่มหรือส่งใหม่' });
+    if (r && r.check && r.check.state === 'open') out.push({ kind: 'trial', title: 'ClairMatch', amount: SC.TRIAL, slipAmount: 1500, ref: r.ref, src: r.slip, from: patientName(s), when: SC.TODAY, by: 'ผู้รับบริการส่งสลิปเองใน LINE', flag: r.check.reasons, cta: 'เช็กบัญชีแล้ว ยอดถูก', rej: 'แจ้งคนไข้ให้โอนเพิ่มหรือส่งใหม่' });
     if (c && c.slip && !c.approved) out.push({ kind: 'course', title: `คอร์ส ${c.sessions} ครั้ง${c.bonus ? ` แถม ${c.bonus} ครั้ง` : ''}`, amount: c.total, ref: c.code || (r ? r.ref : '—'), src: c.slip, from: patientName(s), when: SC.VISIT1.date, by: `${meName(s)} ส่งสลิปแทนจากหน้างาน`, cta: 'ยืนยันรับเงินและเปิดสิทธิ์' });
     return out;
   }
@@ -325,15 +325,15 @@
               <div class="note">ตรวจยอดเงินเข้าบัญชีจริงก่อนยืนยัน ไม่ใช่ดูภาพสลิปอย่างเดียว</div>
               <div class="aa-acts"><button class="btn" data-act="confirmPayment" data-kind="${x.kind}">${I('check')}${esc(x.cta)}</button><button class="btn danger" data-act="rejectPayment" data-kind="${x.kind}">${I('x')}${esc(x.rej || 'ยอดไม่ตรง ตีกลับ')}</button></div>
             </div></div></article>`).join('')
-          : `<div class="card flat">${ui.empty('wallet', 'ไม่มีสลิปผิดปกติ', 'สลิป Clair Match ที่ระบบตรวจผ่านไปต่อเองแล้ว ดูได้ในแท็บตรวจแล้ว ถ้าระบบเจอยอดหรือสลิปแปลก จะขึ้นที่นี่และแจ้งใน LINE แอดมิน')}</div>`;
+          : `<div class="card flat">${ui.empty('wallet', 'ไม่มีสลิปผิดปกติ', 'สลิป ClairMatch ที่ระบบตรวจผ่านไปต่อเองแล้ว ดูได้ในแท็บตรวจแล้ว ถ้าระบบเจอยอดหรือสลิปแปลก จะขึ้นที่นี่และแจ้งใน LINE แอดมิน')}</div>`;
       } else {
         const rows = [];
-        if (trialDone(s)) rows.push({ cells: [`<div class="t">Clair Match</div><span class="small">${esc(patientName(s))}</span>`, `<span class="money">${money(SC.TRIAL)}</span>`, `<span style="white-space:nowrap">${esc(s.request.ref)}</span>`, `<span class="pill">${s.request.check && s.request.check.state === 'asked' ? 'แจ้งคนไข้แล้ว' : 'รับเงินแล้ว'}</span> <span class="small">${!s.request.check || s.request.check.state === 'auto' ? 'ระบบตรวจผ่านอัตโนมัติ' : s.request.check.state === 'ok' ? 'แอดมินเช็กบัญชีแล้ว' : esc(s.request.check.reasons.join(' · '))}</span>`] });
+        if (trialDone(s)) rows.push({ cells: [`<div class="t">ClairMatch</div><span class="small">${esc(patientName(s))}</span>`, `<span class="money">${money(SC.TRIAL)}</span>`, `<span style="white-space:nowrap">${esc(s.request.ref)}</span>`, `<span class="pill">${s.request.check && s.request.check.state === 'asked' ? 'แจ้งคนไข้แล้ว' : 'รับเงินแล้ว'}</span> <span class="small">${!s.request.check || s.request.check.state === 'auto' ? 'ระบบตรวจผ่านอัตโนมัติ' : s.request.check.state === 'ok' ? 'แอดมินเช็กบัญชีแล้ว' : esc(s.request.check.reasons.join(' · '))}</span>`] });
         if (s.course && s.course.approved) rows.push({ cells: [`<div class="t">คอร์ส ${s.course.sessions} ครั้ง</div><span class="small">${esc(patientName(s))}</span>`, `<span class="money">${money(s.course.total)}</span>`, `<span style="white-space:nowrap">${esc(s.course.code || (s.request ? s.request.ref : '—'))}</span>`, '<span class="pill">รับเงินแล้ว · เปิดสิทธิ์แล้ว</span>'] });
         a.rejects.forEach(x => rows.push({ cells: [`<div class="t">${esc(x.title)}</div><span class="small">${esc(x.from)}</span>`, `<span class="money">${money(x.amount)}</span>`, `<span style="white-space:nowrap">${esc(x.ref)}</span>`, `<span class="pill warn">ตีกลับ</span> <span class="small">${esc(x.reason)}</span>`] }));
         body = rows.length ? table(['รายการ', 'ยอด', 'อ้างอิง', 'ผล'], rows) : `<div class="card flat">${ui.empty('receipt', 'ยังไม่มีรายการที่ตรวจแล้ว', 'รายการที่ยืนยันหรือตีกลับจะเก็บไว้ที่นี่')}</div>`;
       }
-      return shell(s, 'a.payments', { kick: 'ตรวจเงิน', title: 'การเงิน', sub: 'ระบบอ่านสลิป Clair Match ให้เอง (ยอด ผู้รับ เวลาโอน เลขอ้างอิงซ้ำ) แล้วจับคู่ต่อทันที ที่นี่ขึ้นเฉพาะสลิปที่ผิดปกติ และสลิปคอร์ส', right: seg }, body);
+      return shell(s, 'a.payments', { kick: 'ตรวจเงิน', title: 'การเงิน', sub: 'ระบบอ่านสลิป ClairMatch ให้เอง (ยอด ผู้รับ เวลาโอน เลขอ้างอิงซ้ำ) แล้วจับคู่ต่อทันที ที่นี่ขึ้นเฉพาะสลิปที่ผิดปกติ และสลิปคอร์ส', right: seg }, body);
     }
   });
   SC.action('viewSlip', (s, ctx) => {
@@ -427,7 +427,7 @@
     if (r.scopeHold) { r.scopeHold = false; if (line) { line('patient', { key: 'clinOk', text: `${said} · นัดเดิมยังอยู่ ไม่มีค่าใช้จ่ายเพิ่ม` }); line('pt', { key: 'teamReply', text: `ทีมคลินิกตรวจเคส ${r.ref} แล้ว · ทำได้เฉพาะ: ${scope.allow.join(' · ')}${scope.limits ? ` · ข้อจำกัด: ${scope.limits}` : ''}` }); } return; }
     if (r.paid) { r.status = 'PAID'; if (line) { line('patient', { key: 'clinOk', text: `${said} · ชำระแล้ว ไม่ต้องชำระซ้ำ ทีมกำลังหานักกายภาพ` }); offerIfFits(s, line); } return; }
     r.status = 'PAYMENT_PENDING';
-    if (line) { line('patient', { key: 'clinOk', text: `${said} · ชำระ Clair Match ฿1,599 เพื่อเริ่มหานักกายภาพ` }); line('patient', { key: 'intakePay' }); }
+    if (line) { line('patient', { key: 'clinOk', text: `${said} · ชำระ ClairMatch ฿1,599 เพื่อเริ่มหานักกายภาพ` }); line('patient', { key: 'intakePay' }); }
   };
   SC.screen('a.clinical', {
     role: 'admin',
@@ -499,7 +499,7 @@
       const head = { kick: r && r.auto ? 'ระบบจับคู่ให้อัตโนมัติ' : 'เลือก PT ด้วยตนเอง', title: 'จับคู่ PT', sub: 'แสดงเฉพาะเขตและเวลาที่ผู้รับบริการสะดวก ไม่มีที่อยู่เต็มในหน้านี้' };
       if (!r || ['CLINICAL_REVIEW', 'REVIEW_DECLINED', 'ASSESS_HOLD', 'PAYMENT_PENDING', 'SLIP_SENT'].includes(r.status)) {
         const cta = r && r.status === 'SLIP_SENT' ? '<button class="btn" data-go="a.payments">ไปตรวจสลิป</button>' : '';
-        return shell(s, 'a.match', head, `<div class="card flat">${ui.empty('users-round', 'ยังไม่มีคำขอที่รอจับคู่', r ? `คำขอ ${r.ref} ${'รอผู้รับบริการชำระเงินก่อน'} ระบบจับคู่ให้ทันทีที่ได้สลิป` : 'เมื่อผู้รับบริการประเมินอาการและชำระ Clair Match แล้ว คำขอจะขึ้นที่นี่', cta)}</div>`);
+        return shell(s, 'a.match', head, `<div class="card flat">${ui.empty('users-round', 'ยังไม่มีคำขอที่รอจับคู่', r ? `คำขอ ${r.ref} ${'รอผู้รับบริการชำระเงินก่อน'} ระบบจับคู่ให้ทันทีที่ได้สลิป` : 'เมื่อผู้รับบริการประเมินอาการและชำระ ClairMatch แล้ว คำขอจะขึ้นที่นี่', cta)}</div>`);
       }
       const d = district(s), z = zoneOf(d);
       const wins = s.patient.windows || [];
@@ -507,7 +507,7 @@
       const reqCard = `<article class="card flat">
         <div class="row between wrap"><b class="h2">${esc(patientName(s))}</b>${reqPill(r)}</div>
         ${kv([['เลขคำขอ', esc(r.ref)], ['เขต', esc(d ? `${d}${z ? ` · ${z.name}` : ''}` : 'ยังไม่ระบุ')], ['จองให้', s.patient.bookingFor === 'SOMEONE_ELSE' ? 'คนในครอบครัว' : 'ตัวเอง'], ['เป้าหมาย', esc(goalText(s) || '—')],
-          bar.length ? ['กิจวัตรประจำวัน', `Barthel ${bar.reduce((t, v) => t + v, 0)}/${bar.length * 2} คะแนน`] : null, ['ชำระแล้ว', `Clair Match ${money(SC.TRIAL)}`]])}
+          bar.length ? ['กิจวัตรประจำวัน', `Barthel ${bar.reduce((t, v) => t + v, 0)}/${bar.length * 2} คะแนน`] : null, ['ชำระแล้ว', `ClairMatch ${money(SC.TRIAL)}`]])}
         ${wins.length ? `<div class="stack"><span class="label">เวลาที่สะดวก</span>${wins.map((w, i) => `<span class="small">${i === 0 ? 'เวลาหลัก' : 'เวลาสำรอง ' + i} · ${esc(w)}</span>`).join('')}</div>` : ''}
       </article>`;
       if (r.status === 'OFFERED' || r.status === 'BOOKED') {
@@ -544,7 +544,7 @@
       // Palm (23 Oct): time + price + send sit right under "แนะนำให้ส่ง"; the long "can't send" list moves below and folds, so phones don't scroll past it.
       const notYet = `<details class="card flat aa-more"><summary class="row between"><span class="label">ยังส่งไม่ได้ ${SAMPLES.length} คน · ดูเหตุผล</span>${I('chevron-down')}</summary><div class="stack">${others}</div></details>`;
       const winCard = wins.length ? `<article class="card flat"><b class="h3">เลือกเวลาที่ผู้รับบริการเสนอ</b><div class="stack">${wins.map((w, i) => `<button class="aa-pick" data-pick="admin.win" data-value="${i}" aria-pressed="${a.win === i}"><span class="aa-box" style="border-radius:50%">${a.win === i ? I('check') : ''}</span><span class="grow"><span class="t">${i === 0 ? 'เวลาหลัก' : 'เวลาสำรอง ' + i}</span><span class="s">${esc(w)}</span></span></button>`).join('')}</div></article>` : '';
-      const send = `<article class="card flat"><div class="row between wrap"><span class="label">ราคา</span><span><b class="money">Clair Match ${money(SC.TRIAL)}</b> <span class="small">· ชำระแล้ว · ไม่มีค่าเดินทางแยก</span></span></div>
+      const send = `<article class="card flat"><div class="row between wrap"><span class="label">ราคา</span><span><b class="money">ClairMatch ${money(SC.TRIAL)}</b> <span class="small">· ชำระแล้ว · ไม่มีค่าเดินทางแยก</span></span></div>
         <button class="btn" data-act="sendOffer" data-need="admin.tick">${I('send')}ส่งข้อเสนอให้ PT ที่เลือก${a.tick.length ? ` (${a.tick.length} คน)` : ''}</button>
         <p class="small" style="margin:0">PT ได้การ์ดใน LINE และต้องตอบรับภายใน 30 นาที</p></article>`;
       return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${picks}${SC.MATCH.traceCard(s)}${winCard}${send}${notYet}</div></div>`);

@@ -1504,7 +1504,7 @@
   });
   act('visitBlock', (s, ctx) => { const n = +ctx.data.n; openSheet(st => { const v = visitOf(st, n); if (!v) return '<button class="btn ghost" data-close>ปิด</button>';
     return `<span class="pill gold">${I('house')}นัดคนไข้</span><b class="h2">ทำเคส ${esc(pname(st))}</b>
-      <div class="kv"><dt>ครั้งที่</dt><dd>${v.n}${v.n === 1 ? ' · Clair Match' : ' · คอร์ส'}</dd><dt>วันเวลา</dt><dd>${esc(v.date)} ${esc(v.time)}</dd><dt>เขต</dt><dd>${esc(districtOf(st))}</dd><dt>สถานะ</dt><dd>${['ยืนยันแล้ว', 'กำลังเดินทาง', 'ถึงแล้ว', 'กำลังดูแล', 'จบแล้ว'][v.step]}</dd></div>
+      <div class="kv"><dt>ครั้งที่</dt><dd>${v.n}${v.n === 1 ? ' · ClairMatch' : ' · คอร์ส'}</dd><dt>วันเวลา</dt><dd>${esc(v.date)} ${esc(v.time)}</dd><dt>เขต</dt><dd>${esc(districtOf(st))}</dd><dt>สถานะ</dt><dd>${['ยืนยันแล้ว', 'กำลังเดินทาง', 'ถึงแล้ว', 'กำลังดูแล', 'จบแล้ว'][v.step]}</dd></div>
       <div class="grid2"><button class="btn ghost" data-close>ปิด</button><button class="btn" data-act="openVisit" data-n="${v.n}">เปิดนัด</button></div>`; }); });
 
   /* ======================================================================
@@ -1677,7 +1677,7 @@
       const yes = Object.values(s.patient.health || {}).filter(x => x === 'YES').length;
       return `<div class="scr">${ui.bar('งานเสนอใหม่')}<div class="body enter">
         <div class="row wrap">${s.request.preferredPt === 'me' ? `<span class="pill">${I('heart-handshake')}ผู้รับบริการขอคุณ</span>` : ''}<span class="pill wait">${I('clock')}ตอบภายใน <span id="ttCount">${remainMin(s)}</span> นาที</span></div>
-        <div class="card"><span class="kick">Clair Match · ครั้งแรก · เลขงาน ${esc(s.request.offerId || '')}</span><b class="h2">ทำเคสที่บ้าน · ${esc(goalText(s))}</b>
+        <div class="card"><span class="kick">ClairMatch · ครั้งแรก · เลขงาน ${esc(s.request.offerId || '')}</span><b class="h2">ทำเคสที่บ้าน · ${esc(goalText(s))}</b>
           <div class="list" style="box-shadow:none;border-radius:0">
             <div class="li"><span class="tile">${I('calendar-days')}</span><span class="grow"><span class="t">${esc(SC.VISIT1.date)}</span><br><span class="s">${esc(SC.VISIT1.time)}</span></span></div>
             <div class="li"><span class="tile">${I('map-pin')}</span><span class="grow"><span class="t">เขต${esc(districtOf(s))}</span><br><span class="s">ที่อยู่เต็มแสดงหลังคุณรับงาน</span></span></div>
@@ -1769,7 +1769,7 @@
         main = `<div class="note mint row">${I('badge-check')}<span>ส่งสรุปเข้า LINE คนไข้แล้ว</span></div><button class="btn ghost" data-act="viewReport" data-n="${n}">ดูสรุปที่ส่ง</button>`;
       }
       return `<div class="scr">${ui.bar('ทำเคส ' + pname(s))}<div class="body">
-        <div class="card"><div class="row between"><b class="h3">ครั้งที่ ${n}${n === 1 ? ' · Clair Match' : ' · คอร์ส'}</b><span class="small">${esc(v.date)}</span></div><p class="small" style="margin:0">${esc(v.time)} · เขต${esc(districtOf(s))}</p>${stepper}</div>
+        <div class="card"><div class="row between"><b class="h3">ครั้งที่ ${n}${n === 1 ? ' · ClairMatch' : ' · คอร์ส'}</b><span class="small">${esc(v.date)}</span></div><p class="small" style="margin:0">${esc(v.time)} · เขต${esc(districtOf(s))}</p>${stepper}</div>
         ${main}
         <div class="tt-map" role="img" aria-label="แผนที่บ้านคนไข้"><span class="me"></span><span class="pin">${I('map-pin')}</span><button class="btn sm ghost" data-act="ptMaps">${I('navigation')}นำทาง</button></div>
         <div class="list">
@@ -2224,9 +2224,9 @@
       const courseLeft = c && c.approved ? (c.net || c.total) - (done.filter(v => v.n > 1).length * c.perSession) : 0;
       const body = rows.length || c ? `
           <div class="tt-earn"><span class="small" style="color:var(--gink)">ยอดเดือนนี้ (ต.ค. 2569) · รอโอน</span><span class="n">${money(total)}</span><span class="small" style="color:var(--gink)">${rows.length} เคส · โอนรอบถัดไป 10 พ.ย. 2569</span></div>
-          ${rows.length ? `<span class="kick">รายการ</span><div class="list">${rows.map(r => `<div class="li"><span class="tile">${I('house')}</span><span class="grow"><span class="t">ทำเคส ${esc(pname(s))} · ครั้งที่ ${r.v.n}</span><br><span class="s">${esc(shortDate(r.v.date))} · ${r.v.n === 1 ? 'Clair Match' : 'คอร์ส'} · ${esc(districtOf(s))}</span></span><span style="text-align:right"><b class="money">${money(r.amt)}</b><br><span class="pill wait">รอโอน</span></span></div>`).join('')}</div>` : ''}
+          ${rows.length ? `<span class="kick">รายการ</span><div class="list">${rows.map(r => `<div class="li"><span class="tile">${I('house')}</span><span class="grow"><span class="t">ทำเคส ${esc(pname(s))} · ครั้งที่ ${r.v.n}</span><br><span class="s">${esc(shortDate(r.v.date))} · ${r.v.n === 1 ? 'ClairMatch' : 'คอร์ส'} · ${esc(districtOf(s))}</span></span><span style="text-align:right"><b class="money">${money(r.amt)}</b><br><span class="pill wait">รอโอน</span></span></div>`).join('')}</div>` : ''}
           ${c ? `<span class="kick">คอร์ส</span><div class="card flat"><div class="row"><span class="tile gold">${I('package')}</span><span class="grow"><b class="h3">คอร์ส ${c.sessions} ครั้ง${c.bonus ? ` แถม ${c.bonus}` : ''} · สุทธิ ${money(c.net || c.total)}</b><br><span class="small">${c.approved ? `รายได้สุทธิทยอยเข้าครั้งละ ${money(c.perSession)} ตามครั้งที่ทำ · เหลือ ${money(Math.max(0, courseLeft))}` : 'รอแอดมินตรวจสลิป รายได้เริ่มนับเมื่อเปิดสิทธิ์'}</span></span></div></div>` : ''}`
-        : ui.empty('wallet', 'ยังไม่มีรายได้', 'รายได้ขึ้นที่นี่หลังจบเคสและส่งสรุป Clair Match ได้สุทธิเคสละ ' + money(NET_TRIAL));
+        : ui.empty('wallet', 'ยังไม่มีรายได้', 'รายได้ขึ้นที่นี่หลังจบเคสและส่งสรุป ClairMatch ได้สุทธิเคสละ ' + money(NET_TRIAL));
       return `<div class="scr">${ui.bar('รายได้', { back: false })}<div class="body enter">${body}
         <p class="note mint row tt-top">${I('info')}<span>ยอดที่แสดงหักค่าธรรมเนียมแล้ว · โอนเข้าบัญชีที่ลงทะเบียนกับทีม</span></p>
         <button class="btn ghost" data-act="ptBank">${I('landmark')}บัญชีรับเงิน</button>
