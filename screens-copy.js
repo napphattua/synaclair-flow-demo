@@ -3,6 +3,8 @@
    A mark is one reviewer's opinion, not approval. Marks live outside the rehearsal state so "เริ่มใหม่" keeps them.
    With API_URL set, each card is sent on its own through tools/copy-review-worker and saved as a new version in a private GitHub repo. Without it, marks stay on this device and go back by copy. */
 (function () {
+  /* S06 (UX audit 7 Nov): shorter, plainer Thai offered next to Nat's wording. Nat's text stays word for word; nothing here is approved. */
+  const AUDIT = { A01: 'ตอบสั้น ๆ ไม่ต้องรู้ทุกข้อ ข้อไหนไม่แน่ใจ กด "ไม่แน่ใจ"', A02: 'เลือกข้อที่ใกล้ที่สุด ไม่แน่ใจ กด "ไม่แน่ใจ" ทีมจะช่วยดูต่อ', A03: 'ยังขาดอีก 1 ข้อ / ตอบข้อ "{ชื่อคำถาม}" แล้วไปต่อได้', A04: 'ข้อที่ไม่แน่ใจ ทีมจะช่วยดูให้ / ยังไม่ต้องจ่ายเงินตอนนี้', A06: 'เลือกได้หลายข้อ นักกายภาพจะคุยเป้าหมายกับคุณอีกครั้งที่บ้าน', A07: 'ตอบเท่าที่สะดวก ข้อมูลสุขภาพจะแชร์ให้ผู้ดูแลเมื่อคุณอนุญาตเท่านั้น', A08: 'ทีมนักกายภาพขอดูข้อมูลก่อน จะแจ้งผลทาง LINE · ยังไม่ต้องจ่ายเงิน', A09: 'ตรวจคำตอบอีกครั้ง แล้วกดส่ง ระบบจะเช็กความปลอดภัยให้หลังส่ง' };
   'use strict';
   const { esc, ui } = SC, I = ui.icon, ALL = window.SC_COPY || [];
   const VER = 'Copy v1.1 · PROPOSED', KEY = 'sc-copy-review-v1', COPY_VERSION = 'v1.1-PROPOSED';
@@ -45,6 +47,7 @@
       <header class="ck-top"><b class="ck-id">${id}</b><span class="ck-role">${esc(role)}</span><span class="grow"></span>${badge}</header>
       <p class="ck-when"><span>แสดงเมื่อ</span> ${esc(trigger)}</p>
       <div class="ck-msg ${isLine ? 'line' : ''}">${isLine ? '<small>แจ้งเตือนใน LINE</small>' : ''}<b>${fill(title)}</b><p>${bold ? fill(body).replace(esc(bold), `<b>${esc(bold)}</b>`) : fill(body)}</p>${has(cta) ? `<span class="ck-cta">${esc(cta)}</span>` : ''}</div>
+      ${AUDIT[id] ? `<div class="ck-audit" data-ux-suggest><b>ข้อเสนอจาก UX audit 7 พ.ย. (ยังไม่อนุมัติ)</b><p>${esc(AUDIT[id])}</p></div>` : ''}
       ${old ? `<details class="ck-old"><summary>ดูข้อความ v1.0 ก่อนนัทแก้</summary><p><b>${fill(old[0])}</b><br>${fill(old[1])}${has(old[2]) ? `<br>ปุ่ม: ${esc(old[2])}` : ''}</p></details>` : ''}
       ${SPECIAL[id] ? `<p class="ck-special">${I('flag')}<span><b>ตรวจเป็นพิเศษ</b> ${esc(SPECIAL[id])}</span></p>` : ''}
       <dl class="ck-meta"><div class="no"><dt>ห้ามใช้</dt><dd>${esc(no)}</dd></div><div><dt>ถ้าสื่อสารผิด</dt><dd>${esc(risk)}</dd></div>${has(dyn) ? `<div><dt>ดึงจากระบบ</dt><dd>${esc(dyn)}</dd></div>` : ''}</dl>

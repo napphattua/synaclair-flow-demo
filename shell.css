@@ -288,3 +288,64 @@ body[data-sc-role="admin"] .stagewrap { grid-template-columns: 250px minmax(0, 1
 .rv-foot { margin: 0; font-size: 12.5px; color: var(--mute); }
 #rvnote { width: 100%; max-width: 662px; } #rvnote:empty { display: none; } .rv-note { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px 8px 12px; border-radius: 14px; background: #fff; font-size: 14px; color: var(--ink); } .rv-note.is-new { box-shadow: 0 0 0 1.5px var(--em2); } .rv-note.is-check { box-shadow: 0 0 0 1.5px var(--gold); } .rv-note .grow { flex: 1 1 180px; min-width: 0; } .rv-note .btn { width: auto; min-height: 34px; padding: 0 12px; font-size: 13.5px; box-shadow: none; }
 #flowsvg .rv-chip rect { stroke: #fff; stroke-width: 1.5; } #flowsvg .rv-chip text { font: 600 11px var(--display); } #flowsvg .rv-chip.is-new rect { fill: var(--em); } #flowsvg .rv-chip.is-new text { fill: #fff; } #flowsvg .rv-chip.is-check rect { fill: var(--gold2); } #flowsvg .rv-chip.is-check text { fill: var(--forest); }
+
+
+/* ---------- 7 Nov 2026 round ---------- */
+.log-btn { display: inline-flex; align-items: center; min-height: 42px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--forest); color: #fff; font: 600 14px var(--display); cursor: pointer; }
+#roletabs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); }
+#roletabs a { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 10px; border-radius: 10px; background: #fff; color: var(--em); text-decoration: none; box-shadow: inset 0 0 0 1px var(--mint2); font: 600 12.5px var(--display); }
+#roletabs svg { width: 13px; height: 13px; }
+#changelog { position: fixed; inset: 0; z-index: 90; overflow-y: auto; background: #07302355; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+#changelog[hidden] { display: none; }
+.log-wrap { max-width: 1100px; margin: 0 auto; background: #fdfdfd; border-radius: 22px; padding: 18px; box-shadow: 0 30px 70px #07302340; display: grid; gap: 12px; }
+.log-head { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; } .log-head .grow { min-width: 220px; } .log-head b { display: block; font: 600 20px var(--display); color: var(--forest); } .log-head small { color: var(--sub); font-size: 13.5px; }
+.log-head .btn { width: auto; }
+.log-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.log-tabs button { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--mint); color: var(--em); font: 600 14px var(--display); cursor: pointer; }
+.log-tabs button.on { background: var(--forest); color: #fff; } .log-tabs span { padding: 0 7px; border-radius: 99px; background: #ffffff33; font-size: 12px; } .log-tabs button:not(.on) span { background: #fff; }
+.log-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.log-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+.log-row.boss { box-shadow: inset 3px 0 0 #b9771f, inset 0 0 0 1px var(--line); } .log-row.open { box-shadow: inset 3px 0 0 var(--gold2), inset 0 0 0 1px var(--line); }
+.log-id { font: 600 13px var(--display); color: var(--em); overflow-wrap: anywhere; }
+.log-what p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink); } .log-what small { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px; color: var(--sub); font-size: 12.5px; } .log-what small svg { width: 13px; height: 13px; }
+.log-acts { display: flex; align-items: center; gap: 10px; } .log-acts .btn { width: auto; min-height: 40px; white-space: nowrap; }
+.log-ok { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; font-size: 13px; color: var(--sub); cursor: pointer; }
+@media (max-width: 760px) { .log-row { grid-template-columns: minmax(0, 1fr); } .log-acts { justify-content: space-between; } #changelog { padding: 0; } .log-wrap { border-radius: 0; min-height: 100%; } }
+/* S01: flow and "มาใหม่" fold so the screen under review stays near the top */
+#flow.fold .boardbox { display: none; }
+.flowhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; } .flowhead .flow-tg { margin-left: auto; width: auto; min-height: 36px; }
+#rvbox { padding-top: 10px; padding-bottom: 10px; } .rv-head .btn { width: auto; min-height: 36px; }
+/* S03: no iPad / computer switch on a phone-width window */
+@media (max-width: 560px) { #devsw { display: none; } #roletabs { display: none; } .log-btn { width: 100%; justify-content: center; } }
+/* A04: admin at 1280+ gets nearly the full width: the level list becomes a drawer and LINE a floating button */
+@media (min-width: 901px) {
+  body[data-sc-role="admin"] .stagewrap { grid-template-columns: minmax(0, 1fr); }
+  body[data-sc-role="admin"] #rail { display: none; position: fixed; z-index: 80; top: 0; left: 0; bottom: 0; width: min(330px, 88vw); max-height: none; border-radius: 0 22px 22px 0; }
+  body[data-sc-role="admin"].levels-open #rail { display: grid; }
+  body[data-sc-role="admin"].levels-open::after { content: ''; position: fixed; inset: 0; z-index: 70; background: #07302344; }
+  body[data-sc-role="admin"] .linep { display: none; position: fixed; z-index: 75; right: 16px; top: 64px; bottom: 16px; width: 360px; }
+  body[data-sc-role="admin"].line-open .linep { display: block; }
+  body[data-sc-role="admin"].line-open .line-phone { height: 100%; }
+  body[data-sc-role="admin"] .line-fab { display: flex; position: fixed; z-index: 76; right: 16px; bottom: 24px; align-items: center; gap: 6px; min-height: 52px; padding: 0 16px; border: 0; border-radius: 99px; background: var(--linegreen); color: #fff; font: 700 15px var(--display); box-shadow: 0 10px 24px #06c75544; }
+  body[data-sc-role="admin"] .line-x { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #ffffff1f; color: #fff; }
+  body[data-sc-role="admin"] .dev-desktop { max-width: none; }
+}
+
+/* 7 Nov rehearsal: per-person admin inboxes in the LINE panel (พี่ปาล์ม · บอส · พี่นัท), and who each admin card went to. */
+#lineHead { flex-wrap: wrap; }
+#lineHead .lh-row { display: flex; align-items: center; gap: 10px; width: 100%; }
+.inbox-tabs { display: flex; gap: 6px; width: 100%; overflow-x: auto; padding-top: 2px; contain: inline-size; }
+.inbox-tabs button { flex: none; min-height: 32px; padding: 0 10px; border: 0; border-radius: 99px; background: #3a4b5d; color: #dfe8f1; font: 600 12.5px var(--display); cursor: pointer; }
+.inbox-tabs button.on { background: #fdfdfd; color: #043928; }
+.inbox-tabs button span { margin-left: 5px; opacity: .75; }
+.msg-to { margin: 0 0 -6px 38px; font: 600 11.5px var(--display); color: #20384f; }
+/* 7 Nov rehearsal: at 375–390 px the level card wrapped one word per line. Text gets the full first row; the buttons go under it. */
+@media (max-width: 560px) {
+  .g-now, .g-pass { flex-wrap: wrap; row-gap: 8px; }
+  .g-now > .grow, .g-pass > .grow { flex: 1 1 calc(100% - 56px); min-width: 0; }
+  .g-now > .btn, .g-pass > .btn { flex: 1 1 auto; min-width: 0; white-space: normal; }
+  #guide .mini-line { flex: 0 0 auto; }
+}
+/* 7 Nov rehearsal: the admin's 250px desktop column rule out-ranked the phone layout, so admin at 390 drew in a 250px strip. One column on narrow screens. */
+@media (max-width: 900px) { body[data-sc-role="admin"] .stagewrap { grid-template-columns: minmax(0, 1fr); } }
+.log-row.sim { box-shadow: inset 3px 0 0 var(--em), inset 0 0 0 1px var(--line); }

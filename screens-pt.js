@@ -396,7 +396,8 @@
   const XP = { signup: 60, photo: 40, bio: 30, post: 30, schedule: 40, verified: 50, note: 5 };
   SC.XP = XP;
   const lvl = xp => { let i = 0; FLOORS.forEach((f, k) => { if (xp >= f) i = k; }); return { level: i + 1, floor: FLOORS[i], next: FLOORS[i + 1] ?? null }; };
-  const NET_TRIAL = 1199;
+  /* PR-02 (H13 l.26): ClairMatch ฿1,599 less the 10% Trial fee = ฿1,439.10 to the PT. Shown with satang. */
+  const NET_TRIAL = SC.POLICY.trialPtNet, money2 = SC.money2;
   const BIO_IDEAS = [['ดูแลมากี่ปี', 'เช่น ดูแลผู้สูงอายุที่บ้านมา 8 ปี'], ['ถนัดเคสแบบไหน', 'เช่น ถนัดฟื้นฟูหลังหลอดเลือดสมอง หรือปวดหลังเรื้อรัง'], ['สไตล์การดูแล', 'เช่น ชอบสอนผู้ดูแลให้ฝึกต่อได้ทุกวัน']];
   const POST_IDEAS = [['ท่าออกกำลังกายง่าย ๆ ที่แนะนำบ่อย', 'ท่าอะไร เหมาะกับใคร ทำวันละกี่ครั้ง และข้อควรระวัง 1 ข้อ'], ['สิ่งที่เพิ่งอ่านแล้วอยากแชร์', 'อ่านเรื่องอะไรมา สรุปให้คนไข้เข้าใจใน 2–3 บรรทัด และบอกแหล่งที่มา'], ['ทำไมถึงชอบดูแลคนไข้ที่บ้าน', 'เล่าเหตุผลหรือเรื่องที่ประทับใจของคุณเอง โดยไม่ระบุตัวคนไข้']];
   const VIDEO_HOSTS = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'tiktok.com', 'www.tiktok.com', 'vt.tiktok.com'];
@@ -714,7 +715,7 @@
         <section class="jn-sec jn-hero" aria-labelledby="jn-title">
           <div class="jn-aur" aria-hidden="true"><i></i><i></i><i></i></div>
           <div class="jn-txt"><h1 id="jn-title">เชื่อมนักกายภาพบำบัด<br><span>ถึงบ้านคนไข้</span></h1>
-            <p><span class="nb">สร้างตัวตนของคุณให้คนไข้เห็น</span> <span class="nb">รับเคสโฮมในเขตที่เลือกเอง</span> <span class="nb">งานใหม่แจ้งผ่าน LINE</span></p></div>
+            <p><span class="nb">รับงานกายภาพบำบัดที่บ้าน</span> <span class="nb">ในเขตที่คุณเลือก</span> <span class="nb">งานใหม่แจ้งทาง LINE</span></p></div>
           <div class="jn-stage">
             <div class="jn-map hero">${jnMapSvg('hero', people)}<span class="jn-dot" data-jn-dot aria-hidden="true"></span><div class="jn-pop" data-jn-pop aria-hidden="true"><span class="ap">${I('message-circle')}</span><span><b>งานใหม่ในเขตที่คุณรับ</b><small data-jn-pop-d>เขตจตุจักร</small></span></div></div>
             <div class="jn-prof" aria-hidden="true">
@@ -912,6 +913,8 @@
   const EQUIP = ['ไม้ค้ำ / walker', 'ยางยืดออกกำลัง', 'เครื่องกระตุ้นไฟฟ้า', 'เครื่องอัลตราซาวด์', 'เข็มขัดช่วยพยุง (gait belt)', 'เครื่องวัดออกซิเจนปลายนิ้ว'];
   const capState = (p, id) => { const d = (p.capDecisions || {})[id]; if (!d) return ''; return d.status === 'PENDING' ? '<small class="tt-capst">รอทีมพิจารณา · แก้คำตอบเองไม่ทำให้อนุมัติ งานอื่นรับได้ตามปกติ</small>' : d.status === 'REJECTED' ? '<small class="tt-capst">ทีมยังไม่อนุมัติงานนี้ · แก้คำตอบเองไม่เปลี่ยนผล</small>' : '<small class="tt-capst">ทีมอนุมัติแล้ว</small>'; };
   act('capPick', (s, ctx) => { SC.capPick(s, ctx.data.id, ctx.data.v); });
+  /* 7 Nov rehearsal voice: 17 taps of "ทำได้" one by one. One tap answers the core tasks still blank; specialty tasks stay one by one. */
+  act('capAllCore', (s, ctx) => { const p = s.pt, ids = capTasks(p).filter(id => id[0] === 'C' && !(p.caps || {})[id]); ids.forEach(id => SC.capPick(s, id, 'can')); ctx.toast(`ตอบ "ทำได้" ${ids.length} ข้อพื้นฐานแล้ว`); });
   function capsStep(p) {
     const list = capTasks(p), done = list.filter(id => CLIN.restricted.includes(id) || p.caps[id]).length;
     const row = id => CLIN.restricted.includes(id)
@@ -920,7 +923,9 @@
           <div class="tt-seg" role="group" aria-label="${esc(CLIN.label(id))}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-act="capPick" data-id="${id}" data-v="${v}">${l}</button>`).join('')}</div></div>`;
     return `<div class="stack"><span class="kick">งานที่รับ</span><h1 class="h1">รับงานกลุ่มไหนบ้าง</h1><p class="small">เลือกกลุ่มก่อน แล้วตอบเฉพาะงานในกลุ่มนั้น ไม่ต้องทำได้ทุกข้อ ตอบตามจริงช่วยให้ได้เคสที่เหมาะ</p></div>
       <div class="tt-svc">${CLIN.services.map(x => { const on = p.services.includes(x.id); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.services" data-value="${x.id}">${I(x.icon)}${esc(x.name)}</button>`; }).join('')}</div>
-      ${list.length ? `<div class="card flat"><div class="row between"><b class="h3">งานในกลุ่มที่เลือก ${list.length} ข้อ</b><span class="pill ${done === list.length ? '' : 'wait'}">ตอบแล้ว ${done}/${list.length}</span></div>${list.map(row).join('')}</div>
+      ${list.length ? `<div class="card flat"><div class="row between"><b class="h3">งานในกลุ่มที่เลือก ${list.length} ข้อ</b><span class="pill ${done === list.length ? '' : 'wait'}">ตอบแล้ว ${done}/${list.length}</span></div>
+        ${(n => n ? `<button class="btn sm ghost" data-act="capAllCore" data-caps-all>${I('check-check')}ทำได้ทุกข้อพื้นฐานที่ยังไม่ตอบ (${n} ข้อ)</button><small class="hint">งานเฉพาะทาง (S) ตอบทีละข้อ เพราะทีมขอดูหลักฐาน · แก้ทีละข้อได้ภายหลัง</small>` : '')(list.filter(id => id[0] === 'C' && !p.caps[id]).length)}
+        ${list.map(row).join('')}</div>
       <div class="card flat"><b class="h3">อุปกรณ์ที่นำไปได้ <span class="small">(ถ้ามี)</span></b><span class="small">ไม่จำเป็นต้องมีเอง บางบ้านมีอุปกรณ์อยู่แล้ว</span>
         <div class="chips">${EQUIP.map(e => { const on = p.equip.includes(e); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.equip" data-value="${esc(e)}">${on ? I('check') : ''}${esc(e)}</button>`; }).join('')}</div></div>
       ${lockNote('ที่ติ๊กเป็นข้อมูลจากคุณ ยังไม่ใช่การอนุมัติ งานเฉพาะทางทีมจะขอดูหลักฐาน เช่น ใบอบรมหรือประสบการณ์ ก่อนส่งเคสแบบนั้นให้')}` : ''}`;
@@ -976,6 +981,10 @@
     const p = s.pt;
     if (!p.legalName.trim() || !/^\d{3,8}$/.test(p.license) || !p.licenseFile || !p.cv.edu.length || !p.displayName.trim() || !(p.services || []).length || !p.zones.length) { ctx.toast('กรอกข้อมูลให้ครบทุกขั้นก่อนนะคะ'); return; }
     p.status = 'PENDING'; p.loggedIn = true; SC.capOpenPending(s);
+    /* 7 Nov rehearsal NT-01: a new sign-up reaches the team in LINE, not only the queue. */
+    const wait = SC.capPending ? SC.capPending(s) : [];
+    ctx.line('admin', { key: 'note', to: ['nat'], title: 'PT สมัครใหม่ รอตรวจใบประกอบ', lines: [`${p.displayName} · ใบประกอบ ${p.license}`, `เขต ${p.zones.join(' · ')}`, wait.length ? `งานที่รอพิจารณา: ${wait.join(' · ')}` : ''], go: 'a.license', button: 'ตรวจใบประกอบ' });
+    if (wait.length) ctx.line('admin', { key: 'note', to: ['palm'], title: 'ถึงพี่ปาล์ม (Clinical Lead): ความสามารถ PT รอพิจารณา', lines: [`${p.displayName} · ${wait.join(' · ')}`, 'พิจารณาได้หลังตรวจใบประกอบ · ระบบไม่อนุมัติเอง'], go: 'a.caps', button: 'พิจารณา' });
     ctx.xp(XP.signup, 'สร้างโปรไฟล์');
     return 't.hub';
   });
@@ -1131,15 +1140,15 @@
             : `<div class="grid2"><label class="btn sm ghost tt-file" style="width:100%">${I('upload')}แนบรูปหรือ PDF<input type="file" accept="image/*,application/pdf" data-file="pt.cvd.efile" aria-label="แนบเอกสารยืนยันการศึกษา"></label><button class="btn sm ghost" style="width:100%" data-pick="pt.cvd.efile" data-value="sample">ไฟล์ตัวอย่าง</button></div>`}
           <small class="hint">ทรานสคริปต์ หรือใบปริญญาบัตร อย่างใดอย่างหนึ่ง · ทีมตรวจ คนไข้ไม่เห็นไฟล์นี้</small></div>
         <button class="btn sm" data-act="cvAddEdu" data-need="pt.cvd.lvl,pt.cvd.major,pt.cvd.efile${other ? ',pt.cvd.uniOther' : ',pt.cvd.uni'}">${I('plus')}เพิ่มประวัติการศึกษา</button></div>
-      <b class="sec-h">${I('award')}การอบรมและใบ certificate <span class="small">ไม่บังคับ</span></b>
-      ${c.train.map(([y, x, cert], i) => row('train', i, x, [y, cert ? 'แนบใบ certificate แล้ว' : ''].filter(Boolean).join(' · '))).join('')}
+      <b class="sec-h">${I('award')}การอบรมและใบรับรองการอบรม <span class="small">ไม่บังคับ</span></b>
+      ${c.train.map(([y, x, cert], i) => row('train', i, x, [y, cert ? 'แนบใบรับรองการอบรมแล้ว' : ''].filter(Boolean).join(' · '))).join('')}
       <div class="card flat tt-cvadd">
         <label class="field"><span>ชื่อหลักสูตรที่อบรม</span><input class="in" data-bind="pt.cvd.course" data-live value="${esc(d.course)}" placeholder="เช่น ฟื้นฟูผู้ป่วย Stroke"></label>
-        <div class="grid2"><label class="field"><span>ปี</span>${sel('pt.cvd.cyear', d.cyear, YEARS, 'เลือกปี')}</label><label class="check" style="align-self:end"><input type="checkbox" data-bind="pt.cvd.cert" ${d.cert ? 'checked' : ''}><span>แนบใบ certificate (ตัวอย่าง)</span></label></div>
+        <div class="grid2"><label class="field"><span>ปี</span>${sel('pt.cvd.cyear', d.cyear, YEARS, 'เลือกปี')}</label><label class="check" style="align-self:end"><input type="checkbox" data-bind="pt.cvd.cert" ${d.cert ? 'checked' : ''}><span>แนบใบ ใบรับรองการอบรม (ตัวอย่าง)</span></label></div>
         <button class="btn sm ghost" data-act="cvAddTrain" data-need="pt.cvd.course">${I('plus')}เพิ่มการอบรม</button></div>`;
   }
   act('editCv', s => { s.pt.cvd = null; cvdOf(s); openSheet(st => `<div class="row between"><b class="h2">การศึกษาและการอบรม</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
-      <p class="small">คนไข้เห็นในแท็บ "ประวัติ" ของโปรไฟล์ · ไม่ต้องใส่ที่ทำงาน · ใบ certificate ทีมตรวจก่อนขึ้นให้คนไข้เห็น</p>
+      <p class="small">คนไข้เห็นในแท็บ "ประวัติ" ของโปรไฟล์ · ไม่ต้องใส่ที่ทำงาน · ใบรับรองการอบรม ทีมตรวจก่อนขึ้นให้คนไข้เห็น</p>
       ${cvForm(st)}<button class="btn" data-close>เสร็จ</button>`); });
   // Palm (29 Oct): master's and doctorate majors vary, so only the bachelor's level pre-fills กายภาพบำบัด; the others start empty.
   act('cvLvl', s => { const d = cvdOf(s); if (d.lvl === 'ปริญญาตรี') { if (!d.major) d.major = 'กายภาพบำบัด'; } else if (d.major === 'กายภาพบำบัด') d.major = ''; });
@@ -1280,7 +1289,7 @@
           <label class="check"><input type="checkbox" data-bind="pt.photoConsent" ${p.photoConsent ? 'checked' : ''}><span>ยินยอมให้แสดงรูปนี้บนหน้าเว็บ<br><span class="small">ทีมตรวจรูปพร้อมใบประกอบก่อนแสดงให้คนไข้</span></span></label>
           <div class="tt-more">
             <div class="row between"><b class="sec-h">${I('images')}รูปอื่น ๆ ให้คนไข้ปัดดู</b><span class="small">${p.gallery.length}/${GALLERY_MAX} · ไม่บังคับ</span></div>
-            <p class="small">รูปตอนทำงาน รูปเท่ ๆ สวย ๆ ของคุณ คนไข้แตะรูปโปรไฟล์แล้วปัดดูได้แบบ IG</p>
+            <p class="small">รูปขณะทำงาน (ไม่ให้เห็นหน้าคนไข้) คนไข้แตะรูปโปรไฟล์แล้วเลื่อนดูได้</p>
             <div class="tt-gal">${p.gallery.map((x, i) => `<span class="g"><img src="${esc(photoSrc(x))}" alt="รูปที่ ${i + 2}"><button class="x" data-act="galleryRemove" data-i="${i}" aria-label="เอารูปที่ ${i + 2} ออก">${I('x')}</button></span>`).join('')}
               ${p.gallery.length < GALLERY_MAX ? `<label class="g add tt-file">${I('plus')}<span class="small">เพิ่มรูป</span><input type="file" accept="image/*" data-file="pt.galleryNew" data-then="galleryAdd" aria-label="เพิ่มรูปอื่น"></label>` : ''}</div>
             ${p.gallery.length < GALLERY_MAX ? '<button class="btn sm ghost" data-act="gallerySample">เพิ่มรูปตัวอย่าง</button>' : ''}
@@ -1300,7 +1309,7 @@
       <div class="tt-crop" style="--v:${CROP_V}px"><img src="${esc(e.src || '')}" alt="รูปที่กำลังปรับ" draggable="false" style="${cropCss(e)}"><span class="mask" aria-hidden="true"></span></div>
       <label class="tt-zoom">${I('zoom-out')}<input type="range" min="1" max="3" step="0.01" value="${e.z || 1}" aria-label="ซูม" data-crop-zoom>${I('zoom-in')}</label>
       <div class="grid2"><button class="btn ghost" style="width:100%" data-act="photoRotate">${I('rotate-cw')}หมุน 90°</button><button class="btn ghost" style="width:100%" data-act="photoReset">${I('rotate-ccw')}เริ่มใหม่</button></div>
-      <button class="btn" data-act="photoApply">${I('check')}ใช้รูปนี้</button>`;
+      <button class="btn" data-act="photoApply">${I('crop')}ครอปเสร็จแล้ว</button>`;
   }
   act('photoEdit', (s, ctx) => { const p = s.pt, src = photoSrc(p.photoDraft || p.photo || 'sample'); p.edit = { src, x: 0, y: 0, z: 1, r: 0, w: 0, h: 0 }; openSheet(cropSheet); });
   act('photoRotate', s => { const e = s.pt.edit; e.r = (e.r + 90) % 360; e.x = 0; e.y = 0; });
@@ -1392,10 +1401,10 @@
       return `<div class="scr">${ui.bar('ตาราง', { back: false, right: `<button class="btn sm ghost tt-today" data-act="calToday" aria-label="กลับไปวันนี้">${I('calendar-check')}วันนี้</button>` })}
         <div class="body tight">
           <!-- Boss (28 Oct): what to do comes first; the calendar follows. -->
-          <div class="card cream tt-sendcard">
-            <div class="row between"><b class="sec-h">${I('calendar-range')}ข้อกำหนดสำหรับส่งตารางงาน</b>${p.schedule.sent && !drafts ? '<span class="pill">ส่งแล้ว</span>' : p.schedXp ? '' : `<span class="tt-xp">+${XP.schedule} XP</span>`}</div>
+          <!-- T04 (UX audit 7 Nov): the rules fold to one line so the calendar shows on the first screen. -->
+          <details class="card cream tt-sendcard tt-rules"><summary class="row between"><b class="sec-h">${I('calendar-range')}ข้อกำหนดส่งตาราง · ดูกติกา</b>${p.schedule.sent && !drafts ? '<span class="pill">ส่งแล้ว</span>' : p.schedXp ? '' : `<span class="tt-xp">+${XP.schedule} XP</span>`}</summary>
             ${chk.html}
-          </div>
+          </details>
           <div class="seg" role="tablist">${[['day', 'วัน'], ['week', 'สัปดาห์'], ['month', 'เดือน']].map(([k, t]) => `<button class="${c.view === k ? 'on' : ''}" data-act="calView" data-v="${k}" role="tab" aria-selected="${c.view === k}">${t}</button>`).join('')}</div>
           <div class="tt-calbar"><button class="ib" data-act="calNav" data-d="-1" aria-label="ก่อนหน้า">${I('chevron-left')}</button><b>${label}</b><button class="ib" data-act="calNav" data-d="1" aria-label="ถัดไป">${I('chevron-right')}</button></div>
           ${view}
@@ -1497,7 +1506,7 @@
     const sc = s.pt.schedule; if (!sc.blocks.some(b => !b.sent)) { ctx.toast('ยังไม่มีช่วงเวลาใหม่ให้ส่ง'); return; }
     if (slotCheck(s).n < MONTH_MIN) { ctx.toast('ลงอย่างน้อย 1 สล็อตก่อนส่ง'); return; }
     // พี่ปาล์ม Q-F (2 Nov): the terms come before a published schedule. Drafts stay saved meanwhile.
-    if (!s.pt.agreement) { s.pt.agreeTick = false; ctx.toast('อ่านและยอมรับข้อตกลงก่อนส่งตารางนะคะ ร่างตารางบันทึกไว้แล้ว'); return 't.agreement'; }
+    if (!s.pt.agreement) { s.pt.agreeTick = false; s.pt.sendAfterAgree = true; ctx.toast('อ่านและยอมรับข้อตกลงก่อนส่งตารางนะคะ ร่างตารางบันทึกไว้แล้ว'); return 't.agreement'; }
     sc.blocks.forEach(b => { b.sent = true; }); sc.sent = true;
     if (!s.pt.schedXp) { s.pt.schedXp = true; ctx.xp(XP.schedule, 'ส่งตาราง'); }
     ctx.toast('ส่งตารางแล้ว ทีมเห็นเวลาที่คุณว่าง');
@@ -1521,9 +1530,9 @@
   function myPatients(s) {
     const out = [];
     if (s.request && ['OFFERED', 'BOOKED'].includes(s.request.status) && s.visits.length) {
-      const c = s.course, left = c ? Math.max(0, c.sessions + (c.bonus || 0) - (c.used || 0)) : null, nv = s.visits.find(v => v.step < 4), done = s.visits.filter(v => v.step >= 4);
+      const c = s.course, left = c ? SC.courseLeft(c) : null, nv = s.visits.find(v => v.step < 4), done = s.visits.filter(v => v.step >= 4 && !v.exit);
       const last = done[done.length - 1];
-      out.push({ id: 'me', hn: 'HN 690521', name: pname(s), area: districtOf(s), status: s.renewal && s.renewal.decided === 'stop' ? 'จบการรักษา' : c ? `คอร์ส เหลือ ${left} ครั้ง` : 'ครั้งแรก', tone: '', last: last ? shortDate(last.date) : '—', next: nv ? `${shortDate(nv.date)} ${nv.time.slice(0, 5)}` : '', dx: ((visitOf(s, 1) || {}).soap || {}).dx || 'รอ OPD ครั้งแรก', visits: done.length, alert: (s.cert.requested && !s.cert.issued) || s.visits.some(v => v.step >= 4 && !v.published) });
+      out.push({ id: 'me', hn: 'HN 690521', name: pname(s), area: districtOf(s), status: s.renewal && s.renewal.decided === 'stop' ? 'จบการรักษา' : c && c.refunded ? 'คอร์สปิด · คืนเงินแล้ว' : s.request.closed ? 'ปิดเคส · คืนเงินแล้ว' : c ? `คอร์ส เหลือ ${left} ครั้ง` : 'ครั้งแรก', tone: (c && c.refunded) || s.request.closed ? 'gray' : '', last: last ? shortDate(last.date) : '—', next: nv ? `${shortDate(nv.date)} ${nv.time.slice(0, 5)}` : '', dx: ((visitOf(s, 1) || {}).soap || {}).dx || 'รอ OPD ครั้งแรก', visits: done.length, alert: (s.cert.requested && !s.cert.issued) || s.visits.some(v => v.step >= 4 && !v.published) });
     }
     return out.concat(SAMPLE_CHARTS);
   }
@@ -1582,28 +1591,30 @@
           <div class="row"><span class="tile gold">${I('bell-ring')}</span><b class="h3 grow">งานเสนอใหม่</b><span class="pill wait">${I('clock')}${mins} นาที</span></div>
           ${s.request.preferredPt === 'me' ? `<span class="pill">${I('heart-handshake')}ผู้รับบริการขอคุณ</span>` : ''}
           <div class="small row wrap"><span class="row" style="gap:4px">${I('calendar-days')}${esc(SC.VISIT1.short)}</span><span class="row" style="gap:4px">${I('map-pin')}${esc(districtOf(s))}</span></div>
-          <div class="row between"><span class="money" style="font-size:18px;color:var(--forest)">${money(NET_TRIAL)} <span class="small">รายได้สุทธิ</span></span><span class="btn sm">ดูงาน ${I('chevron-right')}</span></div></button>`);
+          <div class="row between"><span class="money" style="font-size:18px;color:var(--forest)">${money2(NET_TRIAL)} <span class="small">รายได้สุทธิ</span></span><span class="btn sm">ดูงาน ${I('chevron-right')}</span></div></button>`);
       }
       const vr = visitOf(s, 1);
-      if (vr && vr.step === 0) put('upcoming', skipCard(vr));
       const next = s.visits.filter(v => v.step < 4);
-      if (next.length) put('upcoming', `${next.map(v => `<button class="card tap tt-cardbtn" data-act="openVisit" data-n="${v.n}">
-          <div class="row"><span class="tile">${I('car-front')}</span><span class="grow"><b class="h3">ทำเคส ${esc(pname(s))}</b><br><span class="small">ครั้งที่ ${v.n} · ${esc(v.date)} ${esc(v.time)}</span></span><span class="pill ${STEP_PILL[v.step][1]}">${STEP_PILL[v.step][0]}</span></div>
-          <div class="small row">${I('map-pin')}${esc(districtOf(s))} · ถึงก่อนเวลา 10 นาที</div></button>`).join('')}`);
-      const toWrite = s.visits.filter(v => v.step >= 4 && !v.published && (v.n !== 1 || planDone(s)));
+      /* 7 Nov rehearsal P12: a held visit says so on the list, before the PT opens it. */
+      const held = SC.visitHold(s);
+      if (next.length) put('upcoming', `${next.map(v => `<button class="card tap tt-cardbtn" data-act="openVisit" data-n="${v.n}" ${held ? 'data-held' : ''}>
+          <div class="row"><span class="tile">${I(held ? 'pause' : 'car-front')}</span><span class="grow"><b class="h3">ทำเคส ${esc(pname(s))}</b><br><span class="small">ครั้งที่ ${v.n} · ${esc(v.date)} ${esc(v.time)}</span></span><span class="pill ${held ? 'warn' : STEP_PILL[v.step][1]}">${held ? 'พักการดูแล' : STEP_PILL[v.step][0]}</span></div>
+          <div class="small row">${held ? `${I('pause')}${esc(held)} · ยังไม่ต้องเดินทาง` : `${I('map-pin')}${esc(districtOf(s))} · ถึงก่อนเวลา 10 นาที`}</div></button>`).join('')}`);
+      if (vr && vr.step === 0 && !vr.exit && !held) put('upcoming', skipCard(vr));
+      const toWrite = s.visits.filter(v => v.step >= 4 && !v.exit && !v.published && (v.n !== 1 || planDone(s)));
       if (toWrite.length) put('docs', `${toWrite.map(v => `<button class="card tap tt-cardbtn" data-go="t.opd" data-p-n="${v.n}">
           <div class="row"><span class="tile gold">${I('file-pen-line')}</span><span class="grow"><b class="h3">${v.n === 1 ? 'เขียน OPD' : 'เขียน SOAP ครั้งที่ ' + v.n} · ${esc(pname(s))}</b><br><span class="small">${opdDue(v)}</span></span>${I('chevron-right')}</div></button>`).join('')}`);
       const v1 = visitOf(s, 1);
-      if (v1 && v1.step >= 4 && !planDone(s)) put('docs', `<button class="card tap tt-cardbtn" data-go="t.plan">
+      if (v1 && v1.step >= 4 && !v1.exit && !planDone(s)) put('docs', `<button class="card tap tt-cardbtn" data-go="t.plan">
           <div class="row"><span class="tile">${I('clipboard-check')}</span><span class="grow"><b class="h3">คุยแผนการดูแล · ${esc(pname(s))}</b><br><span class="small">${s.coursePlan && s.coursePlan.step ? 'ทำต่อจากขั้นที่ค้างไว้' : 'วางแผน เสนอคอร์ส ให้คนไข้สแกนจ่าย และนัดครั้งที่ 2 หน้างาน'}</span></span>${I('chevron-right')}</div></button>`);
-      if (s.course) secs.push(`<div class="card flat"><div class="row"><span class="tile gold">${I('package')}</span><span class="grow"><b class="h3">คอร์ส ${s.course.sessions} ครั้ง${s.course.bonus ? ` แถม ${s.course.bonus}` : ''} · ${money(s.course.total)}</b><br><span class="small">${s.course.next ? 'นัดครั้งที่ 2: ' + esc(s.course.next) : 'ยังไม่ได้นัดครั้งที่ 2'}</span></span><span class="pill ${s.course.approved ? '' : 'wait'}">${s.course.approved ? 'เปิดสิทธิ์แล้ว' : 'รอแอดมินตรวจสลิป'}</span></div>
+      if (s.course) secs.push(`<div class="card flat" ${s.course.refunded ? 'data-course-closed' : ''}><div class="row"><span class="tile gold">${I('package')}</span><span class="grow"><b class="h3">คอร์ส ${s.course.sessions} ครั้ง${s.course.bonus ? ` แถม ${s.course.bonus}` : ''} · ${money(s.course.total)}</b><br><span class="small">${s.course.refunded ? `ปิดแล้ว · ทีมคืนเงิน ${s.course.refunded.left} ครั้งที่ไม่ได้ใช้ · ไม่มีนัดค้าง` : s.course.approved ? `เหลือ ${SC.courseLeft(s.course)} จาก ${s.course.sessions + (s.course.bonus || 0)} ครั้ง` : s.course.next ? 'นัดครั้งที่ 2: ' + esc(s.course.next) : 'ยังไม่ได้นัดครั้งที่ 2'}</span></span><span class="pill ${s.course.refunded ? 'gray' : s.course.approved ? '' : 'wait'}">${s.course.refunded ? 'คืนเงินแล้ว' : s.course.approved ? 'เปิดสิทธิ์แล้ว' : 'รอแอดมินตรวจสลิป'}</span></div>
           ${s.course.slip && s.coursePlan && s.coursePlan.step < 6 ? `<button class="btn sm soft" data-go="t.plan">ทำขั้นที่เหลือต่อ</button>` : ''}</div>`);
       const v2 = visitOf(s, 2);
       // Certificate is its own task (Boss 29 Oct): it shows as soon as the patient asks, from visit 1 on; it is not part of writing the OPD.
       if (s.cert.requested && !s.cert.issued && v1) put('docs', `<button class="card tap tt-cardbtn" data-go="t.cert">
           <div class="row"><span class="tile gold">${I('file-text')}</span><span class="grow"><b class="h3">ทำใบรับรอง · ${esc(pname(s))}</b><br><span class="small">คนไข้ขอ (${s.cert.lang === 'EN' ? 'English' : 'ภาษาไทย'})${s.cert.purpose ? ' · ใช้' + esc(s.cert.purpose) : ''} · ${v1.published ? 'ดึงบางส่วนจาก OPD ให้แล้ว' : 'ทำได้หลังส่ง OPD ครั้งแรก'}</span></span>${I('chevron-right')}</div></button>`);
-      const c = s.course, cTotal = c ? c.sessions + (c.bonus || 0) : 0, cLeft = c ? Math.max(0, cTotal - (c.used || 0)) : 0, lastV = c && visitOf(s, cTotal);
-      if (c && c.approved && cLeft > 0 && v2 && v2.step >= 4 && !lastV) put('upcoming', `<button class="card tap tt-cardbtn tt-skipc" data-act="courseSkipLast"><div class="row"><span class="tile">${I('fast-forward')}</span><span class="grow"><b class="h3">ซ้อมข้ามเวลา: ไปครั้งสุดท้ายของคอร์ส</b><br><span class="small">ครั้งที่ 3–${cTotal - 1} ทำครบแล้ว (ระบบตัดคอร์สทุกครั้งที่กดจบการดูแล) · เหลือครั้งที่ ${cTotal}</span></span>${I('chevron-right')}</div></button>`);
+      const c = s.course, cTotal = c ? c.sessions + (c.bonus || 0) : 0, cLeft = c ? Math.max(0, cTotal - (c.used || 0)) : 0, lastV = c && visitOf(s, cTotal + 1);
+      if (c && c.approved && !c.refunded && cLeft > 0 && v2 && v2.step >= 4 && !lastV) put('upcoming', `<button class="card tap tt-cardbtn tt-skipc" data-act="courseSkipLast"><div class="row"><span class="tile">${I('fast-forward')}</span><span class="grow"><b class="h3">ซ้อมข้ามเวลา: ไปครั้งสุดท้ายของคอร์ส</b><br><span class="small">คอร์สครั้งที่ 2–${cTotal - 1} ทำครบแล้ว (ระบบตัดคอร์สทุกครั้งที่กดจบการดูแล) · เหลือครั้งสุดท้ายของคอร์ส</span></span>${I('chevron-right')}</div></button>`);
       if (c && c.approved && !cLeft && lastV && lastV.step >= 4 && !(s.renewal && s.renewal.sent)) put('docs', `<button class="card tap tt-cardbtn" data-go="t.renew"><div class="row"><span class="tile gold">${I('flag')}</span><span class="grow"><b class="h3">สรุปจบคอร์ส · ${esc(pname(s))}</b><br><span class="small">เทียบผลกับเป้าหมาย แล้วเสนอ: ต่อคอร์ส / นัดเป็นครั้ง / จบการรักษา</span></span>${I('chevron-right')}</div></button>`);
       if (s.renewal && s.renewal.sent) secs.push(`<div class="card flat"><div class="row"><span class="tile">${I(s.renewal.decided === 'renew' ? 'repeat' : s.renewal.decided ? 'flag' : 'hourglass')}</span><span class="grow"><b class="h3">${s.renewal.decided === 'renew' ? 'คนไข้ต่อคอร์สแล้ว' : s.renewal.decided === 'pervisit' ? 'คนไข้ขอนัดเป็นครั้ง' : s.renewal.decided === 'stop' ? 'จบการรักษา' : 'ส่งสรุปจบคอร์สแล้ว รอคนไข้ตัดสินใจ'}</b><br><span class="small">${s.renewal.decided === 'renew' ? `คอร์สใหม่ ${s.course.sessions} ครั้ง เปิดสิทธิ์แล้ว · นัดถัดไป ${esc(s.renewal.next || '')}` : s.renewal.decided ? 'ทีมทักถามอาการคนไข้ใน 30 วัน' : 'ระบบเตือนคนไข้ใน 3 วัน ถ้ายังไม่ตอบ ทีมโทรถาม'}</span></span></div></div>`);
       const tab = p.workTab || 'all', q = (p.q || '').trim().toLowerCase(), pts = myPatients(s);
@@ -1638,8 +1649,9 @@
   function skipCard(v) {
     const k = Math.min(v.remind || 0, 3), [msg, a, label, ic] = SKIP[k];
     const marks = ['วันรับงาน', '1 วันก่อนนัด', '1 ชม. ก่อนนัด'].map((t, i) => { const at = k === 0 ? 0 : k < 3 ? 1 : 2; return `<div class="${i < at ? 'd' : i === at ? 'n' : ''}"><i>${i < at ? I('check') : i + 1}</i>${t}</div>`; }).join('');
-    return `<span class="kick">ซ้อมข้ามเวลา</span><div class="card tt-skip"><div class="tt-stepper">${marks}</div><p class="small" style="margin:0">${msg}</p>
-      <button class="btn" data-act="${a}" data-n="1" data-tt-skip>${I(ic)}${label}</button></div>`;
+    /* T08: the time skip is a rehearsal control, so it sits in a dashed box with a secondary button. */
+    return `<div class="sim-box"><span class="sim-tag">ห้องซ้อม · ข้ามเวลา</span><div class="tt-stepper">${marks}</div><p class="small" style="margin:0">${msg}</p>
+      <button class="btn ghost" data-act="${a}" data-n="1" data-tt-skip>${I(ic)}${label}</button></div>`;
   }
   act('skipDayBefore', (s, ctx) => { const v = visitOf(s, 1); v.remind = 1; ctx.line('patient', { key: 'tomorrowPatient' }); ctx.line('patient', { me: true, text: 'ยืนยันนัด' }); ctx.line('pt', { key: 'ptTomorrow' }); ctx.toast('1 วันก่อนนัด: การ์ดยืนยันนัดเข้า LINE ทั้งสองฝ่ายแล้ว'); });
   act('ptConfirmTomorrow', (s, ctx) => { const v = visitOf(s, 1); if (!v || (v.remind || 0) >= 2) return 't.work'; v.remind = 2; ctx.line('pt', { me: true, text: 'ยืนยันนัด' }); ctx.toast('ยืนยันนัดแล้ว ทั้งสองฝ่ายพร้อม'); return 't.work'; });
@@ -1658,16 +1670,17 @@
   const needAck = s => { const r = s.request, rv = r && r.review; return !!(rv && rv.cleared && !r.scopeHold && !(r.acks || {})[scopeKey(r)]); };
   SC.needAck = needAck;
   function scopePanel(s, ref, forVisit) {
-    const r = s.request, rv = r && r.review, c = SC.clinScope(s), on = rv && rv.cleared; if (!on && !c.prec.length && !forVisit) return '';
+    const r = s.request, rv = r && r.review, c = SC.clinScope(s), on = rv && rv.cleared; if (!on && !c.prec.length && !forVisit && !(SC.scopeExtra && SC.scopeExtra(s))) return '';
     const hold = forVisit && SC.visitHold(s);
     return `<div class="card" data-scope="panel">${on ? `<b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b>${c.assessOnly ? '<p class="note" style="margin:0">อนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}<ul class="tt-ok">${c.allowPt.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
-      ${c.notPt.length ? `<p class="note warn" style="margin:0"><b>ไม่อนุมัติ:</b> ${c.notPt.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : forVisit ? `<b class="h3">${I('clipboard-check')} ขอบเขตงาน</b><p class="small" style="margin:0">เคสทั่วไป ไม่มีการอนุมัติเฉพาะกิจกรรมจากทีมคลินิก</p>` : ''}
+      ${c.notPt.length ? `<p class="note warn" style="margin:0"><b>ไม่อนุมัติ:</b> ${c.notPt.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : forVisit ? `<b class="h3">${I('clipboard-check')} ขอบเขตงาน</b><p class="small" style="margin:0">${hold ? 'ข้อมูลคนไข้เปลี่ยน ทีมคลินิกกำลังตรวจใหม่ · ยังไม่ต้องเดินทางจนกว่าทีมจะแจ้ง' : 'เคสทั่วไป ไม่มีการอนุมัติเฉพาะกิจกรรมจากทีมคลินิก'}</p>` : ''}
       ${c.prec.length ? `<b class="h3">${I('shield-check')} ข้อควรระวังจากคำสั่งแพทย์</b>${c.prec.map(x => `<p class="small" style="margin:0;color:var(--forest);font-weight:600">${esc(x)}${/Unknown$/.test(x) ? ' · ยังไม่ทราบ ห้ามถือว่าลงน้ำหนักได้เต็มที่' : ''}</p>`).join('')}` : ''}
-      ${forVisit ? `<div class="row wrap" style="gap:6px"><span class="pill ${on ? '' : 'gray'}">${on ? 'ทีมคลินิกอนุมัติแล้ว' : 'ไม่ต้องตรวจเฉพาะเคส'}</span><span class="pill ${hold ? 'warn' : 'gray'}">${hold ? 'พักการดูแลอยู่' : 'ไม่มีการพักการดูแล'}</span></div>` : ''}
-      <p class="small" style="margin:0">Screening v${esc(r.screeningVersion || 1)}${r.offerId ? ` · Offer ${esc(r.offerId)}` : ''}${on ? ` · อนุมัติโดย ${esc(rv.by || '')} ${esc(rv.at || '')}` : ''}${ref && ref.offerId !== r.offerId ? ` · อัปเดตจาก Offer ${esc(ref.offerId)} ตอนจอง` : ''}</p>
+      ${forVisit ? `<div class="row wrap" style="gap:6px">${hold ? '<span class="pill warn">พักการดูแลอยู่ · ทีมคลินิกกำลังตรวจใหม่</span>' : `<span class="pill ${on ? '' : 'gray'}">${on ? 'ทีมคลินิกอนุมัติแล้ว' : 'ไม่ต้องตรวจเฉพาะเคส'}</span><span class="pill gray">ไม่มีการพักการดูแล</span>`}</div>` : ''}
+      ${SC.scopeExtra ? SC.scopeExtra(s) : ''}
+      <p class="small" style="margin:0">คัดกรองฉบับ ${esc(r.screeningVersion || 1)}${r.offerId ? ` · เลขงาน ${esc(r.offerId)}` : ''}${on ? ` · อนุมัติโดย ${esc(rv.by || '')} ${esc(rv.at || '')}` : ''}${ref && ref.offerId !== r.offerId ? ` · อัปเดตจากเลขงาน ${esc(ref.offerId)} ตอนจอง` : ''}</p>
       ${forVisit && !hold && needAck(s) ? `<button class="btn" data-act="scopeAck">${I('check')}รับทราบขอบเขตนี้ ก่อนเริ่มงาน</button>` : ''}${forVisit && on && (r.acks || {})[scopeKey(r)] ? `<p class="small" style="margin:0;color:var(--em)">${I('check')} รับทราบแล้ว ${esc(r.acks[scopeKey(r)].at)}</p>` : ''}</div>`;
   }
-  act('scopeAck', (s, ctx) => { const r = s.request; if (!r || !needAck(s)) return; const n = +(ctx.param.n || 1); (r.acks = r.acks || {})[scopeKey(r)] = { ptId: 'me', visit: n, key: scopeKey(r), at: new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) }; ctx.toast('รับทราบขอบเขตแล้ว · ไม่ได้ปลดการพักหรืออนุมัติเพิ่ม'); });
+  act('scopeAck', (s, ctx) => { const r = s.request; if (!r || !needAck(s)) return; const n = +(ctx.param.n || 1); (r.acks = r.acks || {})[scopeKey(r)] = { ptId: 'me', visit: n, key: scopeKey(r), at: SC.stamp ? SC.stamp(2) : SC.TODAY }; ctx.toast('รับทราบขอบเขตแล้ว · ไม่ได้ปลดการพักหรืออนุมัติเพิ่ม'); });
   scr('t.offer', {
     render(s) {
       if (!offerForMe(s)) {
@@ -1677,7 +1690,7 @@
       const yes = Object.values(s.patient.health || {}).filter(x => x === 'YES').length;
       return `<div class="scr">${ui.bar('งานเสนอใหม่')}<div class="body enter">
         <div class="row wrap">${s.request.preferredPt === 'me' ? `<span class="pill">${I('heart-handshake')}ผู้รับบริการขอคุณ</span>` : ''}<span class="pill wait">${I('clock')}ตอบภายใน <span id="ttCount">${remainMin(s)}</span> นาที</span></div>
-        <div class="card"><span class="kick">ClairMatch · ครั้งแรก · เลขงาน ${esc(s.request.offerId || '')}</span><b class="h2">ทำเคสที่บ้าน · ${esc(goalText(s))}</b>
+        <div class="card"><span class="kick nocap">ClairMatch ครั้งแรก · เลขงาน ${esc(s.request.offerId || '')}</span><b class="h2">ทำเคสที่บ้าน · ${esc(goalText(s))}</b>
           <div class="list" style="box-shadow:none;border-radius:0">
             <div class="li"><span class="tile">${I('calendar-days')}</span><span class="grow"><span class="t">${esc(SC.VISIT1.date)}</span><br><span class="s">${esc(SC.VISIT1.time)}</span></span></div>
             <div class="li"><span class="tile">${I('map-pin')}</span><span class="grow"><span class="t">เขต${esc(districtOf(s))}</span><br><span class="s">ที่อยู่เต็มแสดงหลังคุณรับงาน</span></span></div>
@@ -1685,7 +1698,8 @@
             ${yes ? `<div class="li"><span class="tile gold">${I('shield-check')}</span><span class="grow"><span class="t">ข้อควรระวังจากการคัดกรอง ${yes} ข้อ</span><br><span class="s">ดูรายละเอียดได้หลังรับงาน</span></span></div>` : ''}
           </div></div>
         ${scopePanel(s)}${SC.MATCH.prepCard(s)}
-        <div class="card cream"><span class="small" style="color:var(--gink)">รายได้สุทธิของคุณ</span><span class="price">${money(NET_TRIAL)}</span><span class="small" style="color:var(--gink)">โอนรอบถัดไปหลังส่งสรุปการดูแล · ไม่มีค่าใช้จ่ายอื่นที่ต้องจ่ายเพิ่ม</span></div>
+        <div class="card cream"><span class="small" style="color:var(--gink)">รายได้สุทธิของคุณ</span><span class="price">${money2(NET_TRIAL)}</span><span class="small" style="color:var(--gink)">โอนรอบถัดไปหลังส่งสรุปการดูแล · ไม่มีค่าใช้จ่ายอื่นที่ต้องจ่ายเพิ่ม</span></div>
+        ${s.request.crossZone ? `<div class="card cream" data-cross-zone><b class="h3">${I('map')}งานข้ามโซน</b><p class="small" style="margin:0">เขตนี้อยู่นอกโซนที่คุณลงไว้ ทีมยืนยันแล้วว่าส่งข้ามโซนได้ · ไม่มีค่าเดินทางเพิ่ม · รับหรือไม่รับก็ไม่มีผลกับโปรไฟล์</p><label class="check"><input type="checkbox" data-bind="pt.crossOk" ${s.pt.crossOk ? 'checked' : ''}><span>ฉันยอมรับเดินทางไปเขต${esc(districtOf(s))}สำหรับงานนี้</span></label></div>` : ''}
         ${s.pt.agreement ? '' : `<p class="note row tt-top">${I('file-text')}<span>งานแรกของคุณ: กดรับแล้วจะพาไปอ่านข้อตกลงการรับงาน 1 ครั้งก่อน</span></p>`}
       ${SC.offerBlock(s) ? `<p class="note warn" role="status" style="margin:0 16px 12px">ยังรับงานนี้ไม่ได้ · ${esc(SC.offerBlock(s))}</p>` : ''}</div><div class="foot row2"><button class="btn ghost" data-act="declineOffer">ปฏิเสธ</button><button class="btn" data-act="acceptOffer" data-offer="${esc(s.request.offerId || '')}" ${SC.offerBlock(s) ? 'disabled' : ''}>${I('check')}รับงานนี้</button></div></div>`;
     },
@@ -1696,6 +1710,7 @@
     // FIX-02: LINE or app, the same recheck runs on accept. An old card cannot skip the latest scope.
     if (ctx.data.offer && ctx.data.offer !== s.request.offerId) { ctx.toast('ขอบเขตงานเปลี่ยนแล้ว ดูข้อมูลล่าสุดก่อนรับงาน'); return 't.offer'; }
     if (!s.pt.agreement) { s.pt.agreeTick = false; return 't.agreement'; }
+    if (s.request.crossZone && !s.pt.crossOk) { ctx.toast('งานข้ามโซน: ติ๊กยอมรับพื้นที่ก่อนรับงาน'); return 't.offer'; }
     const gate = SC.meCandidate(s);
     if (gate && !gate.ok) { ctx.toast(`ยังรับงานนี้ไม่ได้: ${gate.reason}`); return 't.work'; }
     SC.MATCH.book(s, 'me');
@@ -1709,7 +1724,7 @@
       <div class="stack">${DECLINE.map(r => `<button class="opt" style="width:100%;text-align:left;${st.pt.declineReason === r ? 'border-color:var(--em2);background:#eaf3ee' : ''}" data-pick="pt.declineReason" data-value="${esc(r)}">${st.pt.declineReason === r ? I('circle-check') : I('circle')}<span>${esc(r)}</span></button>`).join('')}</div>
       <div class="grid2"><button class="btn ghost" data-close>กลับไปดูงาน</button><button class="btn danger" data-act="confirmDecline" data-need="pt.declineReason">ยืนยันปฏิเสธ</button></div>`); });
   act('confirmDecline', (s, ctx) => {
-    (s.pt.declineLog = s.pt.declineLog || []).push(s.pt.declineReason); ctx.close();
+    (s.pt.declineLog = s.pt.declineLog || []).push(s.pt.declineReason); if (s.request) SC.MATCH.logEvent(s.request, 'DECLINED', { ptId: 'me', reason: s.pt.declineReason }); ctx.close();
     ctx.toast('ส่งเหตุผลให้ทีมแล้ว · ห้องซ้อม: งานนี้ยังค้างไว้ให้ลองกดรับได้');
   });
 
@@ -1736,6 +1751,8 @@
   act('acceptAgreement', (s, ctx) => {
     if (!s.pt.agreeTick) return;
     s.pt.agreement = true; ctx.toast('ยอมรับข้อตกลงแล้ว');
+    /* 7 Nov rehearsal: accepting from "ส่งตาราง" sends the schedule the PT already asked to send (it used to need a second tap). */
+    if (s.pt.sendAfterAgree) { s.pt.sendAfterAgree = false; const sc = s.pt.schedule; if (sc.blocks.some(b => !b.sent)) { sc.blocks.forEach(b => { b.sent = true; }); sc.sent = true; if (!s.pt.schedXp) { s.pt.schedXp = true; ctx.xp(XP.schedule, 'ส่งตาราง'); } ctx.toast('ยอมรับข้อตกลงแล้ว และส่งตารางให้แล้ว'); } }
     const hist = SC.v.hist.pt; if (hist.length) { SC.back(); return; }
     return offerForMe(s) ? 't.offer' : 't.work';
   });
@@ -1754,10 +1771,13 @@
       const yes = Object.entries(s.patient.health || {}).filter(([, x]) => x === 'YES').length;
       const stepper = `<div class="tt-stepper">${['เริ่มเดินทาง', 'ถึงแล้ว', 'เริ่มดูแล', 'จบ'].map((t, k) => `<div class="${k < v.step ? 'd' : k === v.step ? 'n' : ''}"><i>${k < v.step ? I('check') : k + 1}</i>${t}</div>`).join('')}</div>`;
       let main;
-      if (v.step < 4) {
+      /* RF-19 (M11 §6): a visit that ends another way is never recorded as "จบการดูแล". The exits live in policy-1107.js. */
+      if (v.exit && SC.visitExitCard) main = SC.visitExitCard(s, v, n);
+      else if (v.step < 4) {
         const [t, sub, ic] = STEPS[v.step];
         main = `${scopePanel(s, v.scopeRef, true)}${v.step === 3 ? `<div class="card mint tt-c"><span class="small">ดูแลไปแล้ว</span><span class="tt-timer" id="ttTimer">${fmtClock(Date.now() - (s.pt.clock[n] || Date.now()))}</span></div>` : ''}
-          ${SC.visitHold(s) ? `<p class="note warn" role="status">${esc(SC.visitHold(s))}</p>` : needAck(s) ? '' : `<button class="tt-big" data-act="visitNext" data-n="${n}"><span class="grow"><b>${t}</b><small>${sub}</small></span><span class="arw">${I(ic)}</span></button>`}`;
+          ${SC.visitHold(s) ? `<p class="note warn" role="status">${esc(SC.visitHold(s))}</p>` : needAck(s) ? '' : `<button class="tt-big" data-act="visitNext" data-n="${n}"><span class="grow"><b>${t}</b><small>${sub}</small></span><span class="arw">${I(ic)}</span></button>`}
+          ${SC.visitExitButton ? SC.visitExitButton(s, v, n) : ''}`;
       } else if (n === 1 && !planDone(s)) {
         // First visit order (Boss 21 Oct): finish care → plan treatment with the patient → book → OPD within 2 h.
         main = `<div class="note mint row">${I('badge-check')}<span>จบการดูแลแล้ว · คุยแผนการรักษากับคนไข้ต่อเลย</span></div>
@@ -1777,6 +1797,7 @@
           ${a.landmark ? `<div class="li"><span class="tile">${I('signpost')}</span><span class="grow"><span class="t">จุดสังเกตและวิธีเข้าบ้าน</span><br><span class="s">${esc(a.landmark)}</span></span></div>` : ''}
           <button class="li" data-act="ptCallFamily"><span class="tile">${I('phone')}</span><span class="grow"><span class="t">โทรหาผู้ติดต่อ</span><br><span class="s">${s.patient.bookingFor === 'SOMEONE_ELSE' ? 'ญาติที่จองให้' : esc(pname(s))} · โทรผ่านเบอร์กลาง</span></span>${I('chevron-right', 'chev')}</button>
           <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">สิ่งที่คนไข้ขอ</span><br><span class="s">${esc(goalText(s))}</span></span></div>
+          ${SC.transferRow ? SC.transferRow(s) : ''}
           ${s.patient.health && s.patient.health.q4 === 'YES' && s.patient.medNote ? `<div class="li"><span class="tile gold">${I('hospital')}</span><span class="grow"><span class="t">ออกจาก รพ. / ข้อห้ามแพทย์</span><br><span class="s">${esc(s.patient.medNote)}</span></span></div>` : ''}
           ${s.patient.health && s.patient.health.q5 === 'YES' && s.patient.surgeryNote ? `<div class="li"><span class="tile gold">${I('bone')}</span><span class="grow"><span class="t">ผ่าตัด / อุปกรณ์ในร่างกาย</span><br><span class="s">${esc(s.patient.surgeryNote)}</span></span></div>` : ''}
           ${s.patient.health && s.patient.health.q3 === 'YES' && (s.patient.devices || []).length ? `<div class="li"><span class="tile gold">${I('cable')}</span><span class="grow"><span class="t">อุปกรณ์ที่คนไข้ใช้</span><br><span class="s">${esc(s.patient.devices.join(' · '))}</span></span></div>` : ''}
@@ -1798,15 +1819,18 @@
     if (needAck(s)) { ctx.toast('กดรับทราบขอบเขตงานก่อนเริ่ม'); return; }
     const n = +(ctx.data.n || ctx.param.n || 1), v = visitOf(s, n); if (!v || v.step >= 4) return;
     v.step += 1;
-    if (v.step === 1) { ctx.line('patient', { key: 'enRoute' }); ctx.toast('แจ้งคนไข้ใน LINE แล้ว: กำลังเดินทาง'); }
+    /* Rehearsal clock (7 Nov rehearsal P10): each step happens at the visit's own time. */
+    if (SC.clockTo && SC.visitIso(v)) SC.clockTo(s, SC.visitIso(v, [0, -30, -5, 0, 90][v.step]));
+    if (v.step === 1) { v.travelAt = SC.clockNow ? SC.clockNow(s) : new Date().toISOString(); /* NT-13: this moment splits a full refund from the ฿500 keep */ ctx.line('patient', { key: 'enRoute' }); ctx.toast('แจ้งคนไข้ใน LINE แล้ว: กำลังเดินทาง'); }
     else if (v.step === 2) ctx.toast('บันทึกเวลาถึงแล้ว');
     else if (v.step === 3) { s.pt.clock[n] = Date.now(); if (s.request && n === 1 && s.request.trace) s.request.trace.visitId = v.id = `${s.request.ref}-V1`; ctx.toast('เริ่มให้บริการ จับเวลาให้แล้ว'); }
     else {
       ctx.line('patient', { key: 'visitDone' }); if (n === 1) ctx.line('patient', { key: 'feedback' });
       // Course deduction (Boss 29 Oct): the visit is cut from the course the moment the PT taps "จบการดูแล"; the patient's LINE slip carries the review button.
       const c = s.course;
-      if (n >= 2 && c && c.approved) { c.used = Math.max(c.used || 0, n); ctx.line('patient', { key: 'courseUsed', n }); const left = Math.max(0, c.sessions + (c.bonus || 0) - c.used);
-        ctx.toast(left ? `จบการดูแลแล้ว ตัดคอร์สครั้งที่ ${n} · เหลือ ${left} ครั้ง` : 'ครบคอร์สแล้ว เขียน SOAP แล้วสรุปจบคอร์สกับคนไข้'); }
+      // ClairMatch (visit 1) is paid on its own and is not part of the course (Boss 8 Nov): visit n is course visit n-1.
+      if (n >= 2 && c && c.approved) { const k = n - 1; c.used = Math.max(c.used || 0, k); ctx.line('patient', { key: 'courseUsed', n: k }); const left = Math.max(0, c.sessions + (c.bonus || 0) - c.used);
+        ctx.toast(left ? `จบการดูแลแล้ว ตัดคอร์สครั้งที่ ${n - 1} · เหลือ ${left} ครั้ง` : 'ครบคอร์สแล้ว เขียน SOAP แล้วสรุปจบคอร์สกับคนไข้'); }
       else ctx.toast(n === 1 ? 'จบการดูแลแล้ว ต่อไปวางแผนการรักษากับคนไข้' : 'จบการดูแลแล้ว เขียนบันทึกต่อได้เลย');
     }
   });
@@ -1884,7 +1908,7 @@
     v.published = true;
     ctx.line('patient', { key: n === 1 ? 'report' : 'report2' });
     ctx.toast('ลงนามแล้ว ส่งสรุปเข้า LINE คนไข้แล้ว');
-    return n === 1 ? 't.work' : 't.cert';
+    return n === 1 || !(s.cert.requested && !s.cert.issued) ? 't.work' : 't.cert';
   });
 
   /* ======================================================================
@@ -1940,12 +1964,14 @@
       if (s.course && !s.coursePlan) return `<div class="scr">${ui.bar('แผนการดูแล')}<div class="body">${courseSummary(s)}<button class="btn" data-go="t.work">กลับหน้างาน</button></div></div>`;
       const cp = cpOf(s), st = cp.step, goal = cp.goal || 'ฟื้นฟูให้กลับมาทำกิจวัตรได้เอง';
       const n = cp.dates ? cp.dates.length : cp.freq * cp.weeks, pk = PACKS.find(x => x.v === curPack(cp)), r = priceOf(cp, pk);
-      const left = st === 0 || st >= 6 ? `<button class="ib" data-back aria-label="ย้อนกลับ">${I('chevron-left')}</button>` : `<button class="ib" data-act="planBack" aria-label="ขั้นก่อนหน้า">${I('chevron-left')}</button>`;
+      /* PR-16 (Boss, DL7 l.113): once the patient has paid, the course, its bonus and its price are locked. Changing an unpaid offer means a new offer. */
+      const locked = !!(s.course && s.course.slip && !cp.noCourse);
+      const left = st === 0 || st >= 6 || locked ? `<button class="ib" data-back aria-label="ย้อนกลับ">${I('chevron-left')}</button>` : `<button class="ib" data-act="planBack" aria-label="ขั้นก่อนหน้า">${I('chevron-left')}</button>`;
       // Price tools stay a quiet settings icon (top right) on the price step: the patient is looking at this screen.
       // Boss (28 Oct): a patient / PT switch on the price steps. PT mode shows what the PT earns, how many visits can still be
       // added and how far the price can go down (Palm's Final price sheet); the patient view never shows these numbers.
       const priceStep = st === 2 || st === 3, ptv = priceStep && !!cp.ptView;
-      const tools = priceStep ? `<button class="tt-mode${ptv ? ' pt' : ''}" data-act="planMode" role="switch" aria-checked="${ptv}" aria-label="สลับโหมดนักกายภาพ"><span>คนไข้</span><span>นักกายภาพ</span><i></i></button>` : '';
+      const tools = priceStep ? `<button class="tt-mode${ptv ? ' pt' : ''}" data-act="planMode" role="switch" aria-checked="${ptv}" aria-label="สลับโหมดนักกายภาพ (แถม · ลดราคา)" title="แถม · ลดราคา อยู่ในโหมดนักกายภาพ"><span>คนไข้</span><span>นักกายภาพ</span><i></i></button>` : '';
       const head = `${ui.bar('แผนการดูแล · ' + pname(s), { back: false, left, right: tools })}<div class="tt-stepnum" style="padding:10px 16px 0"><div class="progress"><i style="width:${Math.min(st + 1, PLAN_STEPS.length) / PLAN_STEPS.length * 100}%"></i></div><span class="small">${Math.min(st + 1, PLAN_STEPS.length)}/${PLAN_STEPS.length} · ${PLAN_STEPS[Math.min(st, PLAN_STEPS.length - 1)]}</span></div>`;
       let body = '', foot = '';
       if (ptv) {
@@ -1973,14 +1999,17 @@
         foot = `<button class="btn" data-act="planNext">ดูค่าบริการ ${I('arrow-right')}</button>`;
       } else if (st === 2) {
         body = `<div class="stack"><span class="kick">ค่าบริการ · รวมค่าเดินทาง</span><h1 class="h1">เลือกจำนวนครั้ง</h1></div>
-          <div class="stack lg" style="padding-top:6px">${PACKS.map(p => { const x = priceOf(cp, p), on = p.v === pk.v; return `<button class="tt-pk ${on ? 'on' : ''}" data-pick="coursePlan.pack" data-value="${p.v}" data-then="planPack" aria-pressed="${on}">${p.v === packFor(n) ? '<span class="pill">ตามแผน</span>' : ''}<span class="nm">${p.v} ครั้ง${x.free ? ` <span class="pill gold">+ แถม ${x.free}</span>` : ''}</span><span class="pr">${x.total < x.full * p.v ? `<s>${money(x.full * p.v)}</s>` : ''}${money(x.total)}</span><span class="per">เฉลี่ยครั้งละ ${money(x.total / x.sessions)}</span></button>`; }).join('')}</div>`;
+          <div class="stack lg" style="padding-top:6px">${PACKS.map(p => { const x = priceOf(cp, p), on = p.v === pk.v; return `<button class="tt-pk ${on ? 'on' : ''}" data-pick="coursePlan.pack" data-value="${p.v}" data-then="planPack" aria-pressed="${on}">${p.v === packFor(n) ? '<span class="pill">ตามแผน</span>' : ''}<span class="nm">${p.v} ครั้ง${x.free ? ` <span class="pill gold">+ แถม ${x.free}</span>` : ''}</span><span class="pr">${x.total < x.full * p.v ? `<s>${money(x.full * p.v)}</s>` : ''}${money(x.total)}</span><span class="per">${esc(SC.courseLine ? SC.courseLine(p.v, x.free, x.total) : '')}</span></button>`; }).join('')}</div>`;
+        body += `<p class="small" data-bonus-hint>${I('gift')} แถมหรือลดราคา: แตะสวิตช์ "นักกายภาพ" มุมขวาบน (คนไข้ไม่เห็นตัวเลขในโหมดนั้น) หรือ <button class="link" data-act="planMode">เปิดโหมดนักกายภาพ</button></p>`;
         foot = `<button class="btn" data-act="planNext">ไปสรุปราคา ${I('arrow-right')}</button>`;
       } else if (st === 3) {
         const line = (a, b, c = '') => `<div class="tt-br ${c}"><span>${a}</span><b>${b}</b></div>`;
         body = `<div class="stack"><span class="kick">สรุปคอร์ส</span><h1 class="h1">${pk.v} ครั้ง${r.free ? ` แถม ${r.free}` : ''}</h1></div>
           <div class="card">${line(`ราคาเต็ม ${pk.v} × ${money(r.full)}`, money(r.full * pk.v), 'mute')}${line('ราคาคอร์ส', money(r.base))}${r.down ? line('ราคาพิเศษจากนักกายภาพ', '−' + money(r.down), 'gold') : ''}${r.free ? line('ของแถม', `+${r.free} ครั้ง`, 'gold') : ''}
             <div class="tt-br total"><span>ชำระ</span><b>${money(r.total)}</b></div>
-            <p class="small tt-c" style="margin:0">ได้ ${r.sessions} ครั้ง · ใช้ได้ 365 วัน · รวมค่าเดินทาง</p></div>
+            <p class="small tt-c" style="margin:0" data-course-line>${esc(SC.courseLine(pk.v, r.free, r.total))}</p>
+            <p class="small tt-c" style="margin:0">ใช้ได้ 365 วัน นับจากวันที่ทีมยืนยันยอดโอน · รวมค่าเดินทาง · แถมกี่ครั้งล็อกตอนชำระ แก้ภายหลังไม่ได้</p>
+            <p class="small tt-c" style="margin:0" data-open-q><span class="pill gray open-q">การปัดเศษ · รอตัดสิน</span> <span class="pill gray open-q">ครั้งแถมใช้เวลาเท่าครั้งที่จ่ายไหม · รอตัดสิน</span></p></div>
           <p class="small">ราคานี้บอกที่มาทุกบรรทัดเป็นบาท ไม่มีเปอร์เซ็นต์ คนไข้ถามได้ทุกข้อ</p>`;
         foot = `<button class="btn" data-act="planNext">${I('qr-code')}ให้คนไข้สแกนจ่าย</button>`;
       } else if (st === 4) {
@@ -1999,6 +2028,7 @@
           <div class="tt-days" role="group" aria-label="เลือกวัน">${days.map(i => { const x = dateOf(i); return `<button class="${cp.day === i ? 'on' : ''}" data-pick="coursePlan.day" data-value="${i}" aria-pressed="${cp.day === i}" aria-label="${esc(dShort(i))}${plan.has(i) ? ' · วันตามแผน' : ''}"><small>${WD[wday(i)]}</small><b>${x.d}</b><small>${MON[x.m]}</small>${plan.has(i) ? '<i></i>' : ''}${cp.next && cp.next.startsWith(dShort(i) + ' ') ? '<em></em>' : ''}</button>`; }).join('')}</div>
           ${cp.next ? `<div class="tt-picked"><span class="tile">${I('calendar-check')}</span><span class="grow"><b>${esc(title)}</b><small>${esc(cp.next)}–${esc(String(+cp.next.slice(-5, -3) + 1).padStart(2, '0') + cp.next.slice(-3))} น. · 1 ชม.</small></span><button class="ib soft" data-act="planCellClear" aria-label="ลบนัดนี้">${I('x')}</button></div>` : ''}
           <div class="tt-cal" style="--n:1"><div class="tt-calh"><span></span><button class="${cp.day === TODAY_IDX ? 'today' : ''}" tabindex="-1">${WDF[wday(cp.day)]}<b>${dateOf(cp.day).d}</b></button></div><div class="tt-calb">${axis()}${planColumn(s, cp.day, cp, title)}</div></div>`;
+        if (locked) body = `<p class="note mint row" data-course-locked>${I('lock')}<span>คอร์ส ${s.course.sessions} ครั้ง${s.course.bonus ? ` แถม ${s.course.bonus}` : ''} · ${money(s.course.total)} ล็อกแล้วตอนชำระ แก้จำนวนแถมหรือราคาไม่ได้</span></p>` + body;
         foot = `<button class="btn" data-act="bookNext" data-need="coursePlan.next">${I('calendar-check')}ยืนยันนัด · แจ้งคนไข้ใน LINE</button>`;
       } else {
         body = cp.noCourse
@@ -2024,8 +2054,12 @@
     const cp = cpOf(s);
     if (cp.step === 0 && (Number(cp.full) || 0) < FLOOR) { ctx.toast('ราคาเต็มต้องไม่ต่ำกว่า ' + money(FLOOR)); return; }
     cp.step = Math.min(cp.step + 1, 4);
+    /* 7 Nov rehearsal NT-11: the patient gets the course offer in LINE before paying (it used to arrive after the slip). */
+    if (cp.step === 4 && !cp.offerSent) { const pk = PACKS.find(x => x.v === curPack(cp)), r = priceOf(cp, pk); cp.offerSent = true;
+      ctx.line('patient', { key: 'note', title: 'คอร์สที่นักกายภาพเสนอ', lines: [SC.courseLine(pk.v, r.free, r.total), `ยอดชำระ ${money(r.total)} · รวมค่าเดินทางแล้ว`, 'ใช้ได้ 365 วัน นับจากวันที่ทีมยืนยันยอดโอน', 'จ่ายแล้วจำนวนครั้งและราคาล็อก แก้ภายหลังไม่ได้'], go: 'p.course', button: 'ดูรายละเอียด' }); }
   });
-  act('planBack', s => { const cp = cpOf(s); cp.step = Math.max(0, cp.step - 1); });
+  const planLocked = s => !!(s.course && s.course.slip && !(s.coursePlan || {}).noCourse);
+  act('planBack', (s, ctx) => { if (planLocked(s)) { ctx.toast('คอร์สล็อกแล้วตอนชำระ แก้ไม่ได้'); return; } const cp = cpOf(s); cp.step = Math.max(0, cp.step - 1); });
   function ptDash(cp, pk, r) {
     const n = pk.v, rows = Array.from({ length: r.maxFree + 1 }, (_, k) => { const ok = r.total >= minTotalFor(pk, n + k); return { k, ok, per: afterFee(r.total, pk.fee) / (n + k) }; });
     const minTotal = r.minPer * n, minNet = afterFee(minTotal, pk.fee);
@@ -2045,14 +2079,15 @@
       <button class="tt-skip" data-act="planNoCourse"><span class="grow"><b>คนไข้ยังไม่ซื้อคอร์ส</b><small>จ่ายรายครั้ง ครั้งละ ${money(cp.full)} (สุทธิ ${money(afterFee(Number(cp.full) || 0, VISIT_FEE_BPS))}) · ไปนัดครั้งถัดไปเลย</small></span>${I('arrow-right')}</button>`;
   }
   act('planMode', s => { const cp = cpOf(s); cp.ptView = !cp.ptView; });
-  act('planBonus', (s, ctx) => { const cp = cpOf(s), pk = PACKS.find(x => x.v === curPack(cp)); cp.bonus = Math.max(0, Math.min(priceOf(cp, pk).maxFree, (Number(cp.bonus) || 0) + +ctx.data.d)); });
+  act('planBonus', (s, ctx) => { if (planLocked(s)) { ctx.toast('คอร์สล็อกแล้วตอนชำระ แก้จำนวนแถมไม่ได้'); return; } const cp = cpOf(s), pk = PACKS.find(x => x.v === curPack(cp)); cp.bonus = Math.max(0, Math.min(priceOf(cp, pk).maxFree, (Number(cp.bonus) || 0) + +ctx.data.d)); });
   act('coursePaid', (s, ctx) => {
     const cp = cpOf(s), pk = PACKS.find(x => x.v === curPack(cp)), r = priceOf(cp, pk);
     const keep = s.course || {};
-    s.course = { sessions: pk.v, bonus: r.free, perSession: Math.round(r.netPer), fee: r.fee, net: r.net, total: r.total, code: '', paid: false, slip: 'sample', approved: false, used: 1, next: keep.next || '', backups: keep.backups || [], notified: true };
+    s.course = { sessions: pk.v, bonus: r.free, perSession: Math.round(r.netPer), fee: r.fee, net: r.net, total: r.total, code: '', paid: false, slip: 'sample', approved: false, used: 0, next: keep.next || '', backups: keep.backups || [], notified: true };
     // No slip upload on the PT's phone (Boss 21 Oct): the PT glances at the patient's slip, admin is told now, and the patient sends the slip in LINE.
     ctx.line('admin', { key: 'paymentReviewCourse' });
-    ctx.line('patient', { text: `ได้รับแจ้งการโอนค่าคอร์ส ${money(r.total)} แล้วค่ะ ส่งรูปสลิปในแชตนี้ได้เลย ทีมจะตรวจยอดและเปิดสิทธิ์คอร์สให้` });
+    /* NT-26 / PR-18 (DL7 l.68): the patient sees "10 ครั้ง แถม 1 · รวม 11 ครั้ง · เฉลี่ย ฿1,563.64" in LINE too. */
+    ctx.line('patient', { key: 'note', title: 'ได้รับแจ้งการชำระคอร์สแล้ว', lines: [SC.courseLine(pk.v, r.free, r.total), `ยอดชำระ ${money(r.total)}`, 'ใช้ได้ 365 วัน นับจากวันที่ทีมยืนยันยอดโอน', 'ส่งรูปสลิปในแชตนี้ได้เลย ทีมจะตรวจยอดแล้วเปิดสิทธิ์ให้'], go: 'p.course', button: 'ดูคอร์สของฉัน' });
     ctx.line('patient', { me: true, text: `[รูปสลิปโอนเงิน ${money(r.total)}]` });
     cp.step = 5; if (!cp.next) cp.next = slotOf(chosenDates(cp)[0]);
     ctx.toast('แจ้งแอดมินตรวจสลิปแล้ว ต่อไปนัดครั้งที่ 2');
@@ -2095,7 +2130,9 @@
     }
     if (!s.course) { ctx.toast('บันทึกการจ่ายก่อนนัด'); cp.step = 4; return; }
     s.course.next = cp.next; s.course.backups = cp.backups.slice(); cp.step = 6;
-    ctx.toast('นัดครั้งที่ 2 แล้ว: ' + cp.next);
+    /* 7 Nov rehearsal P8: "ยืนยันนัด · แจ้งคนไข้ใน LINE" now sends the card it promises. Until the team confirms the course money, the date is held, not final. */
+    ctx.line('patient', { key: 'note', title: s.course.approved ? 'นัดครั้งที่ 2 ยืนยันแล้ว' : 'นักกายภาพจองนัดครั้งที่ 2 ให้แล้ว', lines: [`${cp.next} น. · ${s.pt.displayName || 'นักกายภาพของคุณ'}`, s.course.approved ? `ใช้สิทธิ์คอร์ส · เหลือ ${SC.courseLeft(s.course)} จาก ${s.course.sessions + (s.course.bonus || 0)} ครั้ง` : 'นัดจะยืนยันเมื่อทีมตรวจเงินคอร์สเสร็จ ทีมแจ้งในแชตนี้'], go: 'p.course', button: 'ดูคอร์สของฉัน' });
+    ctx.toast('นัดครั้งที่ 2 แล้ว แจ้งคนไข้ใน LINE แล้ว: ' + cp.next);
   });
   act('planDone', (s, ctx) => { ctx.go('t.opd', { n: '1' }); });
   const planDone = s => !!((s.course && s.course.notified && s.course.next) || (s.perVisit && s.perVisit.next));
@@ -2184,10 +2221,10 @@
      ====================================================================== */
   act('courseSkipLast', (s, ctx) => {
     const c = s.course; if (!c) return; const total = c.sessions + (c.bonus || 0);
-    for (let n = 3; n < total; n++) if (!visitOf(s, n)) s.visits.push({ n, date: 'ผ่านมาแล้ว', time: '', step: 4, soap: { s: 'Session ' + n }, published: true, skipped: true });
+    for (let n = 3; n <= total; n++) if (!visitOf(s, n)) s.visits.push({ n, date: 'ผ่านมาแล้ว', time: '', step: 4, soap: { s: 'Session ' + n }, published: true, skipped: true });
     c.used = total - 1;
-    s.visits.push({ n: total, date: 'อังคาร 1 ธ.ค. 2569', time: '09:00–10:00', step: 0, soap: {}, published: false });
-    ctx.toast(`ข้ามไปแล้ว · เหลือครั้งที่ ${total} ครั้งสุดท้ายของคอร์ส`);
+    s.visits.push({ n: total + 1, date: 'อังคาร 1 ธ.ค. 2569', time: '09:00–10:00', step: 0, soap: {}, published: false });
+    ctx.toast('ข้ามไปแล้ว · เหลือครั้งสุดท้ายของคอร์ส');
   });
   const PROG = [['met', 'ถึงเป้าหมายแล้ว'], ['part', 'ดีขึ้น แต่ยังไม่ถึงเป้าหมาย'], ['none', 'ยังไม่ดีขึ้นเท่าที่ควร']];
   const REC = [['renew', 'ต่อคอร์ส', 'ฝึกต่อให้ถึงเป้าหมาย'], ['pervisit', 'นัดเป็นครั้งเมื่อจำเป็น', 'ดูแลตัวเองได้แล้ว นัดเมื่อมีอาการ จ่ายรายครั้ง'], ['stop', 'จบการรักษา', 'ถึงเป้าหมายแล้ว ทำโปรแกรมที่บ้านต่อ']];
@@ -2217,16 +2254,17 @@
      ====================================================================== */
   scr('t.earn', {
     render(s) {
-      const done = s.visits.filter(v => v.step >= 4);
-      const rows = done.map(v => ({ v, amt: v.n === 1 ? NET_TRIAL : (s.course ? s.course.perSession : s.perVisit ? s.perVisit.net : 0) }));
+      /* NT-24 (H13 l.26–28, M11 §5): what the PT gets depends on how the visit ended. Manual cases show no amount until the team decides. */
+      const done = s.visits.filter(v => v.step >= 4 && (!v.exit || (SC.exitPay && SC.exitPay(v) > 0)));
+      const rows = done.map(v => ({ v, amt: v.exit && SC.exitPay ? (SC.exitPay(v) || 0) : v.n === 1 ? NET_TRIAL : (s.course ? s.course.perSession : s.perVisit ? s.perVisit.net : 0) }));
       const total = rows.reduce((a, r) => a + r.amt, 0);
       const c = s.course;
       const courseLeft = c && c.approved ? (c.net || c.total) - (done.filter(v => v.n > 1).length * c.perSession) : 0;
       const body = rows.length || c ? `
-          <div class="tt-earn"><span class="small" style="color:var(--gink)">ยอดเดือนนี้ (ต.ค. 2569) · รอโอน</span><span class="n">${money(total)}</span><span class="small" style="color:var(--gink)">${rows.length} เคส · โอนรอบถัดไป 10 พ.ย. 2569</span></div>
-          ${rows.length ? `<span class="kick">รายการ</span><div class="list">${rows.map(r => `<div class="li"><span class="tile">${I('house')}</span><span class="grow"><span class="t">ทำเคส ${esc(pname(s))} · ครั้งที่ ${r.v.n}</span><br><span class="s">${esc(shortDate(r.v.date))} · ${r.v.n === 1 ? 'ClairMatch' : 'คอร์ส'} · ${esc(districtOf(s))}</span></span><span style="text-align:right"><b class="money">${money(r.amt)}</b><br><span class="pill wait">รอโอน</span></span></div>`).join('')}</div>` : ''}
+          <div class="tt-earn"><span class="small" style="color:var(--gink)">ยอดเดือนนี้ (ต.ค. 2569) · รอโอน</span><span class="n">${money2(total)}</span><span class="small" style="color:var(--gink)">${rows.length} เคส · โอนรอบถัดไป 10 พ.ย. 2569</span></div>
+          ${rows.length ? `<span class="kick">รายการ</span><div class="list">${rows.map(r => `<div class="li"><span class="tile">${I('house')}</span><span class="grow"><span class="t">ทำเคส ${esc(pname(s))} · ครั้งที่ ${r.v.n}</span><br><span class="s">${esc(shortDate(r.v.date))} · ${r.v.n === 1 ? 'ClairMatch' : 'คอร์ส'}${r.v.exit && SC.exitLabel ? ' · ' + esc(SC.exitLabel(r.v)) : ''} · ${esc(districtOf(s))}</span></span><span style="text-align:right"><b class="money">${money2(r.amt)}</b><br><span class="pill wait">รอโอน</span></span></div>`).join('')}</div>` : ''}
           ${c ? `<span class="kick">คอร์ส</span><div class="card flat"><div class="row"><span class="tile gold">${I('package')}</span><span class="grow"><b class="h3">คอร์ส ${c.sessions} ครั้ง${c.bonus ? ` แถม ${c.bonus}` : ''} · สุทธิ ${money(c.net || c.total)}</b><br><span class="small">${c.approved ? `รายได้สุทธิทยอยเข้าครั้งละ ${money(c.perSession)} ตามครั้งที่ทำ · เหลือ ${money(Math.max(0, courseLeft))}` : 'รอแอดมินตรวจสลิป รายได้เริ่มนับเมื่อเปิดสิทธิ์'}</span></span></div></div>` : ''}`
-        : ui.empty('wallet', 'ยังไม่มีรายได้', 'รายได้ขึ้นที่นี่หลังจบเคสและส่งสรุป ClairMatch ได้สุทธิเคสละ ' + money(NET_TRIAL));
+        : ui.empty('wallet', 'ยังไม่มีรายได้', 'รายได้ขึ้นที่นี่หลังจบเคสและส่งสรุป ClairMatch ได้สุทธิเคสละ ' + money2(NET_TRIAL));
       return `<div class="scr">${ui.bar('รายได้', { back: false })}<div class="body enter">${body}
         <p class="note mint row tt-top">${I('info')}<span>ยอดที่แสดงหักค่าธรรมเนียมแล้ว · โอนเข้าบัญชีที่ลงทะเบียนกับทีม</span></p>
         <button class="btn ghost" data-act="ptBank">${I('landmark')}บัญชีรับเงิน</button>

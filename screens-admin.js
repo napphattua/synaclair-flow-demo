@@ -116,7 +116,9 @@
   const zoneOf = d => SC.ZONES.find(z => z.districts.includes(d));
   const covers = (zones, d) => { if (!d) return false; const z = zoneOf(d); return zones.includes(d) || (!!z && (zones.includes(z.name) || zones.includes(z.code))); };
   const REQ = { ASSESS_HOLD: ['ประเมินอย่างเดียว · พักจ่าย', 'wait'], CLINICAL_REVIEW: ['รอทีมคลินิกตรวจ', 'wait'], REVIEW_DECLINED: ['ทีมโทรคุยก่อน', 'warn'], PAYMENT_PENDING: ['รอชำระเงิน', 'wait'], SLIP_SENT: ['รอตรวจสลิป', 'wait'], PAID: ['รอจับคู่ PT', 'info'], OFFERED: ['รอ PT ตอบรับ', 'info'], BOOKED: ['นัดแล้ว', ''] };
-  const reqPill = r => { const x = REQ[r.status] || [r.status, 'gray']; return `<span class="pill ${x[1]}">${esc(x[0])}</span>`; };
+  const CLOSED = { hold30: 'ปิดเคส · คืนเต็มวันที่ 30', noPt: 'ปิดเคส · หา PT ไม่ได้ คืนเต็ม', ptNoShow: 'ปิดเคส · PT ไปไม่ได้ คืนเต็ม', cancelBefore: 'ปิดเคส · คนไข้ยกเลิก คืนเต็ม', cancelAfter: 'ปิดเคส · คนไข้ยกเลิกหลังเดินทาง' };
+  const reqPill = r => { const x = r.closed ? [CLOSED[r.closed] || 'ปิดเคสแล้ว', 'gray'] : REQ[r.status] || [r.status, 'gray']; return `<span class="pill ${x[1]}">${esc(x[0])}</span>`; };
+  SC.reqPill = reqPill;
   const STEP = ['นัดแล้ว', 'PT กำลังเดินทาง', 'PT ถึงแล้ว', 'กำลังดูแล', 'เสร็จแล้ว'];
   const goalText = s => SC.goalLabels(s).join(' · ');
   const reports = (s, id) => (s.suspicion.reports || []).filter(r => r.pt === id && !r.cleared);
@@ -140,38 +142,53 @@
   /* ---------- Work queue (derived from state only) ---------- */
   function tasks(s) {
     const a = A(s), t = [], r = s.request;
-    if (s.pt.status === 'PENDING') t.push({ icon: 'badge-check', tag: 'ตรวจใบประกอบ', title: s.pt.legalName || meName(s), sub: `เลขใบประกอบ ${s.pt.license || '—'} · แสดงเป็น ${meName(s)}${s.pt.photo ? ' · มีรูปโปรไฟล์รอตรวจ' : ''}`, go: 'a.license', cta: 'ตรวจใบประกอบ' });
-    if (r && r.status === 'ASSESS_HOLD') t.push({ icon: 'phone', tag: 'ประเมินอย่างเดียว · พักจ่าย', title: `${patientName(s)} · ${r.ref}`, sub: 'ทีมประสานงานติดต่อกลับ · ยังไม่ตั้งราคา ไม่ส่ง Offer ไม่คืนเงินอัตโนมัติ', go: 'a.clinical', cta: 'ดูขอบเขต' });
-    if (r && r.scopeHold && !(r.review || {}).declined) t.push({ icon: 'clipboard-plus', tag: 'พักกิจกรรม · นัดเดิมยังอยู่', title: `${patientName(s)} · ${r.ref}`, sub: `Admin ติดตาม · Clinical Lead ตัดสินความปลอดภัย · Finance ดูเรื่องเงิน · ${(r.review.reasons || []).join(' · ')}`, go: 'a.clinical', cta: 'ตรวจเคสนี้' });
-    if (r && r.status === 'CLINICAL_REVIEW') t.push({ icon: 'clipboard-plus', tag: r.paid ? 'ตรวจซ้ำ · ชำระแล้ว ไม่เก็บซ้ำ' : 'ตรวจก่อนเก็บเงิน', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้' });
-    if (r && r.check && r.check.state === 'open') t.push({ icon: 'receipt', tag: 'สลิปผิดปกติ', title: `สลิป ClairMatch · ${r.ref}`, sub: `${patientName(s)} · ${r.check.reasons.join(' · ')} · จับคู่ PT ต่อไปแล้ว`, go: 'a.payments', cta: 'ดูสลิป' });
-    if (r && r.status === 'PAID') t.push({ icon: 'users-round', tag: 'จับคู่ PT', title: `${patientName(s)} · ${district(s) || 'ยังไม่ระบุเขต'}`, sub: `${r.preferredPt ? `ผู้รับบริการขอ ${ptName(s, r.preferredPt)} · ` : ''}ระบบหา PT ที่ตรงเขตไม่ได้ ต้องเลือกเอง`, go: 'a.match', cta: 'เลือก PT' });
-    if (s.course && s.course.slip && !s.course.approved) t.push({ icon: 'wallet', tag: 'ตรวจเงินคอร์ส', title: `คอร์ส ${s.course.sessions} ครั้ง ${money(s.course.total)}`, sub: `${patientName(s)} · PT ${meName(s)} ส่งสลิปจากหน้างาน`, go: 'a.payments', cta: 'ตรวจสลิปคอร์ส' });
-    if (s.review && s.review.consent && !s.review.approved && !s.review.hidden) t.push({ icon: 'star', tag: 'รีวิวรออนุมัติ', title: `รีวิว ${s.review.stars} ดาว ถึง ${meName(s)}`, sub: 'ผู้รับบริการยินยอมให้แสดงบนหน้าเว็บ อ่านก่อนอนุมัติ', go: 'a.reviews', cta: 'อ่านรีวิว' });
-    if (s.review && s.review.needsContact && !a.contacted) t.push({ icon: 'phone', tag: 'ขอให้ติดต่อกลับ', title: patientName(s), sub: 'ผู้รับบริการติ๊กว่าอยากให้ทีมโทรคุย', go: 'a.reviews', cta: 'ดูเรื่องนี้' });
-    roster(s).forEach(id => { const n = score(s, id); if (n >= 20) t.push({ icon: 'shield-alert', tag: 'เฝ้าระวัง', title: ptName(s, id), sub: `${n} คะแนน · ${LEVEL[level(n)][0]}`, go: 'a.suspicion', cta: 'ทบทวน' }); });
+    /* 7 Nov rehearsal P5: a case closed by a full refund drops its matching and hold tasks. Each task names its owner (proposal, see SC.routeAdmin). */
+    const closed = !!(r && r.closed), own = id => (SC.TEAM && SC.TEAM[id]) ? `${SC.TEAM[id].name} (${SC.TEAM[id].role})` : id;
+    if (s.pt.status === 'PENDING') t.push({ icon: 'badge-check', tag: 'ตรวจใบประกอบ', title: s.pt.legalName || meName(s), sub: `เลขใบประกอบ ${s.pt.license || '—'} · แสดงเป็น ${meName(s)}${s.pt.photo ? ' · มีรูปโปรไฟล์รอตรวจ' : ''}`, go: 'a.license', cta: 'ตรวจใบประกอบ', owner: 'nat', kind: 'team' });
+    /* 7 Nov rehearsal P16: a capability the PT asked about (or a specialty task) waits for a reviewer, so it is a task. */
+    const capWait = capPending(s); if (s.pt.status === 'VERIFIED' && capWait.length) t.push({ icon: 'list-checks', tag: 'พิจารณาความสามารถ PT', title: `${meName(s)} · ${capWait.join(' · ')}`, sub: 'PT แจ้งว่าทำได้หรือขอคุยก่อน · ระบบไม่อนุมัติเอง · พี่ปาล์ม (Clinical Lead) พิจารณา', go: 'a.caps', cta: 'พิจารณา', owner: 'palm', kind: 'team' });
+    if (r && r.status === 'ASSESS_HOLD' && !closed) t.push({ icon: 'phone', tag: 'ประเมินอย่างเดียว · พักจ่าย', title: `${patientName(s)} · ${r.ref}`, sub: 'ทีมประสานงานติดต่อกลับ · ยังไม่ตั้งราคา ไม่ส่ง Offer ไม่คืนเงินอัตโนมัติ', go: 'a.clinical', cta: 'ดูขอบเขต', owner: 'nat', kind: 'clinical' });
+    if (r && r.scopeHold && !closed && !(r.review || {}).declined) t.push({ icon: 'clipboard-plus', tag: 'พักกิจกรรม · นัดเดิมยังอยู่', title: `${patientName(s)} · ${r.ref}`, sub: `แอดมินติดตาม · Clinical Lead ตัดสินความปลอดภัย · เรื่องคืนเงิน: พี่ปาล์ม (CEO) อนุมัติ · ${(r.review.reasons || []).join(' · ')}`, go: 'a.clinical', cta: 'ตรวจเคสนี้', owner: 'palm', kind: 'clinical' });
+    if (r && r.status === 'CLINICAL_HOLD' && !closed) t.push({ icon: 'clipboard-x', tag: 'C11 จำเป็น · พักไว้', title: `${patientName(s)} · ${r.ref}`, sub: 'ไม่เปิดชำระเงิน ไม่ส่งงาน · วิธีจัดบริการที่ปลอดภัย รอตัดสิน', go: 'a.clinical', cta: 'ดูเคส', owner: 'palm', kind: 'clinical' });
+    if (SC.policyTasks) SC.policyTasks(s).forEach(x => t.push(x));
+    if (r && r.status === 'CLINICAL_REVIEW' && !closed) t.push({ icon: 'clipboard-plus', tag: r.paid ? 'ตรวจซ้ำ · ชำระแล้ว ไม่เก็บซ้ำ' : 'ตรวจก่อนเก็บเงิน', title: `${patientName(s)} · ${r.ref}`, sub: (r.review.reasons || []).join(' · '), go: 'a.clinical', cta: 'ตรวจเคสนี้', owner: 'palm', kind: 'clinical', hot: true });
+    if (r && r.check && r.check.state === 'open') t.push({ icon: 'receipt', tag: 'สลิปผิดปกติ', title: `สลิป ClairMatch · ${r.ref}`, sub: `${patientName(s)} · ${r.check.reasons.join(' · ')} · จับคู่ PT ต่อไปแล้ว`, go: 'a.payments', cta: 'ดูสลิป', owner: 'boss', kind: 'money' });
+    if (r && r.status === 'PAID' && !closed) t.push({ icon: 'users-round', tag: 'จับคู่ PT', title: `${patientName(s)} · ${district(s) || 'ยังไม่ระบุเขต'}`, sub: `${r.preferredPt ? `ผู้รับบริการขอ ${ptName(s, r.preferredPt)} · ` : ''}ระบบหา PT ที่ตรงเขตไม่ได้ · ผู้รับผิดชอบ ${own((r.search && r.search.owner) || 'boss')}`, go: 'a.match', cta: 'เลือก PT', owner: (r.search && r.search.owner) || 'boss', kind: 'match', at: r.paidAt ? `${r.paidAt}T09:00` : '' });
+    if (s.course && s.course.slip && !s.course.approved) t.push({ icon: 'wallet', tag: 'ตรวจเงินคอร์ส', title: `คอร์ส ${s.course.sessions} ครั้ง ${money(s.course.total)}`, sub: `${patientName(s)} · PT ${meName(s)} ส่งสลิปจากหน้างาน`, go: 'a.payments', cta: 'ตรวจสลิปคอร์ส', owner: 'boss', kind: 'money' });
+    if (s.review && s.review.consent && !s.review.approved && !s.review.hidden) t.push({ icon: 'star', tag: 'รีวิวรออนุมัติ', title: `รีวิว ${s.review.stars} ดาว ถึง ${meName(s)}`, sub: 'ผู้รับบริการยินยอมให้แสดงบนหน้าเว็บ อ่านก่อนอนุมัติ', go: 'a.reviews', cta: 'อ่านรีวิว', owner: 'nat', kind: 'team' });
+    if (s.review && s.review.needsContact && !a.contacted) t.push({ icon: 'phone', tag: 'ขอให้ติดต่อกลับ', title: patientName(s), sub: 'ผู้รับบริการติ๊กว่าอยากให้ทีมโทรคุย', go: 'a.reviews', cta: 'ดูเรื่องนี้', owner: 'nat', kind: 'team', inline: { act: 'markContacted', label: 'โทรแล้ว' } });
+    roster(s).forEach(id => { const n = score(s, id); if (n >= 20) t.push({ icon: 'shield-alert', tag: 'เฝ้าระวัง', title: ptName(s, id), sub: `${n} คะแนน · ${LEVEL[level(n)][0]}`, go: 'a.suspicion', cta: 'ทบทวน', owner: 'nat', kind: 'team' }); });
     return t;
   }
+  /* Tasks the PT declared that wait for a reviewer: "ขอคุยก่อน", or a specialty task marked "ทำได้", with no decision yet (or a reopened one). */
+  function capPending(s) { const p = s.pt, caps = p.caps || {}, dec = p.capDecisions || {};
+    return Object.keys(caps).filter(id => !SC.CLIN.restricted.includes(id) && ((dec[id] || {}).status === 'PENDING' || (!dec[id] && (caps[id] === 'ask' || (id[0] === 'S' && caps[id] === 'can'))))); }
+  SC.capPending = capPending;
   function waiting(s) {
     const w = [], r = s.request;
     if (r && r.status === 'PAYMENT_PENDING') w.push({ icon: 'hourglass', title: `${patientName(s)} · รอชำระ ClairMatch`, sub: `${r.ref} · ระบบส่งลิงก์ชำระให้ใน LINE แล้ว`, go: 'a.patients', cta: 'ดูคนไข้' });
-    if (r && r.status === 'OFFERED') w.push({ icon: SC.offerBlock(s) ? 'lock' : 'send', title: `${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${SC.offerBlock(s)}` : 'รอ PT ตอบรับข้อเสนอ'} · ${patientName(s)}`, sub: `${r.auto ? 'ระบบจับคู่ให้อัตโนมัติ · ' : ''}ส่งให้ ${(r.offerTo || []).map(id => ptName(s, id)).join(', ') || '—'} · ภายใน 30 นาที`, go: 'a.match', cta: 'ดูข้อเสนอ' });
-    s.visits.filter(x => x.step < 4).forEach(x => w.push({ icon: 'calendar-days', title: `นัดครั้งที่ ${x.n} · ${patientName(s)}`, sub: `${x.date} ${x.time} · ${STEP[x.step]}`, go: 'a.appts', cta: 'ดูนัด' }));
+    if (r && r.status === 'OFFERED' && !r.closed) w.push({ icon: SC.offerBlock(s) ? 'lock' : 'send', title: `${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${SC.offerBlock(s)}` : 'รอ PT ตอบรับข้อเสนอ'} · ${patientName(s)}`, sub: `${r.auto ? 'ระบบส่งงานให้เอง (ห้องซ้อม) · ' : ''}ส่งให้ ${(r.offerTo || []).map(id => ptName(s, id)).join(', ') || '—'} · ภายใน 30 นาที`, go: 'a.match', cta: 'ดูข้อเสนอ' });
+    s.visits.filter(x => x.step < 4).forEach(x => w.push({ icon: 'calendar-days', title: `นัดครั้งที่ ${x.n} · ${patientName(s)}`, sub: `${x.date} ${x.time} · ${STEP[x.step]}${SC.visitHold && SC.visitHold(s) ? ' · พักการดูแลอยู่' : ''}`, go: 'a.appts', cta: 'ดูนัด' }));
     return w;
   }
+  SC.adminTasks = tasks; SC.adminWaiting = waiting;
 
   /* ---------- Shared admin layout ---------- */
-  const NAV = [['a.dash', 'layout-dashboard', 'Dashboard'], ['a.queue', 'inbox', 'งานรอจัดการ'], ['a.clinical', 'clipboard-plus', 'ตรวจทางคลินิก'], ['a.license', 'badge-check', 'ตรวจใบประกอบ'], ['a.caps', 'list-checks', 'ความสามารถ PT'], ['a.payments', 'wallet', 'การเงิน'], ['a.match', 'users-round', 'จับคู่ PT'], ['a.appts', 'calendar-days', 'นัดหมาย'], ['a.pts', 'stethoscope', 'ทีม PT'], ['a.patients', 'heart-handshake', 'คนไข้'], ['a.reviews', 'star', 'รีวิว'], ['a.suspicion', 'shield-alert', 'เฝ้าระวัง']];
+  /* A05 (UX audit 7 Nov): three groups instead of one long list. */
+  const NAV = [['งานวันนี้'], ['a.queue', 'inbox', 'งานรอจัดการ'], ['a.clinical', 'clipboard-plus', 'ตรวจทางคลินิก'], ['a.match', 'users-round', 'จับคู่ PT'], ['a.payments', 'wallet', 'การเงิน'], ['a.refunds', 'banknote', 'คืนเงิน'], ['a.license', 'badge-check', 'ตรวจใบประกอบ'],
+    ['ข้อมูล'], ['a.appts', 'calendar-days', 'นัดหมาย'], ['a.patients', 'heart-handshake', 'คนไข้'], ['a.pts', 'stethoscope', 'ทีม PT'], ['a.caps', 'list-checks', 'ความสามารถ PT'], ['a.reviews', 'star', 'รีวิว'], ['a.suspicion', 'shield-alert', 'เฝ้าระวัง'],
+    ['ภาพรวม'], ['a.dash', 'layout-dashboard', 'ภาพรวม CEO']];
   function counts(s) {
     const t = tasks(s), c = { 'a.queue': t.length };
     t.forEach(x => { c[x.go] = (c[x.go] || 0) + 1; });
     c['a.appts'] = s.visits.filter(x => x.step < 4).length;
+    if (SC.refundCount) c['a.refunds'] = SC.refundCount(s);
     return c;
   }
   /* Main comes first in the DOM so the rehearsal pulses the task button, not the sidebar item; CSS puts the sidebar on the left (or on top at 390px). */
   function shell(s, active, head, body) {
     const c = counts(s);
-    const nav = NAV.map(([id, ic, label]) => `<button data-go="${id}" class="${id === active ? 'on' : ''}" ${id === active ? 'aria-current="page"' : ''}>${I(ic)}${label}${SC.isNewScreen && SC.isNewScreen(id) ? '<span class="nw">ใหม่</span>' : ''}${c[id] ? `<span class="n">${c[id]}</span>` : ''}</button>`).join('');
+    const nav = NAV.map(([id, ic, label]) => !ic ? `<span class="adm-grp">${esc(id)}</span>` : `<button data-go="${id}" class="${id === active ? 'on' : ''}" ${id === active ? 'aria-current="page"' : ''}>${I(ic)}${label}${SC.isNewScreen && SC.isNewScreen(id) ? '<span class="nw">ใหม่</span>' : ''}${c[id] ? `<span class="n">${c[id]}</span>` : ''}</button>`).join('');
     return `<div class="scr aa"><div class="adm">
       <main class="adm-main"><header class="adm-head"><div class="grow">${head.kick ? `<div class="kick">${esc(head.kick)}</div>` : ''}<h1>${esc(head.title)}</h1>${head.sub ? `<p class="aa-sub">${esc(head.sub)}</p>` : ''}</div>${head.right || ''}</header>${body}</main>
       <nav class="adm-side" aria-label="เมนูแอดมิน"><div class="brand"><img src="a/synaclair-icon.svg" alt="">SynaClair</div>${nav}</nav>
@@ -180,28 +197,13 @@
   SC.adminShell = shell;
   const taskRow = (x, hot) => `<div class="aa-task ${hot ? 'hot' : ''}"><span class="tile ${hot ? 'gold' : ''}">${I(x.icon)}</span><div class="grow">${x.tag ? `<span class="pill ${hot ? 'wait' : 'gray'}">${esc(x.tag)}</span>` : ''}<div class="t">${esc(x.title)}</div><div class="s">${esc(x.sub)}</div></div><button class="btn ${hot ? '' : 'ghost'}" data-go="${x.go}">${esc(x.cta)}${I('chevron-right')}</button></div>`;
 
-  /* ================= a.queue ================= */
-  SC.screen('a.queue', {
-    role: 'admin',
-    render(s) {
-      const t = tasks(s), w = waiting(s);
-      const pay = t.filter(x => x.go === 'a.payments').length;
-      const kpis = `<div class="kpis">
-        <div class="kpi"><b>${t.length}</b><span>งานค้างที่ทีมต้องทำ</span></div>
-        <div class="kpi"><b>${pay}</b><span>สลิปรอตรวจ</span></div>
-        <div class="kpi"><b>${t.filter(x => x.go === 'a.match').length}</b><span>คำขอรอจับคู่ PT</span></div>
-        <div class="kpi"><b>${s.visits.filter(x => x.step < 4).length}</b><span>นัดที่กำลังจะถึง</span></div></div>`;
-      const list = t.length ? `<div class="aa-sec">${t.map(x => taskRow(x, true)).join('')}</div>`
-        : `<div class="card flat">${ui.empty('circle-check', 'ไม่มีงานค้าง', 'ทุกเรื่องที่ต้องให้ทีมตอบได้ทำครบแล้ว งานใหม่จะขึ้นที่นี่ทันทีพร้อมแจ้งใน LINE แอดมิน')}</div>`;
-      const wait = w.length ? `<section class="aa-sec"><div class="row between"><h2 class="h3">กำลังรอคนอื่น</h2><span class="small">ไม่นับเป็นงานค้าง</span></div>${w.map(x => taskRow(x, false)).join('')}</section>` : '';
-      return shell(s, 'a.queue', { kick: 'ต้องดำเนินการ', title: 'งานรอจัดการ', sub: 'เฉพาะงานที่ต้องให้ทีมตอบสนอง เรื่องที่กำลังรอ PT หรือผู้รับบริการอยู่ด้านล่าง' }, kpis + list + wait);
-    }
-  });
+  /* a.queue (the admin home) lives in screens-ops.js since the 7 Nov rehearsal round. */
+  SC.adminTaskRow = taskRow;
 
   /* ================= a.license ================= */
   /* พี่ปาล์ม v2.4 R1.2–R1.3: what the PT declared. A tick is self-report, not approval; specialty tasks need evidence checked by the team. */
   const CAP_WORD = { can: 'ทำได้', no: 'ยังไม่ถนัด', ask: 'ขอคุยก่อน' };
-  const capNow = () => new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+  const capNow = () => SC.stamp ? SC.stamp(5) : SC.TODAY;
   /* A declaration can open a review or keep it open, never close one. First-time "ทำได้" on a core task stays as it was: พี่ปาล์ม's D1 is still open. */
   SC.capPick = (s, id, v) => {
     const p = s.pt, caps = p.caps = p.caps || {}, prev = caps[id]; if (prev === v || SC.CLIN.restricted.includes(id)) return;
@@ -209,6 +211,7 @@
     const dec = p.capDecisions = p.capDecisions || {}, d = dec[id]; let note = '';
     if (v === 'ask' || (prev === 'ask' && !d) || (d && d.status === 'APPROVED' && v === 'no')) { if (!d || d.status !== 'REJECTED') { dec[id] = { status: 'PENDING', at: capNow() }; note = 'รอทีมพิจารณา'; } }
     (p.capLog = p.capLog || []).push({ kind: 'declare', id, from: prev || '', to: v, at: capNow(), note });
+    if (note) SC.line('admin', { key: 'note', to: ['palm'], title: `ถึงพี่ปาล์ม (Clinical Lead): ความสามารถ PT รอพิจารณา`, lines: [`${p.displayName || 'PT'} · ${SC.CLIN.label(id)}`, `PT ตอบ: ${CAP_WORD[v] || v}`, 'ระบบไม่อนุมัติเอง'], go: 'a.caps', button: 'พิจารณา' });
   };
   SC.capOpenPending = s => { const dec = s.pt.capDecisions = s.pt.capDecisions || {}; Object.entries(s.pt.caps || {}).forEach(([id, v]) => { if (v === 'ask' && !dec[id]) dec[id] = { status: 'PENDING', at: capNow() }; }); };
   SC.capEligible = (p, id) => { const c = (p.caps || {})[id], d = (p.capDecisions || {})[id]; if (!c || c === 'no') return false; if (d) return d.status === 'APPROVED'; return c === 'can' && id[0] === 'C'; };
@@ -218,7 +221,7 @@
     const by = v => ids.filter(id => caps[id] === v).map(id => esc(SC.CLIN.label(id)));
     const dec = p.capDecisions || {}, spec = ids.filter(id => (id[0] === 'S' && caps[id] === 'can') || caps[id] === 'ask' || dec[id]);
     return `<div class="card flat"><b class="h3">${I('list-checks')}งานที่ PT แจ้งว่ารับได้</b><p class="small" style="margin:0">กลุ่ม: ${esc(names.join(' · ') || '—')} · ที่ติ๊กเป็นข้อมูลจาก PT ยังไม่ใช่การอนุมัติ</p>
-      ${kv([['ทำได้', by('can').join(' · ') || '—'], ['ยังไม่ถนัด', by('no').join(' · ') || '—'], ['ขอคุยก่อน (รอทีมพิจารณา)', by('ask').join(' · ') || '—'], ['อุปกรณ์', esc((p.equip || []).join(' · ') || '—')]])}
+      ${kv([['ทำได้ (' + by('can').length + ')', (x => x.length ? `<div class="aa-chips">${x.map(y => `<span class="chip-s">${y}</span>`).join('')}</div>` : '—')(by('can'))], ['ยังไม่ถนัด', (x => x.length ? `<div class="aa-chips">${x.map(y => `<span class="chip-s">${y}</span>`).join('')}</div>` : '—')(by('no'))], ['ขอคุยก่อน (รอทีมพิจารณา)', (x => x.length ? `<div class="aa-chips">${x.map(y => `<span class="chip-s">${y}</span>`).join('')}</div>` : '—')(by('ask'))], ['อุปกรณ์', esc((p.equip || []).join(' · ') || '—')]])}
       ${spec.length ? `<span class="label">ต้องพิจารณาก่อนส่งเคสแบบนี้ · ระบบไม่อนุมัติเอง · อนุมัติเคสไม่เท่ากับอนุมัติ PT</span>
         <div class="field"><span>พิจารณาในบัญชี</span><div class="chips">${REVIEW_ACCOUNTS.map(x => `<button class="chip ${p.capBy === x.id ? 'on' : ''}" data-pick="pt.capBy" data-value="${x.id}">${esc(x.name)} · ${esc(x.role)}</button>`).join('')}</div></div>
         <label class="field"><span>เหตุผล</span><textarea class="in" style="min-height:64px" maxlength="200" data-bind="pt.capReason" placeholder="เช่น คุยกับ PT แล้ว เคยดูแลเคสแบบนี้">${esc(p.capReason || '')}</textarea></label>
@@ -236,8 +239,20 @@
     if (!why) { ctx.toast('ใส่เหตุผลก่อน'); return; }
     const at = capNow(), version = ((p.capDecisions || {})[id] || {}).version + 1 || 1, evidence = (p.capEvidence || '').trim(); (p.capDecisions = p.capDecisions || {})[id] = { ptId: 'me', task: id, declared: (p.caps || {})[id] || '', status: ctx.data.d, by: lead.id, at, reason: why, evidence, version };
     (p.capLog = p.capLog || []).push({ kind: 'decide', id, to: ctx.data.d, by: lead.id, at, reason: why, evidence, version }); p.capReason = ''; p.capEvidence = '';
-    ctx.toast(ctx.data.d === 'APPROVED' ? 'บันทึกผลอนุมัติแล้ว' : 'บันทึกว่าไม่อนุมัติแล้ว');
+    /* 7 Nov rehearsal NT-03: the PT hears the decision. */
+    ctx.line('pt', { key: 'note', title: ctx.data.d === 'APPROVED' ? `ทีมอนุมัติงาน ${id} ให้คุณแล้ว` : `ทีมยังไม่อนุมัติงาน ${id}`, lines: [SC.CLIN.label(id), ctx.data.d === 'APPROVED' ? 'เคสที่ต้องใช้งานนี้ส่งถึงคุณได้แล้ว' : 'เคสที่ต้องใช้งานนี้จะยังไม่ส่งถึงคุณ · คุยกับทีมได้ในแชตนี้', `เหตุผล: ${why}`], go: 't.hub', button: 'ดูหน้าของฉัน' });
+    ctx.toast(ctx.data.d === 'APPROVED' ? 'บันทึกผลอนุมัติแล้ว แจ้ง PT ใน LINE' : 'บันทึกว่าไม่อนุมัติแล้ว แจ้ง PT ใน LINE');
   });
+  /* A02 (UX audit 7 Nov): this page checks the licence only. Capability review lives on "ความสามารถ PT"; here is one link with the counts. */
+  function capLink(s) {
+    const p = s.pt, caps = p.caps || {}, ids = Object.keys(caps); if (!ids.length) return '';
+    const dec = p.capDecisions || {}, wait = ids.filter(id => (dec[id] || {}).status === 'PENDING' || (!dec[id] && (caps[id] === 'ask' || (id[0] === 'S' && caps[id] === 'can')))).length;
+    const core = ids.filter(id => id[0] === 'C' && caps[id] === 'can'), spec = ids.filter(id => id[0] === 'S' && caps[id] !== 'no');
+    return `<div class="card flat aa-caplink"><div class="row between wrap"><b class="h3">${I('list-checks')}งานที่ PT แจ้งว่ารับได้</b><button class="btn sm ghost" data-go="a.caps">ดูและพิจารณา ${I('chevron-right')}</button></div>
+      <p class="small" style="margin:0">PT ตอบ ${ids.length} งาน · รอพิจารณา ${wait} · ที่ติ๊กเป็นข้อมูลจาก PT ยังไม่ใช่การอนุมัติ</p>
+      <div class="aa-chips"><span class="label">งานพื้นฐาน ${core.length}</span>${core.map(id => `<span class="chip-s">${esc(id)}</span>`).join('')}</div>
+      ${spec.length ? `<div class="aa-chips"><span class="label">งานเฉพาะทาง ${spec.length}</span>${spec.map(id => `<span class="chip-s">${esc(id)}</span>`).join('')}</div>` : ''}</div>`;
+  }
   SC.screen('a.license', {
     role: 'admin',
     render(s) {
@@ -248,18 +263,18 @@
         queue = `<article class="card flat">
           <div class="row top wrap" style="gap:18px">
             ${p.photo ? `<img class="aa-photo" src="${esc(photoSrc(p.photo))}" alt="รูปโปรไฟล์ที่ ${esc(meName(s))} ส่งมา">` : `<div class="aa-photo">${I('image')}</div>`}
-            <div class="grow stack" style="min-width:220px">
+            <div class="grow stack" style="min-width:min(220px,100%);flex:1 1 220px">
               <div class="row wrap"><span class="pill wait">${I('hourglass')}ยังไม่ตรวจ</span><span class="small">สมัครเมื่อ ${esc(SC.TODAY)}</span></div>
               ${kv([['ชื่อจริง', `<b>${esc(p.legalName || '—')}</b>`], ['เลขใบประกอบวิชาชีพ', `<b>${esc(p.license || '—')}</b>`], ['สำเนาใบประกอบ', p.licenseFile ? (p.licenseFile === 'sample' ? '<span class="pill">แนบแล้ว (ไฟล์ตัวอย่าง)</span>' : `<a class="link" href="${esc(p.licenseFile)}" target="_blank" rel="noopener">เปิดไฟล์ที่แนบ</a>`) : '<span class="pill warn">ยังไม่แนบ</span>'], ['เอกสารอื่น', (p.extraDocs || []).length ? p.extraDocs.map(x => `<div>${I('paperclip')} ${x.file === 'sample' ? 'ไฟล์ตัวอย่าง' : `<a class="link" href="${esc(x.file)}" target="_blank" rel="noopener">เปิดไฟล์</a>`} · ${esc(x.note)}</div>`).join('') : '<span class="small">ไม่มี</span>'], ['การศึกษา', ((p.cv && p.cv.edu) || []).length ? p.cv.edu.map(([x, u, f, ef]) => `<div>${esc([x, f, u].filter(Boolean).join(' · '))} · ${ef ? (ef === 'sample' ? '<span class="pill">เอกสารยืนยัน (ตัวอย่าง)</span>' : `<a class="link" href="${esc(ef)}" target="_blank" rel="noopener">เปิดเอกสารยืนยัน</a>`) : '<span class="pill warn">ยังไม่แนบเอกสาร</span>'}</div>`).join('') : '—'], ['ชื่อที่แสดง', esc(meName(s))], ['เขตที่รับงาน', esc((p.zones || []).join(' · ') || '—')],
                 ['รูปโปรไฟล์', p.photo ? (consent ? '<span class="pill">ยินยอมให้แสดงบนเว็บ</span>' : '<span class="pill warn">ยังไม่ยินยอม</span>') : '<span class="pill gray">ยังไม่ได้ใส่รูป</span>']])}
             </div>
           </div>
           ${p.bio ? `<div class="note mint"><b>แนะนำตัว:</b> ${esc(p.bio)}</div>` : ''}
-          ${capsCard(s)}
+          ${capLink(s)}
           ${p.licenseNote ? `<div class="note">${I('message-circle')} ขอข้อมูลเพิ่มแล้วใน LINE: ${esc(p.licenseNote)}</div>` : ''}
           <div class="note mint">เทียบชื่อจริง เลขใบประกอบ และสำเนาที่แนบกับระบบตรวจสอบของสภากายภาพบำบัด และดูว่ารูปเห็นหน้าชัด เป็นรูปจริงของนักกายภาพ</div>
           <div class="aa-acts"><a class="link" href="https://www.pt.or.th/cpte/ptlicense.php" target="_blank" rel="noopener">${I('link')} เปิดระบบตรวจใบประกอบของสภากายภาพบำบัด ${I('external-link')}</a></div>
-          <div class="aa-acts"><button class="btn" data-act="approvePt">${I('check')}อนุมัติ</button><button class="btn ghost" data-act="askLicenseInfo">${I('message-circle')}ขอข้อมูลเพิ่ม</button></div>
+          <div class="aa-acts aa-decide-bar"><button class="btn" data-act="approvePt">${I('check')}อนุมัติใบประกอบ</button><button class="btn ghost" data-act="askLicenseInfo">${I('message-circle')}ขอข้อมูลเพิ่ม</button></div>
         </article>`;
       } else if (p.status === 'NONE') {
         queue = `<div class="card flat">${ui.empty('badge-check', 'ไม่มีใบประกอบรอตรวจ', 'เมื่อนักกายภาพสมัครด้วย LINE ใบประกอบจะขึ้นที่นี่ (ซ้อมด่าน 1 ก่อน)')}</div>`;
@@ -272,7 +287,7 @@
       SAMPLES.forEach(x => done.push({ cells: [`<div class="row">${ui.avatar(x.name, null, 36, x.hue)}<div class="grow"><div class="t">${esc(x.name)}</div>${ui.sample()}</div></div>`, '<span class="small">ข้อมูลตัวอย่าง</span>', esc(x.zones.join(' · ')), ok] }));
       const body = `<section class="aa-sec"><h2 class="h3">รอตรวจ</h2>${queue}</section>
         <section class="aa-sec"><h2 class="h3">ตรวจแล้ว</h2>${table(['นักกายภาพ', 'เลขใบประกอบ', 'เขต', 'สถานะ'], done)}</section>
-        ${p.status === 'VERIFIED' && Object.keys(p.caps || {}).length ? `<section class="aa-sec"><h2 class="h3">ความสามารถของ ${esc(meName(s))}</h2>${capsCard(s)}</section>` : ''}`;
+        ${p.status === 'VERIFIED' && Object.keys(p.caps || {}).length ? `<section class="aa-sec"><h2 class="h3">ความสามารถของ ${esc(meName(s))}</h2>${capLink(s)}</section>` : ''}`;
       return shell(s, 'a.license', { kick: 'ทีม PT', title: 'ตรวจใบประกอบ + รูปโปรไฟล์', sub: 'นักกายภาพสมัครเองด้วย LINE แล้ว เทียบชื่อจริงกับเลขใบประกอบ แล้วกดอนุมัติ ไม่ต้องสัมภาษณ์' }, body);
     }
   });
@@ -322,6 +337,7 @@
               ${x.flag ? `<div class="note" style="color:var(--red)">${I('triangle-alert')} ${x.flag.map(esc).join(' · ')}<br><span class="small">ระบบไม่ได้หยุดงาน: จับคู่ PT ต่อไปแล้ว ยังไม่ส่งใบเสร็จ</span></div>` : ''}
               <div class="price">${money(x.amount)}</div>
               ${kv([['ผู้รับบริการ', esc(x.from)], ['เลขอ้างอิง', esc(x.ref)], ['ส่งเมื่อ', esc(x.when)], ['ส่งโดย', esc(x.by)]])}
+              ${x.kind === 'course' && SC.coursePerVisit ? SC.coursePerVisit(s.course) : ''}
               <div class="note">ตรวจยอดเงินเข้าบัญชีจริงก่อนยืนยัน ไม่ใช่ดูภาพสลิปอย่างเดียว</div>
               <div class="aa-acts"><button class="btn" data-act="confirmPayment" data-kind="${x.kind}">${I('check')}${esc(x.cta)}</button><button class="btn danger" data-act="rejectPayment" data-kind="${x.kind}">${I('x')}${esc(x.rej || 'ยอดไม่ตรง ตีกลับ')}</button></div>
             </div></div></article>`).join('')
@@ -329,9 +345,10 @@
       } else {
         const rows = [];
         if (trialDone(s)) rows.push({ cells: [`<div class="t">ClairMatch</div><span class="small">${esc(patientName(s))}</span>`, `<span class="money">${money(SC.TRIAL)}</span>`, `<span style="white-space:nowrap">${esc(s.request.ref)}</span>`, `<span class="pill">${s.request.check && s.request.check.state === 'asked' ? 'แจ้งคนไข้แล้ว' : 'รับเงินแล้ว'}</span> <span class="small">${!s.request.check || s.request.check.state === 'auto' ? 'ระบบตรวจผ่านอัตโนมัติ' : s.request.check.state === 'ok' ? 'แอดมินเช็กบัญชีแล้ว' : esc(s.request.check.reasons.join(' · '))}</span>`] });
-        if (s.course && s.course.approved) rows.push({ cells: [`<div class="t">คอร์ส ${s.course.sessions} ครั้ง</div><span class="small">${esc(patientName(s))}</span>`, `<span class="money">${money(s.course.total)}</span>`, `<span style="white-space:nowrap">${esc(s.course.code || (s.request ? s.request.ref : '—'))}</span>`, '<span class="pill">รับเงินแล้ว · เปิดสิทธิ์แล้ว</span>'] });
+        if (s.course && s.course.approved) rows.push({ cells: [`<div class="t">คอร์ส ${s.course.sessions} ครั้ง${s.course.bonus ? ` แถม ${s.course.bonus}` : ''}</div><span class="small">${esc(patientName(s))}</span>`, `<span class="money">${money(s.course.total)}</span>`, `<span style="white-space:nowrap">${esc(s.course.code || (s.request ? s.request.ref : '—'))}</span>`, `<span class="pill">รับเงินแล้ว · เปิดสิทธิ์แล้ว</span> <span class="small">${SC.courseValid ? esc(SC.courseValid(s.course)) : ''}</span>`] });
         a.rejects.forEach(x => rows.push({ cells: [`<div class="t">${esc(x.title)}</div><span class="small">${esc(x.from)}</span>`, `<span class="money">${money(x.amount)}</span>`, `<span style="white-space:nowrap">${esc(x.ref)}</span>`, `<span class="pill warn">ตีกลับ</span> <span class="small">${esc(x.reason)}</span>`] }));
         body = rows.length ? table(['รายการ', 'ยอด', 'อ้างอิง', 'ผล'], rows) : `<div class="card flat">${ui.empty('receipt', 'ยังไม่มีรายการที่ตรวจแล้ว', 'รายการที่ยืนยันหรือตีกลับจะเก็บไว้ที่นี่')}</div>`;
+        if (s.course && s.course.approved && SC.coursePerVisit) body += `<section class="aa-sec"><h2 class="h3">ค่าธรรมเนียมต่อครั้ง (เห็นเฉพาะทีม)</h2>${SC.coursePerVisit(s.course)}</section>`;
       }
       return shell(s, 'a.payments', { kick: 'ตรวจเงิน', title: 'การเงิน', sub: 'ระบบอ่านสลิป ClairMatch ให้เอง (ยอด ผู้รับ เวลาโอน เลขอ้างอิงซ้ำ) แล้วจับคู่ต่อทันที ที่นี่ขึ้นเฉพาะสลิปที่ผิดปกติ และสลิปคอร์ส', right: seg }, body);
     }
@@ -343,7 +360,7 @@
   SC.action('confirmPayment', (s, ctx) => {
     if (ctx.data.kind === 'course') {
       if (!s.course) return;
-      s.course.approved = true; s.course.paid = true;
+      s.course.approved = true; s.course.paid = true; s.course.verifiedAt = s.course.verifiedAt || SC.COURSE_VERIFIED_AT || '2026-10-24';
       if (!s.visits.find(x => x.n === 2)) {
         /* Visit 2 is the date the PT booked with the patient on site ('อ. 27 ต.ค. 09:00'). */
         const WDAY = { 'จ.': 'จันทร์', 'อ.': 'อังคาร', 'พ.': 'พุธ', 'พฤ.': 'พฤหัสบดี', 'ศ.': 'ศุกร์', 'ส.': 'เสาร์', 'อา.': 'อาทิตย์' };
@@ -352,8 +369,11 @@
         const time = m ? `${m[3]}:${m[4]}–${String(+m[3] + 1).padStart(2, '0')}:${m[4]}` : SC.VISIT2.time;
         s.visits.push({ n: 2, date, time, step: 0, soap: {}, published: false });
       }
-      ctx.line('patient', { key: 'courseReceipt' }); ctx.line('patient', { key: 'confirmedCourse' });
-      ctx.toast('ยืนยันรับเงินคอร์สแล้ว เปิดสิทธิ์และนัดครั้งที่ 2 ส่งใบเสร็จให้คนไข้ใน LINE');
+      ctx.line('patient', { key: 'courseReceipt' }); if (SC.courseValid) ctx.line('patient', { key: 'note', title: 'เปิดสิทธิ์คอร์สแล้ว', lines: [SC.courseLine(s.course.sessions, s.course.bonus || 0, s.course.total), SC.courseValid(s.course)], go: 'p.course', button: 'ดูคอร์สของฉัน' }); ctx.line('patient', { key: 'confirmedCourse' });
+      /* 7 Nov rehearsal NT-14: the PT's screen promised "ผลแจ้งใน LINE ทั้งคุณและคนไข้". */
+      const v2 = s.visits.find(x => x.n === 2), left = SC.courseLeft ? SC.courseLeft(s.course) : 0, tot = s.course.sessions + (s.course.bonus || 0);
+      ctx.line('pt', { key: 'note', title: `ทีมยืนยันเงินคอร์สแล้ว · ${patientName(s)}`, lines: [SC.courseLine(s.course.sessions, s.course.bonus || 0, s.course.total), `คอร์สเหลือ ${left} จาก ${tot} ครั้ง`, v2 ? `นัดครั้งที่ 2 ยืนยันแล้ว: ${v2.date} ${v2.time}` : 'ยังไม่มีนัดครั้งที่ 2'], go: 't.work', button: 'ดูงาน' });
+      ctx.toast('ยืนยันรับเงินคอร์สแล้ว เปิดสิทธิ์และนัดครั้งที่ 2 ส่งใบเสร็จให้คนไข้ และแจ้ง PT ใน LINE');
       return;
     }
     const r = s.request; if (!r || !r.check || r.check.state !== 'open') return;
@@ -432,7 +452,8 @@
   SC.screen('a.clinical', {
     role: 'admin',
     render(s) {
-      const r = s.request, head = { kick: 'ก่อนเก็บเงิน', title: 'ตรวจทางคลินิก', sub: 'เคสที่มีข้อสงสัยด้านความปลอดภัย ตรวจก่อนส่งลิงก์ชำระ · เคสทั่วไปไม่ผ่านหน้านี้' };
+      const r = s.request, paidAlready = !!(r && (r.paid || r.scopeHold || ['PAID', 'OFFERED', 'BOOKED'].includes(r.status)));
+      const head = paidAlready ? { kick: 'ตรวจซ้ำ · ชำระแล้ว', title: 'ตรวจทางคลินิก', sub: 'ข้อมูลเปลี่ยนหลังชำระ ตรวจใหม่ ไม่เก็บเงินซ้ำ · นัดเดิมยังอยู่จนทีมตัดสิน' } : { kick: 'ก่อนเก็บเงิน', title: 'ตรวจทางคลินิก', sub: 'เคสที่มีข้อสงสัยด้านความปลอดภัย ตรวจก่อนส่งลิงก์ชำระ · เคสทั่วไปไม่ผ่านหน้านี้' };
       if (!r || !r.review) return shell(s, 'a.clinical', head, `<div class="card flat">${ui.empty('clipboard-plus', 'ไม่มีเคสรอตรวจ', 'เคสทั่วไปชำระก่อนแล้วจับคู่เหมือนเดิม หน้านี้มีงานเมื่อคำตอบคัดกรองมีข้อที่ทีมต้องดู', '')}</div>`);
       const rv = r.review, g = SC.clinGroup(s), svc = SC.CLIN.services.find(x => x.id === g.id);
       const list = [...new Set([...(svc ? svc.tasks : ['C01', 'C02', 'C04', 'C06', 'C07', 'C11', 'C12', 'C16']), ...SC.clinExtraTasks(s)])];
@@ -443,29 +464,52 @@
         : `<div class="aa-pick off"><span class="aa-box">${rv.allow.includes(id) ? I('check') : ''}</span><span class="grow"><span class="t">${esc(SC.CLIN.label(id))}</span></span></div>`;
       const caseCard = `<article class="card flat">
         <div class="row between wrap"><b class="h2">${esc(patientName(s))}</b><span class="pill ${open ? 'wait' : declined ? 'warn' : ''}">${open ? (r.scopeHold ? 'รอตรวจ · พักกิจกรรม นัดเดิมยังอยู่' : r.paid ? 'รอตรวจ · ชำระแล้ว ไม่เก็บซ้ำ' : 'รอตรวจ · ยังไม่เก็บเงิน') : declined ? 'โทรคุยก่อน' : 'อนุมัติแล้ว'}</span></div>
-        ${kv([['เลขคำขอ', esc(r.ref)], ['ข้อมูลคัดกรองฉบับที่', esc(String(r.screeningVersion || 1))], ['กลุ่มอาการ', esc(g.name || 'ยังไม่ระบุ')], ['เป้าหมาย', esc(goalText(s) || '—')], ['เขต', esc(district(s) || '—')]])}
+        ${kv([['เลขคำขอ', esc(r.ref)], ['ข้อมูลคัดกรองฉบับที่', esc(String(r.screeningVersion || 1))], ['กลุ่มอาการ', esc(g.name || 'ยังไม่ระบุ')], ['เป้าหมาย', esc(goalText(s) || '—')], district(s) ? ['เขต', esc(district(s))] : null])}
         ${g.answers.length ? `<div class="stack"><span class="label">คำตอบคัดกรอง</span>${g.answers.map(([q, a]) => `<span class="small">${esc(q)}<br><b>${esc(a)}</b></span>`).join('')}</div>` : ''}
         <div class="stack"><span class="label">เหตุผลที่ต้องตรวจ</span>${rv.reasons.map(x => `<span class="small">${I('triangle-alert')} ${esc(x)}</span>`).join('')}</div>
-        ${s.patient.medNote ? `<p class="small">ข้อห้ามแพทย์: ${esc(s.patient.medNote)}</p>` : ''}${s.patient.surgeryNote ? `<p class="small">ผ่าตัด: ${esc(s.patient.surgeryNote)}</p>` : ''}
+        ${assessment(s)}
         <p class="small" style="margin:0">PT ที่ยังไม่รับงานจะไม่เห็นข้อมูลส่วนนี้และที่อยู่เต็ม</p>
       </article>`;
       const decide = `<article class="card flat">
         <b class="h3">อนุมัติเฉพาะกิจกรรมที่ปลอดภัย</b><p class="small" style="margin:0">ติ๊กเฉพาะที่ทำที่บ้านได้ ไม่ใช่อนุมัติทั้งเคส PT จะเห็นรายการนี้ในงานเสนอ</p>
         <div class="stack">${list.map(row).join('')}</div>
         ${open && rv.allow.length ? (rv.allow.every(id => SC.ASSESS_TASKS.includes(id)) ? `<p class="note warn" role="status" style="margin:0" data-scope-effect="assess">ที่เลือกตอนนี้เป็นงานประเมินทั้งหมด ถ้าอนุมัติ ระบบจะพักการชำระเงินและการส่งงานตาม D6 ถ้าอนุญาตให้รักษาด้วย ให้เลือกงานรักษาที่ปลอดภัยเพิ่ม</p>` : `<p class="small" style="margin:0" data-scope-effect="treat">ที่เลือกตอนนี้มีงานรักษารวมอยู่ ถ้าอนุมัติ เคสจะไปต่อตามขั้นตอนชำระเงินปกติ</p>`) : ''}
+        ${open && SC.clinExtraChecks ? SC.clinExtraChecks(s, list) : ''}
         ${open ? `<label class="field"><span>ข้อจำกัด / ข้อควรระวัง</span><textarea class="in" rows="2" data-bind="request.review.limits" placeholder="เช่น ห้ามลงน้ำหนักขาซ้าย · ย้ายตัวต้องมีผู้ช่วย 2 คน">${esc(rv.limits)}</textarea></label>
         <div class="field"><span>ตรวจในบัญชี</span><div class="chips">${REVIEW_ACCOUNTS.map(x => `<button class="chip ${rv.byId === x.id ? 'on' : ''}" data-pick="request.review.byId" data-value="${x.id}">${esc(x.name)} · ${esc(x.role)}</button>`).join('')}</div></div>
         <label class="field"><span>เหตุผลการตัดสิน</span><textarea class="in" rows="2" data-bind="request.review.reason" placeholder="บันทึกพร้อมชื่อผู้ตรวจ เวลา และฉบับข้อมูล">${esc(rv.reason || '')}</textarea></label>
-        <div class="aa-acts"><button class="btn" data-act="clinApprove" data-need="request.review.allow,request.review.byId,request.review.reason">${I('check')}${r.paid || r.scopeHold ? 'อนุมัติที่ติ๊ก' : 'อนุมัติที่ติ๊ก แล้วส่งลิงก์ชำระ'}</button><button class="btn ghost" data-act="clinDecline" data-need="request.review.byId,request.review.reason">${I('phone')}ยังไม่รับ · โทรคุยก่อน</button></div>`
+        <div class="aa-acts aa-decide-bar"><button class="btn" data-act="clinApprove" data-need="request.review.allow,request.review.byId,request.review.reason">${I('check')}${r.paid || r.scopeHold ? 'อนุมัติที่ติ๊ก' : 'อนุมัติที่ติ๊ก แล้วส่งลิงก์ชำระ'}</button><button class="btn ghost" data-act="clinDecline" data-need="request.review.byId,request.review.reason">${I('phone')}ยังไม่รับ · โทรคุยก่อน</button></div>`
         : `<p class="small">ผู้ตรวจ ${esc(rv.by || '—')} · ${esc(rv.at || '')}${rv.limits ? ` · ข้อจำกัด: ${esc(rv.limits)}` : ''}</p>`}
         <p class="small" style="margin:0">ผู้มีอำนาจตรวจ: ${SC.CLIN_LEADS.map(x => `${esc(x.name)} (${esc(x.role)})`).join(' · ')} · ทุกการตัดสินบันทึกชื่อ เวลา เหตุผล และฉบับข้อมูล</p>
         ${(r.reviewLog || []).length ? `<div class="stack"><span class="label">ประวัติการตรวจ</span>${r.reviewLog.map(l => `<span class="small">ฉบับที่ ${esc(String(l.version))} · ${{ APPROVED: 'ผ่านตรวจ', DECLINED: 'ขอโทรคุย', SUPERSEDED: 'ผลเดิมถูกพัก' }[l.decision]} · ${esc(l.reviewer)} · ${esc(l.at)}${l.allow.length ? ` · ${l.allow.map(id => esc(SC.CLIN.label(id))).join(', ')}` : ''} · ${esc(l.reason)}</span>`).join('')}</div>` : ''}
       </article>`;
-      return shell(s, 'a.clinical', head, `<div class="aa-split">${caseCard}<div class="stack lg">${decide}</div></div>`);
+      return shell(s, 'a.clinical', head, `${SC.holdPanel ? SC.holdPanel(s) : ''}<div class="aa-split">${caseCard}<div class="stack lg">${decide}</div></div>`);
     }
   });
+  /* 7 Nov rehearsal P9: the reviewer sees what the PT will see after accepting, and more: the numbers, the family's story, the daily-living score. */
+  const BARTHEL_MAX = { feeding: 2, grooming: 1, transfer: 3, toilet: 2, mobility: 3, dressing: 2, stairs: 2, bathing: 1, bowels: 2, bladder: 2 }; // Thai Barthel ADL, 0–20
+  function assessment(s) {
+    const p = s.patient, h = p.health || {}, b = p.bp, c = SC.bpCat(b), bar = p.barthel || {}, keys = Object.keys(bar), nums = keys.filter(k => typeof bar[k] === 'number'), unsure = keys.filter(k => bar[k] === null).length;
+    const score = nums.reduce((t, k) => t + bar[k], 0), max = Object.keys(BARTHEL_MAX).reduce((t, k) => t + BARTHEL_MAX[k], 0);
+    const yes = k => h[k] === 'YES';
+    const rows = [
+      ['ความดัน', b && b.unknown ? 'ไม่ทราบค่า' : c ? `<b>${esc(b.sys)}/${esc(b.dia)} mmHg</b> · <span class="pill ${c.tone === 'ok' ? '' : c.tone}">${esc(c.label)}</span>` : '—'],
+      ['กิจวัตรประจำวัน', keys.length ? `<b>${score} / ${max} คะแนน</b>${unsure ? ` · ไม่แน่ใจ ${unsure} ข้อ` : ''}${nums.length + unsure < 10 ? ` · ตอบ ${nums.length + unsure} จาก 10 ข้อ` : ''}` : 'ยังไม่ได้ตอบ'],
+      ['เรื่องที่ญาติ/คนไข้เล่า', p.healthStory ? `“${esc(p.healthStory)}”` : '<span class="small">ไม่ได้เล่าเพิ่ม</span>'],
+      yes('q4') ? ['ออกจาก รพ. / ข้อห้ามแพทย์', esc(p.medNote || 'ตอบว่ามี ยังไม่ได้เล่า')] : null,
+      yes('q5') ? ['ผ่าตัด / อุปกรณ์ในร่างกาย', esc(p.surgeryNote || 'ตอบว่าเคย ยังไม่ระบุ')] : null,
+      yes('q3') ? ['อุปกรณ์ที่ใช้', esc((p.devices || []).map(d => d === 'อื่น ๆ' && p.deviceOther ? p.deviceOther : d).join(' · ') || 'มี ยังไม่ระบุ')] : null,
+      yes('q6') ? ['โรคประจำตัว', esc((p.conditions || []).map(x => x === 'อื่น ๆ' && p.conditionOther ? p.conditionOther : x).join(' · ') || 'มี ยังไม่ระบุ')] : null,
+      (p.branch || {}).lift ? ['การย้ายตัว', esc({ N0: 'ทำเองได้', N1: 'ต้องมีคนช่วย 1 คน', N2: 'ต้องมีคนช่วย 2 คน หรือใช้เครื่องยก', UNSURE: 'ไม่แน่ใจ' }[p.branch.lift] || '—')] : null,
+      ['จองให้', p.bookingFor === 'SOMEONE_ELSE' ? 'คนในครอบครัว (ญาติเป็นคนตอบ)' : 'ตัวเอง']
+    ];
+    return `<div class="stack" data-clin-assessment><span class="label">ผลประเมินที่คนไข้ส่ง (ฉบับที่ ${esc(String((s.request || {}).screeningVersion || 1))})</span>${kv(rows)}</div>`;
+  }
   const reviewerOk = (s, ctx) => { const rv = s.request && s.request.review; if (rv && leadOf(rv.byId)) return true; ctx.toast('บัญชีนี้ไม่มีสิทธิ์ตรวจทางคลินิก'); return false; };
-  SC.action('clinApprove', (s, ctx) => { if (!s.request || !s.request.review.allow.length || !reviewerOk(s, ctx)) return; const again = s.request.paid || s.request.scopeHold; SC.clinClear(s, ctx.line); ctx.toast(again ? 'อนุมัติแล้ว แจ้งทุกฝั่งใน LINE ไม่มีการเก็บเงินซ้ำ' : 'อนุมัติแล้ว ส่งลิงก์ชำระให้ผู้รับบริการใน LINE'); return 'a.queue'; });
+  SC.action('clinApprove', (s, ctx) => { if (!s.request || !s.request.review.allow.length || !reviewerOk(s, ctx)) return;
+    /* NEW-02 / MAP-04 (7 Nov): Required tasks are not dropped quietly, unsure suction cannot reach payment, and a case that needs C11 without a safe way stays on hold. */
+    const stop = SC.clinApproveStop && SC.clinApproveStop(s, ctx); if (stop) return stop === true ? undefined : stop;
+    const again = s.request.paid || s.request.scopeHold; SC.clinClear(s, ctx.line); ctx.toast(again ? 'อนุมัติแล้ว แจ้งทุกฝั่งใน LINE ไม่มีการเก็บเงินซ้ำ' : 'อนุมัติแล้ว ส่งลิงก์ชำระให้ผู้รับบริการใน LINE'); return 'a.queue'; });
   SC.action('clinDecline', (s, ctx) => { const r = s.request; if (!r || !reviewerOk(s, ctx)) return; const lead = leadOf(r.review.byId); if (r.scopeHold) r.review.declined = true; else r.status = 'REVIEW_DECLINED'; Object.assign(r.review, { by: `${lead.name} (${lead.role})`, at: SC.REVIEW_AT, note: 'ทีมคลินิกอยากคุยรายละเอียดเพิ่ม เพื่อหาทางดูแลที่ปลอดภัยที่สุด' }); logReview(r, lead, 'DECLINED'); ctx.line('patient', { key: 'clinCall', text: `ทีมคลินิกขอโทรคุยก่อนนะคะ เพื่อหาทางดูแลที่ปลอดภัยที่สุด${r.paid ? ' ยอดชำระเดิมยังอยู่' : ' ยังไม่มีการเก็บเงิน'}` }); ctx.toast('แจ้งผู้รับบริการแล้ว ทีมโทรคุยต่อ'); });
 
   /* ================= a.match ================= */
@@ -482,7 +526,7 @@
     const hard = ev.steps.find(x => !x.ok && x.key !== 'LOCATION' && !(x.key === 'CASE' && mctx.code === 'UNPAID'));
     if (hard) { ok = false; reason = hard.key === 'CAPABILITY' ? `ยังไม่ผ่านการพิจารณา: ${cannot.map(id => SC.CLIN.label(id)).join(' · ')}` : hard.why; }
     else if (zoneOk) reason = `ตรงพื้นที่ · รับงานใน${d}`;
-    else { reason = `รับงาน: ${(s.pt.zones || []).join(' · ') || 'ยังไม่ระบุ'}`; warn = preferred ? `ผู้รับบริการขอคนนี้ แต่ PT ไม่ได้ลงเขต${d} · โทรถาม PT ก่อนส่ง` : `PT ไม่ได้ลงเขต${d} · โทรถามก่อนส่ง`; }
+    else { reason = `รับงาน: ${(s.pt.zones || []).join(' · ') || 'ยังไม่ระบุ'}`; warn = `${preferred ? 'ผู้รับบริการขอคนนี้ แต่ ' : ''}PT ไม่ได้ลงเขต${d} · ส่งข้ามโซนได้เมื่อทีมยืนยัน และ PT กดยอมรับพื้นที่เอง · ไม่มีค่าเดินทางเพิ่ม`; }
     if (ok && g && g !== 'UNSURE' && !(s.pt.services || []).includes(g)) warn = (warn ? warn + ' · ' : '') + `PT ไม่ได้เลือกรับงานกลุ่ม "${SC.CLIN.services.find(x => x.id === g).name}" · ทีมโทรถามก่อนส่ง`;
     return { id: 'me', ok, zoneOk, preferred, reason, warn, warned: st === 'WARNING', cannot };
   }
@@ -496,29 +540,34 @@
     role: 'admin',
     render(s) {
       const r = s.request, a = A(s);
-      const head = { kick: r && r.auto ? 'ระบบจับคู่ให้อัตโนมัติ' : 'เลือก PT ด้วยตนเอง', title: 'จับคู่ PT', sub: 'แสดงเฉพาะเขตและเวลาที่ผู้รับบริการสะดวก ไม่มีที่อยู่เต็มในหน้านี้' };
+      const head = { kick: r && r.auto ? 'ห้องซ้อม: ระบบส่งงานให้เอง' : 'เลือก PT ด้วยตนเอง', title: 'จับคู่ PT', sub: 'แสดงเฉพาะเขตและเวลาที่ผู้รับบริการสะดวก ไม่มีที่อยู่เต็มในหน้านี้' };
+      /* 7 Nov rehearsal P5: after a full refund the case is closed; this page must not invite anyone to send the job. */
+      if (r && r.closed) { const rf = (s.refunds || []).slice().reverse().find(x => x.ref === r.ref && ['hold30', 'noPt', 'ptNoShow', 'cancelBefore', 'cancelAfter'].includes(x.kind));
+        return shell(s, 'a.match', head, `<article class="card flat" data-match-closed><div class="row between wrap"><b class="h2">${esc(patientName(s))}</b>${reqPill(r)}</div>${kv([['เลขคำขอ', esc(r.ref)], ['เงินคืน', rf ? `${SC.money2(rf.amount)} · ${esc(SC.REFUND_STATUS[rf.status][0])} (${esc(rf.id)})` : '—']])}<p class="small" style="margin:0">ไม่ต้องจับคู่หรือค้นหาต่อ · ไม่มีงานค้างในคิว</p><div class="aa-acts"><button class="btn ghost" data-go="a.refunds">${I('banknote')}ดูเคสเงินคืน</button></div></article>`); }
       if (!r || ['CLINICAL_REVIEW', 'REVIEW_DECLINED', 'ASSESS_HOLD', 'PAYMENT_PENDING', 'SLIP_SENT'].includes(r.status)) {
         const cta = r && r.status === 'SLIP_SENT' ? '<button class="btn" data-go="a.payments">ไปตรวจสลิป</button>' : '';
         return shell(s, 'a.match', head, `<div class="card flat">${ui.empty('users-round', 'ยังไม่มีคำขอที่รอจับคู่', r ? `คำขอ ${r.ref} ${'รอผู้รับบริการชำระเงินก่อน'} ระบบจับคู่ให้ทันทีที่ได้สลิป` : 'เมื่อผู้รับบริการประเมินอาการและชำระ ClairMatch แล้ว คำขอจะขึ้นที่นี่', cta)}</div>`);
       }
       const d = district(s), z = zoneOf(d);
+      /* PG-16 (CM X-RULE-OFF): the real app keeps automatic dispatch off until the 26 rules pass validation. Whether every request is manual is open (O-14). */
+      const ruleOff = `<p class="sim-note" data-rule-off>ห้องซ้อม: ในแอปจริง การส่งงานอัตโนมัติยังปิดอยู่จนกว่ากฎ 26 เคสผ่านการตรวจ · จะปิดทุกคำขอหรือไม่ <b>รอตัดสิน</b></p>`;
       const wins = s.patient.windows || [];
       const bar = Object.values(s.patient.barthel || {}).filter(v => typeof v === 'number');
       const reqCard = `<article class="card flat">
         <div class="row between wrap"><b class="h2">${esc(patientName(s))}</b>${reqPill(r)}</div>
         ${kv([['เลขคำขอ', esc(r.ref)], ['เขต', esc(d ? `${d}${z ? ` · ${z.name}` : ''}` : 'ยังไม่ระบุ')], ['จองให้', s.patient.bookingFor === 'SOMEONE_ELSE' ? 'คนในครอบครัว' : 'ตัวเอง'], ['เป้าหมาย', esc(goalText(s) || '—')],
-          bar.length ? ['กิจวัตรประจำวัน', `Barthel ${bar.reduce((t, v) => t + v, 0)}/${bar.length * 2} คะแนน`] : null, ['ชำระแล้ว', `ClairMatch ${money(SC.TRIAL)}`]])}
+          bar.length ? ['กิจวัตรประจำวัน', `${bar.reduce((t, v) => t + v, 0)} คะแนน`] : null, ['ชำระแล้ว', `ClairMatch ${money(SC.TRIAL)}`]])}
         ${wins.length ? `<div class="stack"><span class="label">เวลาที่สะดวก</span>${wins.map((w, i) => `<span class="small">${i === 0 ? 'เวลาหลัก' : 'เวลาสำรอง ' + i} · ${esc(w)}</span>`).join('')}</div>` : ''}
       </article>`;
       if (r.status === 'OFFERED' || r.status === 'BOOKED') {
         const names = (r.offerTo || []).filter(id => r.status !== 'BOOKED' || !r.bookedPt || id === r.bookedPt).map(id => esc(SC.MATCH.nameOf(s, id) || ptName(s, id))).join(', ') || '—';
         const sent = r.status === 'OFFERED'
           ? `<article class="card flat"><div class="row"><span class="tile">${I('send')}</span><div class="grow"><b class="h3">${SC.offerBlock(s) ? `PT ยังรับไม่ได้ · ${esc(SC.offerBlock(s))}` : 'ส่งข้อเสนอแล้ว รอ PT ตอบรับภายใน 30 นาที'}</b><p class="p">ส่งให้ ${names} · ${esc(wins[a.win] || wins[0] || '')}</p>${r.auto ? `<span class="pill info">${I('zap')}ระบบส่งให้เอง · ${esc(r.auto)}</span>` : ''}</div></div>
-              <p class="small">ถ้าไม่มีใครตอบใน 30 นาที ระบบขยายการค้นหา ครบสองรอบแล้วทีมช่วยประสานเอง</p>
+              <p class="small">ถ้าไม่มีใครตอบใน 30 นาที ระบบค้นหาเวลาสำรองและโซนอื่นที่ให้บริการได้ตามลำดับ · ข้ามโซนต้องให้ทีมยืนยันก่อน</p>
               <div class="aa-acts"><button class="btn ghost" data-act="remindOffer">${I('bell')}เตือน PT ใน LINE อีกครั้ง</button></div></article>`
           : `<article class="card flat"><div class="row"><span class="tile">${I('circle-check')}</span><div class="grow"><b class="h3">PT รับงานแล้ว</b><p class="p">${names} · ${esc(SC.VISIT1.date)} ${esc(SC.VISIT1.time)}</p></div></div>
               <div class="aa-acts"><button class="btn ghost" data-go="a.appts">${I('calendar-days')}ดูนัดหมาย</button></div></article>`;
-        return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${sent}${SC.MATCH.traceCard(s)}</div></div>`);
+        return shell(s, 'a.match', head, `${ruleOff}<div class="aa-split"><div class="stack lg">${reqCard}${SC.searchCard ? SC.searchCard(s) : ''}</div><div class="stack lg">${sent}${SC.MATCH.traceCard(s)}</div></div>`);
       }
       const mc = meCandidate(s);
       if (a.tick == null || a.tickRef !== r.ref) { a.tick = mc && mc.ok && mc.preferred && mc.zoneOk ? ['me'] : []; a.tickRef = r.ref; }
@@ -536,7 +585,7 @@
       const recCount = mc && mc.ok ? 1 : 0;
       const picks = `<article class="card flat">
         <div class="row between wrap"><b class="h3">เลือก PT พร้อมกัน 1–4 คน</b><span class="small">แนะนำ ${recCount} คน</span></div>
-        <p class="small" style="margin:0">ส่งได้เฉพาะ PT ที่ผ่านด่าน: ใบประกอบผ่าน · ส่งตารางแล้ว · ทำงานที่ทีมคลินิกอนุมัติได้ แล้วจึงเรียงตามเขตและเวลา ขยายการค้นหาตอน 30/90 นาทีก็ยังใช้ด่านเดิม</p>
+        <p class="small" style="margin:0">ส่งได้เฉพาะ PT ที่ผ่านด่าน: ใบประกอบผ่าน · ส่งตารางแล้ว · ทำงานที่ทีมคลินิกอนุมัติได้ แล้วจึงเรียงตามเขตและเวลา · ค้นโซนอื่นต้องให้ทีมยืนยันก่อน และยังใช้ด่านเดิม</p>
         ${r.review && r.review.cleared ? `<div class="note mint">${I('clipboard-check')} ทีมคลินิกอนุมัติเฉพาะ: ${r.review.allow.map(id => esc(SC.CLIN.label(id))).join(' · ')}${r.review.limits ? `<br>ข้อจำกัด: ${esc(r.review.limits)}` : ''}</div>` : ''}
         ${banner}
         ${meRow ? `<div class="stack"><span class="label">แนะนำให้ส่ง</span>${meRow}</div>` : `<p class="p">ยังไม่มี PT ที่ส่งได้ในเขตนี้</p>`}
@@ -544,15 +593,19 @@
       // Palm (23 Oct): time + price + send sit right under "แนะนำให้ส่ง"; the long "can't send" list moves below and folds, so phones don't scroll past it.
       const notYet = `<details class="card flat aa-more"><summary class="row between"><span class="label">ยังส่งไม่ได้ ${SAMPLES.length} คน · ดูเหตุผล</span>${I('chevron-down')}</summary><div class="stack">${others}</div></details>`;
       const winCard = wins.length ? `<article class="card flat"><b class="h3">เลือกเวลาที่ผู้รับบริการเสนอ</b><div class="stack">${wins.map((w, i) => `<button class="aa-pick" data-pick="admin.win" data-value="${i}" aria-pressed="${a.win === i}"><span class="aa-box" style="border-radius:50%">${a.win === i ? I('check') : ''}</span><span class="grow"><span class="t">${i === 0 ? 'เวลาหลัก' : 'เวลาสำรอง ' + i}</span><span class="s">${esc(w)}</span></span></button>`).join('')}</div></article>` : '';
+      const cross = a.tick.includes('me') && mc && mc.ok && !mc.zoneOk;
       const send = `<article class="card flat"><div class="row between wrap"><span class="label">ราคา</span><span><b class="money">ClairMatch ${money(SC.TRIAL)}</b> <span class="small">· ชำระแล้ว · ไม่มีค่าเดินทางแยก</span></span></div>
+        ${cross ? `<label class="check" data-cross-confirm><input type="checkbox" data-bind="admin.crossOk" ${a.crossOk ? 'checked' : ''}><span>ทีมยืนยันส่งข้ามโซน · PT ต้องกดยอมรับพื้นที่เองในงานเสนอ</span></label>` : ''}
         <button class="btn" data-act="sendOffer" data-need="admin.tick">${I('send')}ส่งข้อเสนอให้ PT ที่เลือก${a.tick.length ? ` (${a.tick.length} คน)` : ''}</button>
         <p class="small" style="margin:0">PT ได้การ์ดใน LINE และต้องตอบรับภายใน 30 นาที</p></article>`;
-      return shell(s, 'a.match', head, `<div class="aa-split">${reqCard}<div class="stack lg">${picks}${SC.MATCH.traceCard(s)}${winCard}${send}${notYet}</div></div>`);
+      return shell(s, 'a.match', head, `${ruleOff}<div class="aa-split"><div class="stack lg">${reqCard}${SC.searchCard ? SC.searchCard(s) : ''}</div><div class="stack lg">${picks}${winCard}${send}${SC.MATCH.traceCard(s)}${notYet}</div></div>`);
     }
   });
   SC.action('sendOffer', (s, ctx) => {
     const a = A(s), r = s.request; if (!r || r.status !== 'PAID' || !a.tick || !a.tick.length) return;
-    if (a.tick.includes('me')) { const mc = meCandidate(s); if (!mc || !mc.ok) { ctx.toast(`ส่งไม่ได้: ${mc ? mc.reason : 'ไม่พบ PT'}`); return; } }
+    if (a.tick.includes('me')) { const mc = meCandidate(s); if (!mc || !mc.ok) { ctx.toast(`ส่งไม่ได้: ${mc ? mc.reason : 'ไม่พบ PT'}`); return; }
+      /* NEW-03 (H13 7 Nov): cross-zone only with staff confirmation, and the PT must accept the zone. */
+      if (!mc.zoneOk) { if (!a.crossOk) { ctx.toast('ข้ามโซน: ติ๊กยืนยันของทีมก่อนส่ง'); return; } r.crossZone = true; s.pt.crossOk = false; } }
     r.status = 'OFFERED'; r.offerTo = a.tick.slice();
     ctx.line('pt', { key: 'ptOffer' }); SC.MATCH.evaluate(s); SC.MATCH.logOffer(s, r.offerTo, 'แอดมินส่งเอง');
     ctx.toast(`ส่งข้อเสนอให้ PT ${r.offerTo.length} คนแล้ว รอตอบรับภายใน 30 นาที`);
@@ -565,7 +618,8 @@
     render(s) {
       const r = s.request;
       const note = r && r.status === 'OFFERED' ? `<div class="note">${I('hourglass')} ส่งข้อเสนอให้ PT แล้ว นัดจะขึ้นที่นี่เมื่อ PT ตอบรับ</div>` : '';
-      const pill = x => x.step >= 4 ? '<span class="pill">เสร็จแล้ว</span>' : x.step === 0 ? '<span class="pill info">นัดแล้ว</span>' : `<span class="pill wait">${STEP[x.step]}</span>`;
+      /* 7 Nov rehearsal P2: a cancelled or no-show visit is not "เสร็จแล้ว". */
+      const pill = x => { const o = SC.visitOutcome && SC.visitOutcome(s, x); if (o && !o.done) return `<span class="pill warn" data-outcome="${esc(o.kind)}">${esc(o.label)}</span>${o.money ? `<span class="small">${esc(o.money)}${o.now ? ` · ${esc(o.now)}` : ''}</span>` : ''}`; return x.step >= 4 ? '<span class="pill">เสร็จแล้ว</span>' : x.step === 0 ? '<span class="pill info">นัดแล้ว</span>' : `<span class="pill wait">${STEP[x.step]}</span>`; };
       const body = s.visits.length
         ? table(['นัด', 'นักกายภาพ', 'วันเวลา', 'สถานะ', ''], s.visits.map(x => ({ attrs: `data-act="openAppt" data-n="${x.n}"`, cells: [`<div class="t">${esc(patientName(s))}</div><span class="small">ครั้งที่ ${x.n}</span>`, esc(meName(s)), `${esc(x.date)}<br><span class="small">${esc(x.time)}</span>`, `<div class="stack" style="gap:4px;justify-items:start">${pill(x)}${x.published ? '<span class="small">ส่งสรุปแล้ว</span>' : ''}</div>`, `<button class="ib" data-act="openAppt" data-n="${x.n}" aria-label="ดูรายละเอียดนัดครั้งที่ ${x.n}">${I('chevron-right')}</button>`] })))
         : `<div class="card flat">${ui.empty('calendar-days', 'ยังไม่มีนัด', 'นัดจะขึ้นเมื่อ PT ตอบรับข้อเสนอ หรือเมื่อทีมยืนยันเงินคอร์สและวันนัดครั้งต่อไป')}</div>`;
@@ -574,11 +628,13 @@
   });
   SC.action('openAppt', (s, ctx) => {
     const x = s.visits.find(v => v.n === +ctx.data.n); if (!x) return;
-    const steps = STEP.map((t, i) => `<div class="step ${i < x.step || x.step === 4 ? 'done' : i === x.step ? 'now' : ''}"><span class="dot">${i < x.step || x.step === 4 ? I('check') : i + 1}</span><div><div class="t">${t}</div></div></div>`).join('');
+    const o = SC.visitOutcome && SC.visitOutcome(s, x), ex = o && !o.done;
+    const steps = ex ? STEP.slice(0, o.stoppedAt + 1).map(t => `<div class="step done"><span class="dot">${I('check')}</span><div><div class="t">${t}</div></div></div>`).join('') + `<div class="step now"><span class="dot">${I('x')}</span><div><div class="t">${esc(o.label)}</div><div class="s">${esc(o.why)}${o.at ? ` · ${esc(o.at)}` : ''}</div></div></div>`
+      : STEP.map((t, i) => `<div class="step ${i < x.step || x.step === 4 ? 'done' : i === x.step ? 'now' : ''}"><span class="dot">${i < x.step || x.step === 4 ? I('check') : i + 1}</span><div><div class="t">${t}</div></div></div>`).join('');
     const so = x.soap || {};
-    const report = x.published ? `<div class="card mint"><b class="h3">สรุปที่ส่งให้คนไข้แล้ว</b>${kv([so.goal ? ['เป้าหมาย', esc(so.goal)] : null, so.dx ? ['การวินิจฉัย', esc(so.dx)] : null, so.p ? ['แผน', esc(so.p)] : null, so.family ? ['ฝากญาติ', esc(so.family)] : null])}</div>` : '<div class="note">ยังไม่ส่งสรุปผล PT ส่งหลังจบเคส</div>';
+    const report = ex ? '' : x.published ? `<div class="card mint"><b class="h3">สรุปที่ส่งให้คนไข้แล้ว</b>${kv([so.goal ? ['เป้าหมาย', esc(so.goal)] : null, so.dx ? ['การวินิจฉัย', esc(so.dx)] : null, so.p ? ['แผน', esc(so.p)] : null, so.family ? ['ฝากญาติ', esc(so.family)] : null])}</div>` : '<div class="note">ยังไม่ส่งสรุปผล PT ส่งหลังจบเคส</div>';
     openSheet(ctx, `${sheetHead(`ครั้งที่ ${x.n} · ${patientName(s)}`, `${x.date} ${x.time}`)}
-      ${kv([['นักกายภาพ', esc(meName(s))], ['เขต', esc(district(s) || '—')], ['สถานะ', esc(STEP[x.step])]])}
+      ${kv([['นักกายภาพ', esc(meName(s))], ['เขต', esc(district(s) || '—')], ['สถานะ', ex ? esc(o.label) : esc(STEP[x.step])], ex && o.money ? ['เงิน', esc(`${o.money}${o.now ? ' · ' + o.now : ''}`)] : null])}
       <div class="steps">${steps}</div>${report}
       ${x.step === 0 ? `<button class="btn ghost" data-act="remindAppt">${I('bell')}ส่งการ์ดเตือนนัดให้คนไข้</button>` : ''}
       <button class="btn ghost" data-close>ปิด</button>`);
@@ -618,11 +674,14 @@
     role: 'admin',
     render(s) {
       const r = s.request;
-      if (!r) return shell(s, 'a.patients', { kick: 'ผู้รับบริการ', title: 'คนไข้' }, `<div class="card flat">${ui.empty('heart-handshake', 'ยังไม่มีผู้รับบริการ', 'เมื่อมีคนประเมินอาการและส่งคำขอ รายชื่อจะขึ้นที่นี่')}</div>`);
+      const em = SC.emCase && SC.emCase(s);
+      const emRow = em ? table(['ผู้ตอบว่าฉุกเฉิน', 'เบอร์', 'ตอบเมื่อ', 'สถานะ', ''], [{ attrs: 'data-act="emOpen"', cells: [`<div class="t">${esc(em.name)}</div><span class="small">ยังไม่มีคำขอ · ระบบหยุดการจอง</span>`, esc(em.phone || '—'), esc(em.at), em.closed ? '<span class="pill gray">โทรแล้ว · ปิดงาน</span>' : `<span class="pill warn">${em.revised ? 'แก้คำตอบเป็นไม่มี · ยังต้องโทร' : 'รอโทรตาม'}</span>`, `<button class="ib" data-act="emOpen" aria-label="เปิดงานฉุกเฉิน">${I('chevron-right')}</button>`] }]) : '';
+      const emSec = em ? `<section class="aa-sec" data-em-row><h2 class="h3">ตอบว่ามีอาการฉุกเฉิน</h2>${emRow}</section>` : '';
+      if (!r) return shell(s, 'a.patients', { kick: 'ผู้รับบริการ', title: 'คนไข้' }, emSec || `<div class="card flat">${ui.empty('heart-handshake', 'ยังไม่มีผู้รับบริการ', 'เมื่อมีคนประเมินอาการและส่งคำขอ รายชื่อจะขึ้นที่นี่')}</div>`);
       const c = s.course;
-      const course = c ? (c.approved ? `<span class="pill">คอร์ส ${c.sessions} ครั้ง · ใช้แล้ว ${c.used || 0}</span>` : '<span class="pill wait">รอตรวจเงินคอร์ส</span>') : '<span class="small">ยังไม่มีคอร์ส</span>';
+      const course = c ? (c.refunded ? `<span class="pill gray">คอร์สปิด · คืน ${SC.money2(c.refunded.amount)}</span>` : c.approved ? `<span class="pill">คอร์ส ${c.sessions + (c.bonus || 0)} ครั้ง · ใช้แล้ว ${c.used || 0} · เหลือ ${SC.courseLeft(c)}</span>` : '<span class="pill wait">รอตรวจเงินคอร์ส</span>') : '<span class="small">ยังไม่มีคอร์ส</span>';
       const rows = [{ attrs: 'data-act="openPatient"', cells: [`<div class="t">${esc(patientName(s))}</div><span class="small">${esc(r.ref)}</span>`, esc(district(s) || '—'), r.preferredPt ? esc(ptName(s, r.preferredPt)) : '<span class="small">ให้ทีมเลือก</span>', reqPill(r), course, `<button class="ib" data-act="openPatient" aria-label="ดูรายละเอียด">${I('chevron-right')}</button>`] }];
-      return shell(s, 'a.patients', { kick: 'ผู้รับบริการ', title: 'คนไข้', sub: 'ข้อมูลส่วนตัวเปิดดูได้เฉพาะทีมที่ดูแลเคส กดที่แถวเพื่อดูรายละเอียด' }, table(['ผู้รับบริการ', 'เขต', 'PT ที่ขอ', 'สถานะ', 'คอร์ส', ''], rows));
+      return shell(s, 'a.patients', { kick: 'ผู้รับบริการ', title: 'คนไข้', sub: 'ข้อมูลส่วนตัวเปิดดูได้เฉพาะทีมที่ดูแลเคส กดที่แถวเพื่อดูรายละเอียด' }, emSec + table(['ผู้รับบริการ', 'เขต', 'PT ที่ขอ', 'สถานะ', 'คอร์ส', ''], rows));
     }
   });
   SC.action('openPatient', (s, ctx) => {
@@ -631,7 +690,7 @@
     const addr = [ad.line, ad.subdistrict, ad.district, ad.province, ad.postal].filter(Boolean).join(' ');
     openSheet(ctx, `${sheetHead(patientName(s), r.ref)}
       ${kv([['สถานะ', reqPill(r)], ['จองให้', s.patient.bookingFor === 'SOMEONE_ELSE' ? 'คนในครอบครัว' : 'ตัวเอง'], ['โทร', esc(s.patient.phone || '—')], ['ที่อยู่', esc(addr || '—')], ['เป้าหมาย', esc(goalText(s) || '—')], ['เรื่องสุขภาพที่เล่า', esc(s.patient.healthStory || '—')], ['ออกจาก รพ. / ข้อห้ามแพทย์', s.patient.health && s.patient.health.q4 === 'YES' ? esc(s.patient.medNote || 'มี (ยังไม่ได้เล่า)') : '—'], ['ผ่าตัด / อุปกรณ์ในร่างกาย', s.patient.health && s.patient.health.q5 === 'YES' ? esc(s.patient.surgeryNote || 'เคย (ยังไม่ระบุ)') : '—'], ['อุปกรณ์ที่ใช้', s.patient.health && s.patient.health.q3 === 'YES' ? esc((s.patient.devices || []).map(d => d === 'อื่น ๆ' && s.patient.deviceOther ? s.patient.deviceOther : d).join(' · ') || 'มี (ยังไม่ระบุ)') : '—'], ['โรคประจำตัว', s.patient.health && s.patient.health.q6 === 'YES' ? esc((s.patient.conditions || []).map(c => c === 'อื่น ๆ' && s.patient.conditionOther ? s.patient.conditionOther : c).join(' · ') || 'มี (ยังไม่ระบุ)') : '—'], ['ความดันล่าสุด', (() => { const b = s.patient.bp, c = SC.bpCat(b); return b && b.unknown ? 'ไม่ทราบค่า' : c ? `${esc(b.sys)}/${esc(b.dia)} mmHg · <span class="pill ${c.tone === 'ok' ? '' : c.tone}">${c.label}</span>` : '—'; })()], ['เวลาที่สะดวก', (s.patient.windows || []).map(esc).join('<br>') || '—'], ['PT ที่ขอ', r.preferredPt ? esc(ptName(s, r.preferredPt)) : 'ให้ทีมเลือก'],
-        ['คอร์ส', c ? esc(`${c.sessions} ครั้ง ${money(c.total)} · ${c.approved ? `ใช้แล้ว ${c.used || 0} ครั้ง` : 'รอตรวจเงิน'}`) : 'ยังไม่มี'], ['นัดถัดไป', esc((s.visits.find(x => x.step < 4) || {}).date || '—')]])}
+        ['คอร์ส', c ? esc(`${c.sessions + (c.bonus || 0)} ครั้ง ${money(c.total)} · ${c.refunded ? `ปิดแล้ว คืน ${SC.money2(c.refunded.amount)}` : c.approved ? `ใช้แล้ว ${c.used || 0} · เหลือ ${SC.courseLeft(c)} ครั้ง` : 'รอตรวจเงิน'}`) : 'ยังไม่มี'], ['นัดถัดไป', esc((s.visits.find(x => x.step < 4) || {}).date || '—')]])}
       <div class="grid2"><button class="btn ghost" data-act="callPatient">${I('phone')}โทรหา</button><button class="btn ghost" data-go="a.appts">${I('calendar-days')}ดูนัดหมาย</button></div>`);
   });
   SC.action('callPatient', (s, ctx) => { ctx.toast(`ห้องซ้อม: ระบบจริงโทรออกไปที่ ${s.patient.phone || 'เบอร์ผู้รับบริการ'}`); });

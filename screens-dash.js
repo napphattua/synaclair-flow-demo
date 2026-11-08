@@ -5,65 +5,65 @@
   'use strict';
   const { esc, ui } = SC, I = ui.icon;
   const ST = { ok: ['ปกติ', ''], watch: ['ต้องดู', 'wait'], urgent: ['ต้องทำวันนี้', 'warn'], unknown: ['ยังวัดไม่ได้', 'gray'], policy: ['รอยืนยันนโยบาย', 'gray'] };
-  const OPS = 'ทีมปฏิบัติการ', MATCH = 'Matching Admin', BOOK = 'Booking Admin', FIN = 'Finance', PTA = 'ทีม PT', CL = 'Clinical Lead', PKG = 'ทีมคอร์ส';
+  const OPS = 'ทีมปฏิบัติการ', MATCH = 'ทีมจับคู่', BOOK = 'ทีมนัด', FIN = 'การเงิน', PTA = 'ทีม PT', CL = 'Clinical Lead', PKG = 'ทีมคอร์ส';
   /* [Q-ID, the question, sample value, state, owner, existing screen, how it is counted] */
   const Q = {
     D01: [
       ['Q01.01', 'ธุรกิจโตจากลูกค้าใหม่ หรือจากลูกค้าเดิมที่กลับมาใช้บริการ?', 'ใหม่ 38 · เดิม 14', 'ok', OPS, 'a.patients', 'นับคนไม่ซ้ำ จากการเยี่ยมครั้งแรกที่จบแล้ว'],
-      ['Q01.02', 'ลูกค้าหลุดออกจาก Funnel ขั้นตอนไหนมากที่สุด?', 'คัดกรอง → จ่าย', 'watch', OPS, 'a.queue', 'เคสที่พักรอทีมคลินิกไม่นับว่าหลุด'],
-      ['Q01.03', 'จ่าย Trial แล้วมารับบริการครั้งแรกจริงกี่เปอร์เซ็นต์?', '81%', 'ok', OPS, 'a.appts', 'เคสที่จ่ายแล้วแต่ยังพักตรวจ ไม่นับว่าหลุดหรือจบ'],
-      ['Q01.04', 'Trial เปลี่ยนเป็น Package 5/10/20 ได้เท่าไร และแบบไหนมากที่สุด?', '37% · 10 ครั้ง', 'ok', PKG, 'a.payments', 'นับเมื่อเงินผ่านการยืนยัน เปิด QR ไม่นับว่าซื้อ'],
-      ['Q01.05', 'รายได้ค่าบริการแพลตฟอร์มเกิดจาก Visit ที่ใช้จริงเท่าไร?', '', 'policy', FIN, 'a.payments', 'รอแหล่งราคาและค่าธรรมเนียมที่ใช้จริง ไม่ใช้ยอดรับเงินแทน'],
-      ['Q01.06', 'โซนใดมี Demand สูงแต่ส่งมอบบริการไม่ทัน?', 'ฝั่งธนบุรี', 'watch', MATCH, 'a.match', 'หนึ่งคำขอนับหนึ่งเคส แม้เลือกหลายเวลา'],
+      ['Q01.02', 'ลูกค้าหยุดกลางทางที่ขั้นไหนมากที่สุด?', 'คัดกรอง → จ่าย', 'watch', OPS, 'a.queue', 'เคสที่พักรอทีมคลินิกไม่นับว่าหลุด'],
+      ['Q01.03', 'จ่ายค่าครั้งแรก (ClairMatch) แล้ว มารับบริการจริงกี่ %?', '81%', 'ok', OPS, 'a.appts', 'เคสที่จ่ายแล้วแต่ยังพักตรวจ ไม่นับว่าหลุดหรือจบ'],
+      ['Q01.04', 'เปลี่ยนเป็นคอร์ส 5 / 10 / 15 ครั้ง ได้เท่าไร แบบไหนมากที่สุด?', '37% · 10 ครั้ง', 'ok', PKG, 'a.payments', 'นับเมื่อเงินผ่านการยืนยัน เปิด QR ไม่นับว่าซื้อ'],
+      ['Q01.05', 'ค่าธรรมเนียมแพลตฟอร์มจากครั้งที่ไปดูแลจริงเท่าไร?', '', 'unknown', FIN, 'a.payments', 'ใช้ฐาน Price List v1.0: ClairMatch 10% · จ่ายรายครั้ง 12% · คอร์ส 16/14/10% · ยังไม่มีข้อมูลจริงให้นับ'],
+      ['Q01.06', 'โซนไหนคนขอมาก แต่ส่งนักกายภาพไม่ทัน?', 'ฝั่งธนบุรี', 'watch', MATCH, 'a.match', 'หนึ่งคำขอนับหนึ่งเคส แม้เลือกหลายเวลา'],
       ['Q01.07', 'ตัวเลขที่ลดลงเกิดจากการตลาด การจับคู่ หรือการให้บริการ?', '', 'unknown', OPS, 'a.queue', 'ยังไม่มีข้อมูลแคมเปญ จึงไม่เดาสาเหตุ']
     ],
     D02: [
-      ['Q02.01', 'PT สมัครมาแล้วกี่คน ผ่านการตรวจใบอนุญาตกี่คน?', '46 → 38', 'ok', PTA, 'a.license', 'ผ่านเฉพาะเมื่อทีมตรวจใบประกอบแล้ว'],
-      ['Q02.02', 'PT ที่ Verified แล้วเปิดพื้นที่และตารางพร้อมรับงานจริงกี่คน?', '21 คน', 'watch', PTA, 'a.pts', 'ต้องมีใบประกอบ พื้นที่ ตาราง และข้อตกลงครบ ไม่ได้แปลว่าผ่านทักษะทุกงาน'],
+      ['Q02.01', 'PT สมัครมาแล้วกี่คน ผ่านการตรวจใบประกอบวิชาชีพกี่คน?', '46 → 38', 'ok', PTA, 'a.license', 'ผ่านเฉพาะเมื่อทีมตรวจใบประกอบแล้ว'],
+      ['Q02.02', 'PT ที่ตรวจใบประกอบผ่านแล้ว และเปิดเขตกับตารางพร้อมรับงานจริง กี่คน?', '21 คน', 'watch', PTA, 'a.pts', 'ต้องมีใบประกอบ พื้นที่ ตาราง และข้อตกลงครบ ไม่ได้แปลว่าผ่านทักษะทุกงาน'],
       ['Q02.03', 'แต่ละโซนมี PT พร้อมรับงานเพียงพอกับคำขอหรือไม่?', 'ขาด 2 โซน', 'watch', MATCH, 'a.pts', 'ใช้พื้นที่ เวลา และเงื่อนไขทางคลินิกร่วมกัน'],
-      ['Q02.04', 'Block 3 ชั่วโมงถูกใช้ไปเท่าไร และติดข้อจำกัดใด?', '58%', 'ok', PTA, 'a.pts', '3 ชั่วโมงรับได้สูงสุด 2 นัด แต่ไม่นับเป็นความจุจริงถ้าเวลาไม่พอ'],
-      ['Q02.05', 'PT คนใดเปิดตารางแต่ไม่รับ Offer บ่อย?', '3 คน', 'watch', PTA, 'a.pts', 'ไม่นับ Offer ที่ถูกยกเลิก พักตรวจ หรือมีคนอื่นรับก่อน'],
+      ['Q02.04', 'ช่วงเวลาว่าง 3 ชั่วโมงถูกใช้ไปเท่าไร และติดข้อจำกัดอะไร?', '58%', 'ok', PTA, 'a.pts', '3 ชั่วโมงรับได้สูงสุด 2 นัด แต่ไม่นับเป็นความจุจริงถ้าเวลาไม่พอ'],
+      ['Q02.05', 'PT คนไหนเปิดตารางแต่ไม่รับงานที่เสนอบ่อย?', '3 คน', 'watch', PTA, 'a.pts', 'ไม่นับ Offer ที่ถูกยกเลิก พักตรวจ หรือมีคนอื่นรับก่อน'],
       ['Q02.06', 'วันและช่วงเวลาใดขาดแคลน PT มากที่สุด?', 'จ.–ศ. เย็น', 'watch', MATCH, 'a.pts', 'กดดูรายการเคสในช่วงเวลานั้นได้'],
-      ['Q02.07', 'PT ที่หยุดเปิดตารางหรือใบอนุญาตไม่ผ่านควรติดตามอย่างไร?', 'ไม่มีตาราง 9 · ใบไม่ผ่าน 2', 'watch', PTA, 'a.license', 'แยกคิวใบประกอบไม่ผ่านออกจากคิวไม่มีตาราง']
+      ['Q02.07', 'PT ที่หยุดเปิดตารางหรือใบประกอบไม่ผ่าน ควรติดตามอย่างไร?', 'ไม่มีตาราง 9 · ใบไม่ผ่าน 2', 'watch', PTA, 'a.license', 'แยกคิวใบประกอบไม่ผ่านออกจากคิวไม่มีตาราง']
     ],
     D03: [
-      ['Q03.01', 'ลูกค้าที่จ่ายเงินแล้วแต่ยังไม่มี PT มีกี่เคส และรอนานเท่าไร?', '5 เคส · นานสุด 48 นาที', 'urgent', MATCH, 'a.match', 'ไม่รวมเคสที่จ่ายแล้วแต่พักรอทีมคลินิก'],
-      ['Q03.02', 'คำขอใดกำลังใกล้ครบ 30 นาที และ 90 นาที?', '', 'policy', MATCH, 'a.match', 'รอยืนยันเวลาทำการ และ Simulator ยังไม่มีนาฬิกา 30/90'],
-      ['Q03.03', 'PT ได้รับ Offer กี่คน ตอบรับ/ปฏิเสธ/ไม่ตอบกี่คน?', '18 · รับ 9 · ปฏิเสธ 4', 'ok', MATCH, 'a.match', 'ส่งแล้วไม่เท่ากับถึงแล้ว ถ้าไม่มีหลักฐานการส่งถึงให้บอกตรงๆ'],
+      ['Q03.01', 'ลูกค้าที่จ่ายเงินแล้วแต่ยังไม่มี PT มีกี่เคส และรอนานเท่าไร?', 'รอ PT 5 เคส · นานสุด 48 นาที', 'urgent', MATCH, 'a.match', 'ไม่รวมเคสที่จ่ายแล้วแต่พักรอทีมคลินิก'],
+      ['Q03.02', 'คำขอไหนค้นหาครบ 3 เวลา × ทุกโซนแล้ว และไหนใกล้ครบ 24 ชม. ที่ต้องแจ้งคนไข้?', '', 'policy', MATCH, 'a.match', 'จุดเริ่มนับ 24 ชม. และกำหนดปิดงานของทีมยังรอตัดสิน'],
+      ['Q03.03', 'PT ได้รับงานที่เสนอกี่คน ตอบรับ / ปฏิเสธ / ไม่ตอบ กี่คน?', '18 · รับ 9 · ปฏิเสธ 4', 'ok', MATCH, 'a.match', 'ส่งแล้วไม่เท่ากับถึงแล้ว ถ้าไม่มีหลักฐานการส่งถึงให้บอกตรงๆ'],
       ['Q03.04', 'เหตุใดการจับคู่ไม่สำเร็จ: พื้นที่ เวลา หรือไม่มีคนกดรับ?', 'เวลา 6 · ทักษะ 3', 'watch', MATCH, 'a.match', 'PT ที่ถูกตัดออกไม่นับว่าไม่ตอบ'],
       ['Q03.05', 'การกดรับพร้อมกันทำให้มีผู้ได้รับงานมากกว่า 1 คนหรือไม่?', '', 'unknown', MATCH, 'a.match', 'ต้องทดสอบที่ server จริง Simulator พิสูจน์ไม่ได้'],
       ['Q03.06', 'เคสที่ต้องขอเวลาใหม่หรือคืนเงินอยู่ที่ขั้นไหน?', 'ขอเวลาใหม่ 2 · คืนเงิน 1', 'watch', MATCH, 'a.payments', 'แยกสิทธิ์สองเรื่อง ไม่คืนเงินจากการหมดเวลาอัตโนมัติ'],
       ['Q03.07', 'ลูกค้ากลับมาใช้บริการกับ PT เดิมได้ต่อเนื่องหรือไม่?', '91%', 'ok', BOOK, 'a.appts', 'เปลี่ยน PT ต้องมีเหตุผลย้อนดูได้']
     ],
     D04: [
-      ['Q04.01', 'วันนี้มีนัดกี่เคส ยืนยันแล้วและยังรอดำเนินการกี่เคส?', '9 · ยืนยัน 7 · พักการดูแล 1', 'urgent', BOOK, 'a.appts', 'นัดที่พักการดูแลยังเห็นอยู่ แต่ห้ามขึ้นว่าพร้อมรักษา'],
+      ['Q04.01', 'วันนี้มีนัดกี่เคส ยืนยันแล้วและยังรอดำเนินการกี่เคส?', 'นัดวันนี้ 9 · ยืนยัน 7 · พักการดูแล 1', 'urgent', BOOK, 'a.appts', 'นัดที่พักการดูแลยังเห็นอยู่ แต่ห้ามขึ้นว่าพร้อมรักษา'],
       ['Q04.02', 'เคสใดมีความเสี่ยงมาสายหรือเริ่มงานไม่ทัน?', '', 'unknown', BOOK, 'a.appts', 'ไม่มี GPS จึงไม่เดาเวลาถึง'],
       ['Q04.03', 'การยกเลิกมาจากลูกค้าหรือ PT และมีเหตุผลอะไร?', 'คนไข้ 3 · PT 1', 'ok', BOOK, 'a.appts', 'แยกยกเลิกออกจากเลื่อนนัด'],
       ['Q04.04', 'No-show เกิดหลัง PT ถึงหน้างานหรือไม่ และบันทึกหลักฐานครบหรือยัง?', '', 'unknown', BOOK, 'a.appts', 'ไม่มีหลักฐานการถึง ไม่ตัดสิทธิ์หรือคิดค่าปรับอัตโนมัติ'],
-      ['Q04.05', 'มี Visit ใดจบแล้วแต่ยังไม่ปิดสถานะหรือรายงาน?', '2 เคส', 'watch', CL, 'a.appts', 'จบการรักษา ส่งรายงาน และปิดงาน เป็นคนละสถานะ'],
+      ['Q04.05', 'นัดไหนจบแล้วแต่ยังไม่ปิดสถานะหรือรายงาน?', '2 เคส', 'watch', CL, 'a.appts', 'จบการรักษา ส่งรายงาน และปิดงาน เป็นคนละสถานะ'],
       ['Q04.06', 'การแจ้งเตือนก่อนนัดส่งสำเร็จหรือไม่?', '', 'unknown', BOOK, 'a.appts', 'LINE จำลองไม่ใช่หลักฐานการส่งจริง'],
       ['Q04.07', 'นัดครั้งถัดไปของผู้ป่วยรายเดิมถูกจองกับ PT เดิมหรือไม่?', '28 จาก 31', 'ok', BOOK, 'a.appts', 'จองแล้วกับทำเสร็จแล้วเป็นคนละจำนวน']
     ],
     D05: [
-      ['Q05.01', 'ยอดชำระที่ยืนยันแล้วตรงกับรายการคำสั่งซื้อหรือไม่?', 'ไม่ตรง 1 รายการ', 'urgent', FIN, 'a.payments', 'สลิปซ้ำหรือ QR เปิดอยู่ ไม่นับเป็นยอดยืนยัน'],
-      ['Q05.02', 'Visit ที่ใช้จริงสร้าง Platform Fee เท่าไร?', '', 'policy', FIN, 'a.payments', 'ไม่มีเวอร์ชันค่าธรรมเนียมที่ยืนยัน จึงไม่แสดง 0'],
+      ['Q05.01', 'ยอดชำระที่ยืนยันแล้วตรงกับรายการคำสั่งซื้อหรือไม่?', 'สลิปยอดไม่ตรง 1 รายการ', 'urgent', FIN, 'a.payments', 'สลิปซ้ำหรือ QR เปิดอยู่ ไม่นับเป็นยอดยืนยัน'],
+      ['Q05.02', 'ครั้งที่ไปดูแลจริงสร้างค่าธรรมเนียมแพลตฟอร์มเท่าไร?', '', 'unknown', FIN, 'a.payments', 'ใช้ฐาน Price List v1.0: ClairMatch 10% · จ่ายรายครั้ง 12% · คอร์ส 16/14/10% · ยังไม่มีข้อมูลจริง จึงไม่แสดง 0'],
       ['Q05.03', 'ยอดค้างจ่าย PT เท่าไร และเกิดจากเคสใด?', '', 'policy', FIN, 'a.payments', 'แยกประมาณการ ค้างจ่าย และจ่ายแล้ว เมื่อยืนยันกฎแล้ว'],
       ['Q05.04', 'มีรายการรับเงินซ้ำ หักสิทธิ์ซ้ำ หรือจ่ายซ้ำหรือไม่?', '', 'unknown', FIN, 'a.payments', 'ต้องตรวจจากบันทึกจริงบน Staging'],
-      ['Q05.05', 'รายการ Refund อยู่ในขั้นไหน ใครอนุมัติ และจ่ายคืนแล้วหรือยัง?', 'รออนุมัติ 1', 'watch', FIN, 'a.payments', 'อนุมัติแล้วไม่ได้แปลว่าจ่ายคืนแล้ว'],
+      ['Q05.05', 'คำขอคืนเงินอยู่ขั้นไหน ใครขอ ใครอนุมัติ ใครโอน และกระทบยอดแล้วหรือยัง?', 'รออนุมัติ 1', 'watch', 'พี่ปาล์ม (CEO) อนุมัติ', 'a.refunds', 'อนุมัติแล้วไม่ได้แปลว่าโอนแล้ว · ผู้ขอ ผู้อนุมัติ ผู้โอน ต้องเป็นคนละคน'],
       ['Q05.06', 'ยอดเงินที่กระทบยอดไม่ได้ค้างกี่วัน?', '1 รายการ · 2 วัน', 'watch', FIN, 'a.payments', 'นับจากวันที่พบ ทุกรายการต้องมีเจ้าของ'],
-      ['Q05.07', 'ยอดค่าธรรมเนียมที่ CEO เห็นตรวจย้อนกลับถึง Visit ได้หรือไม่?', '', 'policy', FIN, 'a.payments', 'ย้อนถึง Visit โดยไม่เปิดข้อมูลสุขภาพ']
+      ['Q05.07', 'ค่าธรรมเนียมที่ CEO เห็น ย้อนกลับไปถึงนัดแต่ละครั้งได้ไหม?', '', 'policy', FIN, 'a.payments', 'ย้อนถึงนัดโดยไม่เปิดข้อมูลสุขภาพ']
     ],
     D06: [
-      ['Q06.01', 'ลูกค้าซื้อ Trial ซ้ำเกินสิทธิ์ 1 ครั้งหรือไม่?', 'ไม่พบ', 'ok', PKG, 'a.patients', 'จ่ายซ้ำไม่เท่ากับใช้สิทธิ์ซ้ำ'],
-      ['Q06.02', 'Package 1/5/10/20 ขายและถูกใช้จริงเท่าไร?', 'ขาย 19 คอร์ส', 'ok', PKG, 'a.payments', 'แยกขายกับใช้ ตามเวอร์ชันสินค้า'],
+      ['Q06.01', 'ลูกค้าซื้อ ClairMatch ซ้ำเกินสิทธิ์ 1 ครั้งไหม?', 'ไม่พบ', 'ok', PKG, 'a.patients', 'จ่ายซ้ำไม่เท่ากับใช้สิทธิ์ซ้ำ'],
+      ['Q06.02', 'จ่ายรายครั้ง และคอร์ส 5/10/15 ขายและถูกใช้จริงเท่าไร?', 'ขาย 19 คอร์ส', 'ok', PKG, 'a.payments', 'แยกขายกับใช้ ตามเวอร์ชันสินค้า'],
       ['Q06.03', 'แพ็กเกจที่ซื้อใหม่ก่อนใช้ของเก่าหมด ถูกเรียงใช้ถูกต้องหรือไม่?', '', 'policy', PKG, 'a.payments', 'รอกฎตามสัญญาที่ใช้จริง'],
-      ['Q06.04', 'สิทธิ์คงเหลือ แยก Reserved / Used / Available ถูกต้องหรือไม่?', '12 · 74 · 88 ครั้ง', 'ok', PKG, 'a.payments', 'ตัดสิทธิ์ครั้งเดียวเมื่อ PT จบการรักษา'],
-      ['Q06.05', 'แพ็กเกจใดใกล้ครบ 365 วัน และเสี่ยงไม่ได้ใช้?', '', 'policy', PKG, 'a.patients', 'ใช้วันหมดอายุตามสัญญาเมื่อยืนยันแล้ว'],
-      ['Q06.06', 'ลูกค้าที่จบ Trial หรือ Package แล้วกลับมาซื้อซ้ำกี่คน?', '6 คน', 'ok', PKG, 'a.patients', 'ซื้อซ้ำไม่ปนกับมาใช้บริการซ้ำ'],
+      ['Q06.04', 'สิทธิ์คงเหลือ แยก กันไว้ / ใช้แล้ว / พร้อมใช้ ถูกต้องไหม?', '12 · 74 · 88 ครั้ง', 'ok', PKG, 'a.payments', 'ตัดสิทธิ์ครั้งเดียวเมื่อ PT จบการรักษา'],
+      ['Q06.05', 'คอร์สไหนใกล้ครบ 365 วัน และเสี่ยงไม่ได้ใช้?', '', 'unknown', PKG, 'a.payments', 'นับ 365 วันจากวันที่ทีมยืนยันยอดโอน (บอส 7 พ.ย.) · ยังไม่มีข้อมูลจริง'],
+      ['Q06.06', 'ลูกค้าที่จบครั้งแรกหรือคอร์สแล้ว กลับมาซื้อซ้ำกี่คน?', '6 คน', 'ok', PKG, 'a.patients', 'ซื้อซ้ำไม่ปนกับมาใช้บริการซ้ำ'],
       ['Q06.07', 'เมื่อเปลี่ยน PT มีผลต่อราคาและความต่อเนื่องอย่างไร?', '', 'policy', PKG, 'a.appts', 'ยึดราคาตามสัญญา ข้อยกเว้นต้องมีผู้อนุมัติ']
     ],
     D07: [
-      ['Q07.01', 'Visit ที่จบแล้วมีรายงานครบกี่เปอร์เซ็นต์?', '94%', 'ok', CL, 'a.appts', 'ร่างไม่นับว่าส่งแล้ว'],
+      ['Q07.01', 'นัดที่จบแล้วมีรายงานครบกี่ %?', '94%', 'ok', CL, 'a.appts', 'ร่างไม่นับว่าส่งแล้ว'],
       ['Q07.02', 'รายงานใดเกินกำหนดส่งตามนโยบายที่อนุมัติ?', '2 ฉบับ', 'watch', CL, 'a.appts', 'ภายใน 2 ชั่วโมงและไม่เกิน 22:00 เมื่อยืนยันเวอร์ชันกฎแล้ว'],
       ['Q07.03', 'Goal / SOAP / Family message ครบถ้วนตามแบบฟอร์มหรือไม่?', '96%', 'ok', CL, 'a.appts', 'ความครบไม่ใช่คะแนนคุณภาพการรักษา'],
       ['Q07.04', 'รายงานส่งให้ผู้มีสิทธิ์สำเร็จหรือมีการส่งล้มเหลว?', '', 'unknown', CL, 'a.appts', 'ข้อความถึงญาติไม่ส่ง SOAP ทั้งชุด'],
@@ -72,24 +72,24 @@
       ['Q07.07', 'เคสใดต้องติดตามความครบถ้วนโดยไม่เปิดเผยรายละเอียดทางคลินิก?', '3 เคส', 'watch', CL, 'a.clinical', 'เปิดงานและเจ้าของงานได้โดยไม่เปิด SOAP ให้ CEO']
     ],
     D08: [
-      ['Q08.01', 'วันนี้มีปัญหา Critical กี่เคส และมีใครเป็น Owner?', '2 เคส · มีเจ้าของครบ', 'urgent', OPS, 'a.queue', 'ทุกเคสต้องมีเจ้าของและงานถัดไป'],
+      ['Q08.01', 'วันนี้มีปัญหาร้ายแรงกี่เคส และมีเจ้าของครบไหม?', 'ปัญหาร้ายแรง 2 เคส · มีเจ้าของครบ', 'urgent', OPS, 'a.queue', 'ทุกเคสต้องมีเจ้าของและงานถัดไป'],
       ['Q08.02', 'ปัญหาประเภทใดเกิดซ้ำมากที่สุด?', 'เวลา PT ไม่ตรง', 'watch', OPS, 'a.suspicion', 'การแจ้งเตือนซ้ำไม่นับเป็นเรื่องใหม่'],
       ['Q08.03', 'เคสที่ชำระเงินแล้วแต่ยังจับคู่ไม่ได้ค้างกี่ชั่วโมง?', 'นานสุด 0.8 ชม.', 'watch', MATCH, 'a.match', 'ไม่รวมเคสที่พักรอทีมคลินิก'],
       ['Q08.04', 'ข้อร้องเรียนหรือเหตุการณ์ไม่พึงประสงค์อยู่ในสถานะใด?', '', 'unknown', CL, 'a.queue', 'ยังไม่มีรายการร้องเรียนในระบบ'],
-      ['Q08.05', 'ความผิดพลาดเรื่องเงินและ Session มีเคสใดต้องหยุด Automation?', '1 เคส', 'urgent', FIN, 'a.payments', 'หยุดเฉพาะรายการที่ผิด CEO กดแก้บัญชีเองไม่ได้'],
-      ['Q08.06', 'การแจ้งเตือนล้มเหลวส่งผลให้เกิด Missed Visit หรือไม่?', '', 'unknown', BOOK, 'a.appts', 'แสดงความสัมพันธ์ ไม่สรุปว่าเป็นสาเหตุ'],
-      ['Q08.07', 'เคสใดเกิน SLA และเมื่อปิดแล้วมีหลักฐานการแก้ไขหรือไม่?', '', 'policy', OPS, 'a.queue', 'ยังไม่มีเวอร์ชัน SLA ปิดเคสต้องมีหลักฐาน']
+      ['Q08.05', 'ความผิดพลาดเรื่องเงินและสิทธิ์ มีเคสไหนต้องหยุดระบบอัตโนมัติ?', 'หยุดอัตโนมัติ 1 เคส', 'urgent', FIN, 'a.payments', 'หยุดเฉพาะรายการที่ผิด CEO กดแก้บัญชีเองไม่ได้'],
+      ['Q08.06', 'การแจ้งเตือนล้มเหลวทำให้พลาดนัดไหม?', '', 'unknown', BOOK, 'a.appts', 'แสดงความสัมพันธ์ ไม่สรุปว่าเป็นสาเหตุ'],
+      ['Q08.07', 'เคสไหนเกินกำหนดเวลาที่ตกลงไว้ และปิดแล้วมีหลักฐานการแก้ไขไหม?', '', 'policy', OPS, 'a.queue', 'ยังไม่มีเวอร์ชัน SLA ปิดเคสต้องมีหลักฐาน']
     ]
   };
   const VIEWS = [
     { id: 'D01', icon: 'layout-dashboard', name: 'ภาพรวม', title: 'ภาพรวม CEO', sub: 'ธุรกิจโตจากไหน ลูกค้าหลุดตรงไหน ต้องตามเรื่องอะไรวันนี้', kpi: [['จ่ายแล้วมารับบริการ', '81%', 'ok'], ['เปลี่ยนเป็นคอร์ส', '37%', 'ok'], ['ค่าธรรมเนียมที่เกิดจริง', '', 'policy']], viz: { t: 'เส้นทางลูกค้า 30 วัน', bars: [['คัดกรองแล้ว', 120], ['ผ่านด่านความปลอดภัย', 96], ['จ่ายเงินแล้ว', 64], ['มีนัดแล้ว', 58], ['เยี่ยมครั้งแรกจบ', 52], ['ซื้อคอร์ส', 19]] } },
     { id: 'D02', icon: 'stethoscope', name: 'นักกายภาพ', title: 'นักกายภาพและกำลังรับงาน', sub: 'มีคนพร้อมรับงานจริงกี่คน โซนไหนขาด ใครต้องตาม', kpi: [['พร้อมรับงานจริง', '21 คน', 'watch'], ['โซนที่ขาด', '2 โซน', 'watch'], ['รอพิจารณาทักษะ', '7 งาน', 'watch']], viz: { t: 'จากสมัครจนพร้อมรับงาน', bars: [['สมัคร', 46], ['ใบประกอบผ่าน', 38], ['มีพื้นที่และตาราง', 26], ['ยอมรับข้อตกลง', 21]], foot: 'ตอบ "ทำได้" เองไม่นับเป็นกำลังรับงาน', cta: ['a.caps', 'ดูความสามารถ PT'] } },
-    { id: 'D03', icon: 'users-round', name: 'จับคู่', title: 'ศูนย์จับคู่', sub: 'แยกเคสที่พร้อมจับคู่ ออกจากเคสที่ต้องรอทีม', kpi: [['จ่ายแล้ว รอจับคู่', '5 เคส', 'urgent'], ['จ่ายแล้ว พักตรวจคลินิก', '2 เคส', 'watch'], ['รอทักษะ PT', '3 เคส', 'watch'], ['นาฬิกา 30/90', '', 'policy']], live: true, viz: { t: 'เหตุผลที่ยังจับคู่ไม่ได้', bars: [['เวลาไม่ตรง', 6], ['รอทักษะ PT', 3], ['พื้นที่', 2], ['ไม่มีคนกดรับ', 2]] } },
+    { id: 'D03', icon: 'users-round', name: 'จับคู่', title: 'ศูนย์จับคู่', sub: 'แยกเคสที่พร้อมจับคู่ ออกจากเคสที่ต้องรอทีม', kpi: [['จ่ายแล้ว รอจับคู่', '5 เคส', 'urgent'], ['จ่ายแล้ว พักตรวจคลินิก', '2 เคส', 'watch'], ['รอทักษะ PT', '3 เคส', 'watch'], ['กำหนดแจ้งคนไข้ 24 ชม.', '', 'policy']], live: true, viz: { t: 'เหตุผลที่ยังจับคู่ไม่ได้', bars: [['เวลาไม่ตรง', 6], ['รอทักษะ PT', 3], ['พื้นที่', 2], ['ไม่มีคนกดรับ', 2]] } },
     { id: 'D04', icon: 'calendar-days', name: 'นัดและเยี่ยม', title: 'นัดและการเยี่ยม', sub: 'วันนี้มีอะไร เคสไหนนัดอยู่แต่ยังห้ามเริ่มรักษา', kpi: [['นัดวันนี้', '9 เคส', 'ok'], ['นัดอยู่ · พักการดูแล', '1 เคส', 'urgent'], ['จบแล้วรอรายงาน', '2 เคส', 'watch']], live: true, viz: { t: 'นัดวันนี้', bars: [['ยืนยันแล้ว', 7], ['พักการดูแล', 1], ['รอดำเนินการ', 1]] } },
-    { id: 'D05', icon: 'wallet', name: 'การเงิน', title: 'การเงิน', sub: 'เงินเข้าตรงไหม อะไรค้าง ใครต้องจัดการ', kpi: [['รายการยืนยันแล้ว', '83 รายการ', 'ok'], ['กระทบยอดไม่ได้', '1 รายการ', 'urgent'], ['ค่าธรรมเนียมและค้างจ่าย PT', '', 'policy']], note: 'ยังไม่แสดงยอดเงินเป็นบาท เพราะต้องยืนยันแหล่งราคาที่ใช้จริงก่อน', viz: { t: 'สถานะรายการจ่าย', bars: [['ยืนยันแล้ว', 83], ['รอตรวจสลิป', 4], ['ไม่ตรง', 1]] } },
-    { id: 'D06', icon: 'package', name: 'คอร์ส', title: 'คอร์สและสิทธิ์คงเหลือ', sub: 'ขายได้เท่าไร ใช้ไปเท่าไร เหลือเท่าไร', kpi: [['คอร์สที่ขาย', '19 คอร์ส', 'ok'], ['ซื้อซ้ำ', '6 คน', 'ok'], ['ใกล้หมดอายุ', '', 'policy']], stack: [['ใช้แล้ว', 74, 'u'], ['กันไว้สำหรับนัด', 12, 'r'], ['พร้อมใช้', 88, 'a']] },
+    { id: 'D05', icon: 'wallet', name: 'การเงิน', title: 'การเงิน', sub: 'เงินเข้าตรงไหม อะไรค้าง ใครต้องจัดการ', kpi: [['รายการยืนยันแล้ว', '83 รายการ', 'ok'], ['กระทบยอดไม่ได้', '1 รายการ', 'urgent'], ['ค่าธรรมเนียมและค้างจ่าย PT', '', 'unknown']], note: 'ค่าธรรมเนียมใช้ฐาน Price List v1.0 · ยังไม่แสดงยอดรวมเป็นบาทเพราะยังไม่มีข้อมูลจริง', viz: { t: 'สถานะรายการจ่าย', bars: [['ยืนยันแล้ว', 83], ['รอตรวจสลิป', 4], ['ไม่ตรง', 1]] } },
+    { id: 'D06', icon: 'package', name: 'คอร์ส', title: 'คอร์สและสิทธิ์คงเหลือ', sub: 'ขายได้เท่าไร ใช้ไปเท่าไร เหลือเท่าไร', kpi: [['คอร์สที่ขาย', '19 คอร์ส', 'ok'], ['ซื้อซ้ำ', '6 คน', 'ok'], ['ใกล้ครบ 365 วัน', '', 'unknown']], stack: [['ใช้แล้ว', 74, 'u'], ['กันไว้สำหรับนัด', 12, 'r'], ['พร้อมใช้', 88, 'a']] },
     { id: 'D07', icon: 'file-check-2', name: 'รายงาน', title: 'รายงานคลินิก', sub: 'รายงานครบไหม อะไรค้าง โดย CEO เห็นแค่ภาพรวมกับข้อมูลเคส ไม่เห็นรายละเอียดการรักษา', kpi: [['รายงานครบ', '94%', 'ok'], ['เกินกำหนด', '2 ฉบับ', 'watch'], ['ส่งถึงผู้มีสิทธิ์', '', 'unknown']], viz: { t: 'รายงาน 30 วัน', bars: [['ส่งแล้ว', 49], ['ยังเป็นร่าง', 1], ['เกินกำหนด', 2]] } },
-    { id: 'D08', icon: 'siren', name: 'ปัญหา', title: 'ปัญหาและความเสี่ยง', sub: 'เรื่องไหนร้ายแรง ใครรับผิดชอบ และปิดด้วยหลักฐานอะไร', kpi: [['Critical วันนี้', '2 เคส', 'urgent'], ['หยุด Automation', '1 เคส', 'urgent'], ['ร้องเรียน', '', 'unknown']], live: true, viz: { t: 'เรื่องที่เกิดซ้ำ', bars: [['เวลา PT ไม่ตรง', 6], ['ข้อมูลเปลี่ยนหลังจอง', 3], ['สลิปไม่ตรง', 1]] } }
+    { id: 'D08', icon: 'siren', name: 'ปัญหา', title: 'ปัญหาและความเสี่ยง', sub: 'เรื่องไหนร้ายแรง ใครรับผิดชอบ และปิดด้วยหลักฐานอะไร', kpi: [['ปัญหาร้ายแรงวันนี้', '2 เคส', 'urgent'], ['หยุดระบบอัตโนมัติ', '1 เคส', 'urgent'], ['ร้องเรียน', '', 'unknown']], live: true, viz: { t: 'เรื่องที่เกิดซ้ำ', bars: [['เวลา PT ไม่ตรง', 6], ['ข้อมูลเปลี่ยนหลังจอง', 3], ['สลิปไม่ตรง', 1]] } }
   ];
   const pill = st => `<span class="pill ${ST[st][1]}">${ST[st][0]}</span>`;
   const kpiCard = ([t, val, st]) => `<div class="dc-kpi ${st}"><span>${esc(t)}</span>${val ? `<b>${esc(val)}</b>` : `<b class="none">${ST[st][0]}</b>`}${val && st !== 'ok' ? pill(st) : ''}</div>`;
@@ -117,9 +117,10 @@
       const urgent = VIEWS.flatMap(x => Q[x.id].filter(r => r[3] === 'urgent').map(r => [x, r]));
       const tabs = `<nav class="dc-tabs" aria-label="มุมมอง Dashboard">${VIEWS.map(x => { const n = Q[x.id].filter(r => r[3] === 'urgent').length; return `<button class="${x.id === view.id ? 'on' : ''}" aria-current="${x.id === view.id ? 'page' : 'false'}" data-pick="dash.v" data-value="${x.id}">${I(x.icon)}${x.name}${n ? `<span>${n}</span>` : ''}</button>`; }).join('')}</nav>`;
       const today = view.id === 'D01' ? `<section class="dc-card"><h2>ต้องตามวันนี้</h2>${urgent.map(([x, r]) => `<button class="dc-urgent" data-pick="dash.v" data-value="${x.id}"><span class="tile">${I(x.icon)}</span><span class="grow"><b>${esc(r[2])}</b><small>${esc(x.name)} · ${esc(r[4])}</small></span>${I('chevron-right')}</button>`).join('')}</section>` : '';
-      return SC.adminShell(s, 'a.dash', { kick: 'Central Admin', title: view.title, sub: view.sub, right: ui.sample() }, `
+      return SC.adminShell(s, 'a.dash', { title: view.title, sub: view.sub, right: ui.sample() }, `
         ${tabs}
         <p class="dc-note">${I('info')}<span><b>ข้อมูลตัวอย่างทั้งหน้า</b> ใช้ดูหน้าตาและวิธีอ่าน ยังไม่ใช่ตัวเลขจริง · 30 วันล่าสุด เวลาไทย${view.note ? ` · ${esc(view.note)}` : ''}</span></p>
+        <p class="dc-note" data-live-link>${I('arrow-right-left')}<span>ตัวเลขของเคสที่ซ้อมอยู่ (เงินเข้า คืนเงิน นัดวันนี้ ความปลอดภัย ค้างจ่าย PT) อยู่ที่หน้าแรกแอดมิน</span><button class="btn sm ghost" data-go="a.queue">เปิดหน้าแรกแอดมิน</button></p>
         <div class="dc-kpis">${view.kpi.map(kpiCard).join('')}</div>
         ${view.live ? liveStrip(s) : ''}
         ${today}
@@ -141,7 +142,7 @@
       const queue = Object.entries(p.caps || {}).filter(([id, v]) => (dec[id] || {}).status === 'PENDING' || (!dec[id] && (v === 'ask' || (id[0] === 'S' && v === 'can'))));
       const name = hasMe ? SC.me().name : 'PT ในห้องซ้อม';
       return SC.adminShell(s, 'a.caps', { kick: 'ทีม PT', title: 'ความสามารถ PT', sub: 'สิ่งที่ PT ตอบ กับสิ่งที่ทีมอนุมัติ เป็นคนละเรื่อง การตอบเองไม่นับเป็นกำลังรับงาน' }, `
-        <p class="dc-note">${I('scale')}<span><b>ตามมติ D1–D3</b> งาน Core (C01–C17) ที่ตอบ "ทำได้" ใช้จับคู่ได้ งาน Specialty และข้อที่เคยขอคุยต้องให้ Clinical Lead 1 คนอนุมัติ · เกณฑ์หลักฐานยังรอ Clinical Leads ตรวจรับ</span></p>
+        <p class="dc-note">${I('scale')}<span>งานพื้นฐาน (C01–C17) ที่ PT ตอบว่าทำได้ ใช้จับคู่ได้เลย · งานเฉพาะทาง (S) หรือข้อที่ขอคุยก่อน ต้องให้ Clinical Lead อนุมัติ 1 คน · เกณฑ์หลักฐานยังรอ Clinical Lead ตรวจรับ</span></p>
         <div class="dc-kpis"><div class="dc-kpi watch"><span>รอพิจารณา (ห้องซ้อม)</span><b>${queue.length} งาน</b></div><div class="dc-kpi ok"><span>ทีมอนุมัติแล้ว</span><b>${me.ok} งาน</b></div><div class="dc-kpi ok"><span>ไม่อนุมัติ</span><b>${me.no} งาน</b></div></div>
         <section class="dc-card"><div class="row between wrap"><h2>คิวรอพิจารณา</h2><span class="pill wait">${queue.length} งาน</span></div>
           ${queue.length ? queue.map(([id, v]) => `<div class="dc-cq"><span class="tile gold">${I('hourglass')}</span><span class="grow"><b>${esc(SC.CLIN.label(id))}</b><small>${esc(name)} · PT ตอบ: ${v === 'ask' ? 'ขอคุยก่อน' : v === 'can' ? 'ทำได้' : 'ยังไม่ถนัด'}</small></span><button class="btn sm ghost" data-act="capsOpen">พิจารณา</button></div>`).join('') : '<p class="small" style="margin:0">ไม่มีงานรอพิจารณาในห้องซ้อม</p>'}</section>
@@ -163,7 +164,12 @@
       return `<div class="scr">${ui.bar('งานที่รับ')}<div class="body">
         <div class="dc-ptsum"><div><b>${c.ok}</b><span>ทีมอนุมัติ</span></div><div class="w"><b>${c.wait}</b><span>รอพิจารณา</span></div><div><b>${ids.filter(id => p.caps[id] === 'can').length}</b><span>ตอบว่าทำได้</span></div></div>
         <p class="note" style="margin:0">แก้คำตอบได้ตลอด แต่การแก้เองไม่ทำให้งานที่รอพิจารณาผ่าน งานอื่นรับได้ตามปกติ</p>
-        ${sorted.length ? sorted.map(id => { const [t, tone] = res(id); return `<div class="card flat dc-tt" data-task="${id}"><div class="row between" style="gap:8px;align-items:flex-start"><b>${esc(SC.CLIN.label(id))}</b><span class="pill ${tone}">${t}</span></div><small>${esc(SC.CLIN.tasks[id])}</small><div class="tt-seg" role="group" aria-label="${esc(SC.CLIN.label(id))}">${[['can', 'ทำได้'], ['no', 'ยังไม่ถนัด'], ['ask', 'ขอคุยก่อน']].map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-act="capPick" data-id="${id}" data-v="${v}">${l}</button>`).join('')}</div>${dec[id] && dec[id].reason ? `<small>เหตุผลจากทีม: ${esc(dec[id].reason)}</small>` : ''}</div>`; }).join('') : ui.empty('list-checks', 'ยังไม่ได้เลือกกลุ่มงาน', 'เลือกกลุ่มงานตอนสร้างโปรไฟล์ก่อน', '')}
+        ${(() => { /* T05 (UX audit 7 Nov): waiting items first; answered ones folded, grouped as งานพื้นฐาน C and งานเฉพาะทาง S. */
+          if (!sorted.length) return ui.empty('list-checks', 'ยังไม่ได้เลือกกลุ่มงาน', 'เลือกกลุ่มงานตอนสร้างโปรไฟล์ก่อน', '');
+          const card = id => { const [t, tone] = res(id); return `<div class="card flat dc-tt" data-task="${id}"><div class="row between" style="gap:8px;align-items:flex-start"><b>${esc(SC.CLIN.label(id))}</b><span class="pill ${tone}">${t}</span></div><small>${esc(SC.CLIN.tasks[id])}</small><div class="tt-seg" role="group" aria-label="${esc(SC.CLIN.label(id))}">${[['can', 'ทำได้'], ['no', 'ยังไม่ถนัด'], ['ask', 'ขอคุยก่อน']].map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-act="capPick" data-id="${id}" data-v="${v}">${l}</button>`).join('')}</div>${dec[id] && dec[id].reason ? `<small>เหตุผลจากทีม: ${esc(dec[id].reason)}</small>` : ''}</div>`; }, wait = sorted.filter(id => res(id)[1] === 'wait'), done = sorted.filter(id => res(id)[1] !== 'wait');
+          const grp = (t, ids) => ids.length ? `<h3 class="h3" style="margin:6px 0 0">${t} (${ids.length})</h3>${ids.map(card).join('')}` : '';
+          return `${wait.length ? `<h2 class="sec-h">รอทีมพิจารณา (${wait.length})</h2>${wait.map(card).join('')}` : ''}<details class="card flat dc-done"${wait.length ? '' : ' open'}><summary class="sec-h">ตอบแล้ว (${done.length})</summary>${grp('งานพื้นฐาน C', done.filter(id => id[0] === 'C'))}${grp('งานเฉพาะทาง S', done.filter(id => id[0] === 'S'))}</details>`;
+        })()}
         <div class="tt-cap lock card flat"><b>${esc(SC.CLIN.label('S06'))}</b><small>${I('lock')} ยังไม่เปิดรับ ทีมจะติดต่อเอง</small></div>
       </div>${ui.tabs('pt', 't.hub')}</div>`;
     }
@@ -179,7 +185,7 @@
     const caps = {}; Object.keys(SC.CLIN.en).forEach(id => { if (id !== 'S06') caps[id] = 'can'; }); pending.forEach(id => { caps[id] = 'ask'; });
     Object.assign(s.pt, { services: ['01', '02', '03', '04', '05', '06'], zones: ['บางนา'], status: 'VERIFIED', agreement: true, photoApproved: true, caps, capLog: [], capDecisions: Object.fromEntries(['C14'].concat(pending).map(id => [id, { status: 'PENDING', at: 'ตัวอย่าง' }])) });
     caps.C14 = 'ask'; s.pt.schedule = Object.assign({}, s.pt.schedule, { sent: true });
-    if (allow) { Object.assign(s.request.review, { allow, limits, byId: 'palm', reason: 'ตัวอย่างสำหรับตรวจ' }); SC.clinClear(s, SC.line); }
+    if (allow) { Object.assign(s.request.review, { allow, limits, byId: 'palm', reason: 'ตัวอย่างสำหรับตรวจ', limited: true, limitedWhy: 'ตัวอย่าง: Lead จำกัดขอบเขตเฉพาะงานที่ติ๊ก (เงื่อนไข Limited Scope รอตัดสิน)' }); SC.clinClear(s, SC.line); }
     if (allow && pay) { s.request.slip = 'sample'; SC.autoPay(s, SC.line); }
     if (book) { fireAct('acceptOffer', { offer: s.request.offerId }); }
     return s;
@@ -193,19 +199,24 @@
     { id: 'ack-v1', st: 'new', role: 'นักกายภาพ', t: 'ขอบเขตงานและการรับทราบ', d: 'CLIN-ACK-01 ดูงานที่อนุมัติ ข้อจำกัด และต้องกดรับทราบก่อนเริ่ม', screen: 't.visit', open() { demoCase({ book: true }); SC.go('t.visit', { n: 1 }); } },
     { id: 'd6-hold-v1', st: 'new', role: 'คนไข้', t: 'ประเมินอย่างเดียว: พักจ่าย', d: 'มติ D6 ยังไม่เปิดจ่ายและไม่ส่ง Offer ทีมติดต่อกลับ', screen: 'p.result', open() { demoCase({ allow: ['C01'], limits: 'Assessment only; no S05 Airway Clearance or S06 Airway Suction' }); SC.go('p.result'); } },
     { id: 'r4-offer-v1', st: 'check', role: 'นักกายภาพ', t: 'Offer ที่ยังรับไม่ได้', d: 'FIX-R4-03 ไม่นับใน "ต้องตอบ" และบอกเหตุผลก่อนกด', screen: 't.work', open() { demoCase(); SC.capPick(SC.s, 'C01', 'ask'); SC.go('t.work'); } },
-    { id: 'profile-v2', st: 'check', role: 'คนไข้', t: 'โปรไฟล์ PT แบบใหม่', d: 'รูปปก แถบตัวเลข และแท็บตามรายการล่าสุด', screen: 'p.pt', open() { SC.s.patient.viewPt = 's1'; SC.s.patient.ptTab = 'work'; SC.go('p.pt'); } }
+    { id: 'profile-v2', st: 'check', role: 'คนไข้', t: 'โปรไฟล์ PT แบบใหม่', d: 'รูปปก แถบตัวเลข และแท็บตามรายการล่าสุด', screen: 'p.pt', open() { SC.s.patient.viewPt = 's1'; SC.s.patient.ptTab = 'about'; SC.go('p.pt'); } }
   ];
   SC.REVIEW_ITEMS = ITEMS;
   const KEY = 'sc-reviewed-v1';
   const readDone = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } };
   const writeDone = x => { try { localStorage.setItem(KEY, JSON.stringify(x)); } catch (e) { /* the strip still works for this visit */ } };
   let done = readDone();
-  SC.isNewScreen = id => ITEMS.some(x => x.screen === id && !done.includes(x.id));
+  /* A05: the "ใหม่" mark goes once the screen has been opened. */
+  let seen = (() => { try { return JSON.parse(localStorage.getItem('sc-seen-v1') || '[]'); } catch (e) { return []; } })();
+  SC.isNewScreen = id => !seen.includes(id) && ITEMS.some(x => x.screen === id && !done.includes(x.id));
+  let rvOpen = false;
   const stLabel = { new: 'มาใหม่', check: 'รอตรวจ' };
   function paint(s, v) {
+    const at0 = v.at[v.role]; if (at0 && !seen.includes(at0) && ITEMS.some(x => x.screen === at0)) { seen = [...seen, at0]; try { localStorage.setItem('sc-seen-v1', JSON.stringify(seen)); } catch (e) { /* ok */ } }
     const left = ITEMS.filter(x => !done.includes(x.id)), box = document.getElementById('rvbox');
-    if (box) box.innerHTML = `<div class="rv-head"><span class="rv-mark">${I('sparkles')}</span><div class="grow"><b>มาใหม่ · รอตรวจ</b><small>${left.length ? `เหลือ ${left.length} เรื่องให้บอสดู · ป้ายเดียวกันนี้อยู่บนผังโฟลว์ด้านล่าง` : 'ตรวจครบแล้ว'}</small></div></div>
-      <div class="rv-list">${ITEMS.map(x => { const ok = done.includes(x.id); return `<article class="rv-card is-${x.st} ${ok ? 'done' : ''}" data-rv-card="${x.id}"><div class="row between"><span class="rv-tag ${ok ? 'is-ok' : 'is-' + x.st}">${ok ? 'ตรวจแล้ว' : stLabel[x.st]}</span><small>${esc(x.role)}</small></div><b>${esc(x.t)}</b><p>${esc(x.d)}</p><div class="rv-acts"><button class="btn sm" data-rv-open="${x.id}">เปิดดู${I('arrow-right')}</button><button class="btn sm ghost" data-rv-done="${x.id}">${ok ? 'เอาป้ายกลับ' : 'ตรวจแล้ว'}</button></div></article>`; }).join('')}</div><p class="rv-foot">บางเรื่องเปิดพร้อมเคสตัวอย่าง จึงเริ่มห้องซ้อมใหม่</p>`;
+    /* S01: folded to one line by default so the screen under review stays near the top. */
+    if (box) box.innerHTML = `<div class="rv-head"><span class="rv-mark">${I('sparkles')}</span><div class="grow"><b>มาใหม่ · รอตรวจ ${left.length} เรื่อง</b>${rvOpen ? `<small>${left.length ? 'ป้ายเดียวกันนี้อยู่บนผังโฟลว์' : 'ตรวจครบแล้ว'}</small>` : ''}</div><button class="btn sm ghost" data-rv-toggle aria-expanded="${rvOpen}">${rvOpen ? 'ซ่อน' : 'ดูรายการ'}</button></div>
+      ${rvOpen ? `<div class="rv-list">${ITEMS.map(x => { const ok = done.includes(x.id); return `<article class="rv-card is-${x.st} ${ok ? 'done' : ''}" data-rv-card="${x.id}"><div class="row between"><span class="rv-tag ${ok ? 'is-ok' : 'is-' + x.st}">${ok ? 'ตรวจแล้ว' : stLabel[x.st]}</span><small>${esc(x.role)}</small></div><b>${esc(x.t)}</b><p>${esc(x.d)}</p><div class="rv-acts"><button class="btn sm" data-rv-open="${x.id}">เปิดดู${I('arrow-right')}</button><button class="btn sm ghost" data-rv-done="${x.id}">${ok ? 'เอาป้ายกลับ' : 'ตรวจแล้ว'}</button></div></article>`; }).join('')}</div><p class="rv-foot">บางเรื่องเปิดพร้อมเคสตัวอย่าง จึงเริ่มห้องซ้อมใหม่</p>` : ''}`;
     document.querySelectorAll('#flowsvg [data-rv-screen]').forEach(g => { const it = ITEMS.find(x => x.screen === g.dataset.rvScreen && !done.includes(x.id)); g.style.display = it ? '' : 'none'; if (it) { g.setAttribute('class', `rv-chip is-${it.st}`); g.querySelector('text').textContent = stLabel[it.st]; } });
     const note = document.getElementById('rvnote'), at = v.at[v.role], cur = ITEMS.find(x => x.screen === at && !done.includes(x.id));
     if (note) note.innerHTML = cur ? `<div class="rv-note is-${cur.st}"><span class="rv-tag is-${cur.st}">${stLabel[cur.st]}</span><span class="grow">${esc(cur.d)}</span><button class="btn sm ghost" data-rv-done="${cur.id}">ตรวจแล้ว</button></div>` : '';
@@ -213,6 +224,7 @@
   SC.onShell(paint);
   document.addEventListener('click', e => {
     const o = e.target.closest('[data-rv-open]'), k = e.target.closest('[data-rv-done]');
+    if (e.target.closest('[data-rv-toggle]')) { rvOpen = !rvOpen; paint(SC.s, SC.v); if (window.lucide) window.lucide.createIcons(); return; }
     if (o) { const it = ITEMS.find(x => x.id === o.dataset.rvOpen); if (it) { it.open(); SC.render(); const d = document.getElementById('dev'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
     if (k) { const id = k.dataset.rvDone; done = done.includes(id) ? done.filter(x => x !== id) : [...done, id]; writeDone(done); paint(SC.s, SC.v); SC.render(); }
   });

@@ -56,7 +56,7 @@
       const g = el('g', k ? { class: 'mod has-wi', 'data-wi': n.n, role: 'button', tabindex: 0, 'aria-label': `ด่าน ${n.n} มี ${k} กรณีแยก` } : { class: 'mod' }, svg);
       el('rect', { x: xOf(start) - 10, y: 6, width: xOf(i) - xOf(start) + W + 20, height: HGT - 12, rx: 14 }, g);
       const t = el('text', { x: xOf(start) - 2, y: 21 }, g); t.textContent = 'ด่าน ' + n.n;
-      if (k) { const b = el('tspan', { class: 'wi-t' }, t); b.textContent = ` · ถ้า… ${k} กรณี`; }
+      if (k) { const b = el('tspan', { class: 'wi-t' }, t); b.textContent = ` · ทางแยก ${k}`; }
       start = i + 1; } });
     for (let i = 1; i < NODES.length; i++) {
       const a = NODES[i - 1], b = NODES[i], x1 = xOf(i - 1) + W, y1 = LANE[a.lane], x2 = xOf(i), y2 = LANE[b.lane], mx = (x1 + x2) / 2;

@@ -15,19 +15,19 @@
   const SAMPLE_PTS = [
     { id: 's1', license: '23418', photo: 'a/pt-fon-profile.jpg', cover: 'a/pt-fon-cover.jpg', tags: ['ผู้สูงอายุ', 'หลังผ่าตัด', 'ป้องกันล้ม'], name: 'กภ.ฝน ดูแลผู้สูงอายุ', initials: 'ฝ', hue: 32, zones: ['ประเวศ', 'บางนา'], bio: 'ดูแลผู้สูงอายุและหลังผ่าตัดที่บ้าน ใจเย็น อธิบายให้ญาติเข้าใจทุกครั้ง', rating: { average: 4.8, count: 12 }, cases: 20,
       post: { text: 'ป้องกันหกล้มในห้องน้ำ 3 จุดที่ควรติดราวจับ', video: 'https://youtu.be/example', image: 'elderly.jpg' }, quote: { text: 'แม่ลุกจากเตียงเองได้แล้ว คุณหมอใจเย็นมาก', area: 'ประเวศ', stars: 5 } },
-    { id: 's2', license: '31207', tags: ['หลังผ่าตัด', 'กระดูกและข้อ'], name: 'PT วิชัย', initials: 'ว', hue: 150, zones: ['สวนหลวง', 'พระโขนง'], bio: 'ฟื้นฟูหลังผ่าตัดเข่าและสะโพก', rating: { average: 5, count: 4 }, cases: 6,
+    { id: 's2', license: '31207', tags: ['หลังผ่าตัด', 'กระดูกและข้อ'], name: 'กภ.วิชัย', initials: 'ว', hue: 150, zones: ['สวนหลวง', 'พระโขนง'], bio: 'ฟื้นฟูหลังผ่าตัดเข่าและสะโพก', rating: { average: 5, count: 4 }, cases: 6,
       post: { text: 'หลังผ่าตัดเข่า เดินแบบไหนปลอดภัย', image: 'post-surgery.jpg' }, quote: null },
     { id: 's3', license: '28845', tags: ['ออฟฟิศซินโดรม', 'กระดูกและข้อ'], name: 'กภ.มายด์ ออฟฟิศซินโดรม', initials: 'ม', hue: 200, zones: ['บางรัก', 'สาทร'], bio: 'ปวดคอ บ่า หลัง จากการทำงาน', rating: null, cases: 0,
       post: { text: 'ยืดคอ 30 วินาทีระหว่างประชุม', image: 'neck.jpg' }, quote: null },
     { id: 's4', license: '19962', tags: ['สโตรก', 'ฝึกเดิน'], name: 'กภ.ต้น ฟื้นฟูหลังสโตรก', initials: 'ต', hue: 12, zones: ['บางแค', 'ภาษีเจริญ'], bio: 'ฝึกเดินและใช้มือหลังสโตรกที่บ้าน', rating: null, cases: 0,
       post: { text: 'ฝึกหยิบของด้วยมือข้างที่อ่อนแรง', image: 'stroke.jpg' }, quote: null },
-    { id: 's5', license: '35510', tags: ['ผู้สูงอายุ', 'ป้องกันล้ม'], name: 'PT ปุ้ย ดูแลผู้สูงอายุ', initials: 'ป', hue: 280, zones: ['จตุจักร', 'ลาดพร้าว'], bio: 'ทรงตัว ลุกเดิน ป้องกันล้ม', rating: null, cases: 0,
+    { id: 's5', license: '35510', tags: ['ผู้สูงอายุ', 'ป้องกันล้ม'], name: 'กภ.ปุ้ย ดูแลผู้สูงอายุ', initials: 'ป', hue: 280, zones: ['จตุจักร', 'ลาดพร้าว'], bio: 'ทรงตัว ลุกเดิน ป้องกันล้ม', rating: null, cases: 0,
       post: { text: 'จัดบ้านให้ผู้สูงอายุเดินได้ปลอดภัย' }, quote: null },
     { id: 's6', license: '27731', tags: ['กระดูกและข้อ', 'หลังผ่าตัด'], name: 'กภ.เบียร์ กระดูกและข้อ', initials: 'บ', hue: 95, zones: ['ตลิ่งชัน', 'บางกอกน้อย'], bio: 'เข่า สะโพก ไหล่ ฟื้นฟูหลังผ่าตัด', rating: null, cases: 0,
       post: { text: 'ยกขาตรง 3 แบบหลังผ่าตัดเข่า' }, quote: null },
     { id: 's7', license: '33096', tags: ['ติดเตียง', 'ผู้สูงอายุ'], name: 'กภ.ฟ้า ฝั่งตะวันออก', initials: 'ฟ', hue: 175, zones: ['มีนบุรี', 'ลาดกระบัง'], bio: 'ผู้ป่วยติดเตียงและการจัดท่า', rating: null, cases: 0,
       post: { text: 'พลิกตะแคงตัวทุก 2 ชั่วโมง ทำยังไงให้ง่าย' }, quote: null },
-    { id: 's8', license: '24480', tags: ['ปวดหลัง', 'กระดูกและข้อ'], name: 'PT นนท์ ปวดหลัง', initials: 'น', hue: 220, zones: ['ดุสิต', 'พญาไท'], bio: 'ปวดหลัง ปวดคอ และการยกของให้ถูกท่า', rating: null, cases: 0,
+    { id: 's8', license: '24480', tags: ['ปวดหลัง', 'กระดูกและข้อ'], name: 'กภ.นนท์ ปวดหลัง', initials: 'น', hue: 220, zones: ['ดุสิต', 'พญาไท'], bio: 'ปวดหลัง ปวดคอ และการยกของให้ถูกท่า', rating: null, cases: 0,
       post: { text: 'ยกของจากพื้นยังไงไม่ให้ปวดหลัง' }, quote: null }
   ];
   /* Certificate treatment list (Boss 29 Oct): broad headings only, picked from a dropdown, one bullet each. The detail stays in the SOAP note.
@@ -119,20 +119,51 @@
     suspicion: { reports: [] },
     line: { patient: [], pt: [], admin: [] },
     unread: { patient: 0, pt: 0, admin: 0 },
+    /* Rehearsal clock (7 Nov rehearsal P10): one scenario time for every log, never the computer's clock. ISO local time, only moves forward. */
+    clock: '2026-10-22T09:00',
+    incidents: [],
     passed: []
   });
 
   let s = load() || initial();
   const v = { device: {}, role: 'pt', at: { patient: 'p.loading', pt: 't.join', admin: 'a.queue' }, hist: { patient: [], pt: [], admin: [] }, params: {}, overlay: null, toast: null, panel: 'line', celebrate: null, wi: null, wiCase: null };
-  try { const saved = JSON.parse(localStorage.getItem('sc-proto-view') || 'null'); if (saved) Object.assign(v, { role: saved.role, at: saved.at, hist: saved.hist, params: saved.params || {}, device: saved.device || {} }); } catch (e) { /* fresh view */ }
+  /* Live sync (7 Nov): the case lives in localStorage and is shared by every open tab; what each tab is looking at (role, screen, history)
+     lives in sessionStorage, so a patient tab, a PT tab and an admin tab can stay open side by side. ?role=patient|pt|admin opens a tab as that role. */
+  const ROLE_PARAM = (() => { try { const r = new URLSearchParams(location.search).get('role'); return ['patient', 'pt', 'admin'].includes(r) ? r : null; } catch (e) { return null; } })();
+  try { const saved = JSON.parse(sessionStorage.getItem('sc-proto-view') || 'null') || (ROLE_PARAM ? null : JSON.parse(localStorage.getItem('sc-proto-view') || 'null')); if (saved) Object.assign(v, { role: saved.role, at: saved.at, hist: saved.hist, params: saved.params || {}, device: saved.device || {} }); } catch (e) { /* fresh view */ }
+  if (ROLE_PARAM) v.role = ROLE_PARAM;
 
   function load() { try { return JSON.parse(localStorage.getItem('sc-proto-state') || 'null'); } catch (e) { return null; } }
-  function persist() { try { localStorage.setItem('sc-proto-state', JSON.stringify(s)); localStorage.setItem('sc-proto-view', JSON.stringify({ role: v.role, at: v.at, hist: v.hist, params: v.params, device: v.device })); } catch (e) { /* storage blocked: rehearsal still works for this visit */ } }
+  let lastSaved = '';
+  function persist() {
+    try {
+      const json = JSON.stringify(s);
+      if (json !== lastSaved) { localStorage.setItem('sc-proto-state', json); lastSaved = json; }
+      const view = JSON.stringify({ role: v.role, at: v.at, hist: v.hist, params: v.params, device: v.device });
+      sessionStorage.setItem('sc-proto-view', view); localStorage.setItem('sc-proto-view', view);
+    } catch (e) { /* storage blocked: rehearsal still works for this visit */ }
+  }
+  /* Another tab changed the case: take its state, keep this tab's role and screen, and redraw (LINE messages included). */
+  function applyRemote(json) {
+    if (!json || json === lastSaved) return;
+    try { s = JSON.parse(json); lastSaved = json; } catch (e) { return; }
+    if (v.overlay && typeof v.overlay.html !== 'function') v.overlay = null;
+    render(true);
+  }
+  window.addEventListener('storage', e => { if (e.key === 'sc-proto-state') applyRemote(e.newValue); });
 
   const get = (path, o = s) => path.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
   function set(path, value) { const ks = path.split('.'); let o = s; ks.slice(0, -1).forEach(k => { if (o[k] == null) o[k] = {}; o = o[k]; }); o[ks[ks.length - 1]] = value; }
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const money = n => '฿' + Math.round(n).toLocaleString('en-US');
+  /* Satang shown (PR-02, PR-18): ฿1,439.10, ฿1,563.64, ฿12,509.09. How to round is still open (O-09); these are the documents' own figures. */
+  const money2 = n => '฿' + (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  /* Money facts from the 7 Nov documents (H13 l.26–28, M11 §5, apps/api/src/trial-policy). One place, used by every screen. */
+  const POLICY = { trial: 1599, trialFeePct: 10, trialPtNet: 1439.10, trialPlatform: 159.90,
+    cancelAfterTravel: { refund: 1099, keep: 500, pt: 400, platform: 100 },
+    noShow: { refund: 600, keep: 999, pt: 799.20, platform: 199.80, waitMin: 15 },
+    assessOnly: { refund: 600, keep: 999, pt: 850, platform: 149 },
+    courseValidDays: 365 };
 
   /* ---------- Screens and actions ---------- */
   const screens = {}, actions = {}, shellHooks = [];
@@ -185,7 +216,21 @@
     const step = t => { const k = Math.min(1, (t - t0) / 650); n.textContent = Math.round(from + (to - from) * (1 - (1 - k) ** 3)); if (k < 1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
-  function line(role, card) { if (card.key === 'received') card = Object.assign({ snap: receivedSnap() }, card); if (role === 'pt' && card.key === 'ptOffer') card = offerStamp(card); s.line[role].push(card); if (!(v.panel === 'line' && v.role === role)) s.unread[role] = (s.unread[role] || 0) + 1; }
+  function line(role, card) { if (card.key === 'received') card = Object.assign({ snap: receivedSnap() }, card); if (role === 'pt' && card.key === 'ptOffer') card = offerStamp(card);
+    /* Counts and money in LINE come from the case at the moment the card is sent (7 Nov rehearsal P4), never from the fixed sample text. */
+    if (COUNT_CARDS.includes(card.key) && !card.cs) card = Object.assign({ cs: countSnap() }, card);
+    /* Per-person admin inboxes (7 Nov rehearsal P14): every admin card names who gets it (พี่ปาล์ม / บอส / พี่นัท). */
+    if (role === 'admin' && !card.me) card = Object.assign({}, card, { to: [].concat(card.to || (SC.routeAdmin ? SC.routeAdmin(card) : ['nat'])) });
+    s.line[role].push(card); if (!(v.panel === 'line' && v.role === role)) s.unread[role] = (s.unread[role] || 0) + 1;
+    /* NT-31 (M11 §8): the payment link always travels with the conditions. Wording waits for Legal (O-07, O-24). */
+    if (role === 'patient' && card.key === 'intakePay') line('patient', { key: 'note', title: 'อ่านก่อนชำระ ClairMatch ฿1,599', tag: 'ข้อความรอ Legal ตรวจ', lines: PAY_TERMS, go: 'p.pay', button: 'ดูใบแจ้งชำระ' }); }
+  const COUNT_CARDS = ['confirmedCourse', 'courseReceipt', 'paymentReviewCourse', 'courseProposal', 'myCare'];
+  function countSnap() {
+    const c = s.course, v2 = s.visits.find(x => x.n === 2), cp = s.coursePlan || {};
+    return c ? { total: c.sessions + (c.bonus || 0), left: SC.courseLeft ? SC.courseLeft(c) : Math.max(0, c.sessions + (c.bonus || 0) - (c.used || 0)), sessions: c.sessions, bonus: c.bonus || 0, money: c.total, v2: v2 ? { date: v2.date, time: v2.time } : null, next: c.next || '', plan: cp.freq ? { freq: cp.freq, weeks: cp.weeks } : null } : { plan: cp.freq ? { freq: cp.freq, weeks: cp.weeks } : null };
+  }
+  /* M11 §8: the 7 things a patient must see before paying. Proposed Thai; Legal has not checked it yet. */
+  const PAY_TERMS = ['ประเมินและรักษาในวันเดียวกัน เมื่อเหมาะสมและปลอดภัย', 'ประเมินแล้วรักษาไม่ได้เพราะอาการ: คืน ฿600', 'ยกเลิกก่อนนักกายภาพออกเดินทาง: คืนเต็ม ฿1,599', 'ยกเลิกหลังออกเดินทาง: คืน ฿1,099 · ไม่พบคนไข้หลังรอ 15 นาที: คืน ฿600', 'หานักกายภาพไม่ได้: เลือกขอคืนเต็มได้', 'ถ้าทีมคลินิกพักการดูแล: นัดและยอดเดิมยังอยู่ ครบ 30 วันเลือกคืนเต็มได้', 'ไม่เห็นด้วยกับผล ขอให้ทีมทบทวนได้ในแชต LINE'];
 
   /* ---------- Small UI helpers shared by every screen file ---------- */
   const icon = (n, cls = '') => `<i data-lucide="${n}" class="${cls}"></i>`;
@@ -245,12 +290,12 @@
     { n: 8, role: 'pt', title: 'นักกายภาพรับงานแรก', start: 't.work', done: () => !!s.request && s.request.status === 'BOOKED',
       guide: { 't.work': ['[data-act="openOffer"]', 'เปิดงานเสนอใหม่'], 't.offer': ['[data-act="acceptOffer"]', 'กด "รับงานนี้"'], 't.agreement': ['[data-act="acceptAgreement"]', 'อ่านข้อตกลง ติ๊กยอมรับ แล้วกดยืนยัน (ครั้งเดียว)'] },
       complete() { s.pt.agreement = true; s.request.status = 'BOOKED'; s.visits = [{ n: 1, date: VISIT1.date, time: VISIT1.time, step: 0, soap: {}, published: false }]; line('patient', { key: 'ptIntro' }); line('patient', { key: 'confirmed' }); } },
-    { n: 9, role: 'pt', title: 'วันทำเคสครั้งแรก', start: 't.work', done: () => !!(s.visits[0] && s.visits[0].step >= 4),
+    { n: 9, role: 'pt', title: 'วันทำเคสครั้งแรก', start: 't.work', done: () => !!(s.visits[0] && s.visits[0].step >= 4 && !s.visits[0].exit),
       guide: { 't.work': ['[data-tt-skip]', 'ซ้อมข้ามเวลา: 1 วันก่อนนัด → ยืนยันนัด → 1 ชม. ก่อนนัด → เริ่มเดินทาง'], 't.visit': ['[data-act="visitNext"]', 'กดทีละขั้น: เริ่มเดินทาง → ถึงแล้ว → เริ่มดูแล → จบการดูแล'] },
       complete() { const x = s.visits[0]; if ((x.remind || 0) < 3) { line('patient', { key: 'tomorrowPatient' }); line('pt', { key: 'ptTomorrow' }); line('pt', { key: 'ptUpcoming' }); } x.remind = 3; x.step = 4; line('patient', { key: 'enRoute' }); line('patient', { key: 'visitDone' }); line('patient', { key: 'feedback' }); } },
     { n: 10, role: 'pt', title: 'วางแผนการรักษากับคนไข้', start: 't.visit', done: () => !!((s.course && s.course.slip && s.course.next && s.course.notified) || (s.perVisit && s.perVisit.next)),
       guide: { 't.visit': ['[data-go="t.plan"]', 'กด "วางแผนการรักษากับคนไข้"'], 't.work': ['[data-go="t.plan"]', 'เปิดการ์ดคุยแผนการรักษากับคนไข้'], 't.plan': ['[data-act="planNext"], [data-act="coursePaid"], [data-act="bookNext"]', 'พิมพ์เป้าหมายที่คนไข้อยากได้ → ความถี่และวัน → เลือกคอร์ส → คนไข้สแกนจ่าย แล้วแจ้งแอดมิน → นัดครั้งที่ 2'] },
-      complete() { s.coursePlan = { step: 6, goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', freq: 2, weeks: 5, full: 1850, pack: 10, code: false, price: null, bonus: 0, slip: 'sample', next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'] }; s.course = { sessions: 10, bonus: 0, perSession: 1368, fee: 2227, net: 13683, total: 15910, code: '', paid: false, slip: 'sample', approved: false, used: 1, next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'], notified: true }; line('admin', { key: 'paymentReviewCourse' }); } },
+      complete() { s.coursePlan = { step: 6, goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', freq: 2, weeks: 5, full: 1850, pack: 10, code: false, price: null, bonus: 0, slip: 'sample', next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'] }; s.course = { sessions: 10, bonus: 0, perSession: 1368, fee: 2227, net: 13683, total: 15910, code: '', paid: false, slip: 'sample', approved: false, used: 0, next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'], notified: true }; line('admin', { key: 'paymentReviewCourse' }); } },
     { n: 11, role: 'pt', title: 'เขียน OPD ภายใน 2 ชม.', start: 't.work', done: () => !!(s.visits[0] && s.visits[0].published),
       guide: { 't.plan': ['[data-act="planDone"]', 'กด "เขียน OPD"'], 't.work': ['[data-go="t.opd"]', 'เปิดบันทึกที่ต้องส่ง'], 't.opd': ['[data-act="publishReport"]', 'เป้าหมายดึงมาจากแผนที่คุยกับคนไข้ เขียน OPD แล้วกด "ลงนามและส่งสรุป"'] },
       complete() { const x = s.visits[0]; x.published = true; x.soap = { goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', s: 'Low back pain when standing up, 6/10', o: 'Needs hands to push up from a chair; slow gait', t: ['Lumbar mobilization', 'Sit-to-stand training, 3 sets', 'Home exercise teaching'], p: 'ฝึกลุกจากเก้าอี้ 10 ครั้ง วันละ 2 รอบ มีคนยืนข้าง ๆ', dx: 'Low back pain with lower-limb weakness', family: 'ให้คุณแม่ฝึกลุกนั่งวันละ 2 รอบ มีคนยืนข้าง ๆ' }; line('patient', { key: 'report' }); } },
@@ -259,10 +304,10 @@
       complete() { s.review = { stars: 5, liked: ['pro', 'care', 'result'], improve: [], text: 'คุณหมอใจเย็นมาก แม่ลุกจากเก้าอี้เองได้แล้ว', consent: true, needsContact: false, approved: false, hidden: false }; s.cert.requested = true; s.cert.at = 'หลังครั้งแรก'; line('pt', { key: 'certRequest' }); } },
     { n: 13, role: 'admin', title: 'แอดมินตรวจเงินคอร์สและอนุมัติรีวิว', start: 'a.queue', done: () => !!(((s.course && s.course.approved) || s.perVisit) && s.review && (!s.review.consent || s.review.approved || s.review.hidden)),
       guide: { 'a.queue': ['[data-go="a.payments"], [data-go="a.reviews"]', 'ทำงานที่ค้าง: ตรวจเงินคอร์ส และรีวิวที่ขอแสดง'], 'a.payments': ['[data-act="confirmPayment"]', 'กด "ยืนยันรับเงินและเปิดสิทธิ์"'], 'a.reviews': ['[data-act="approveReview"]', 'อ่านข้อความ แล้วกด "อนุมัติให้แสดง"'] },
-      complete() { if (s.course) { s.course.approved = true; s.course.paid = true; } if (s.review.consent) s.review.approved = true; if (!s.visits.find(x => x.n === 2)) s.visits.push({ n: 2, date: VISIT2.date, time: VISIT2.time, step: 0, soap: {}, published: false }); if (s.course) { line('patient', { key: 'courseReceipt' }); line('patient', { key: 'confirmedCourse' }); } } },
+      complete() { if (s.course) { s.course.approved = true; s.course.paid = true; s.course.verifiedAt = '2026-10-24'; } if (s.review.consent) s.review.approved = true; if (!s.visits.find(x => x.n === 2)) s.visits.push({ n: 2, date: VISIT2.date, time: VISIT2.time, step: 0, soap: {}, published: false }); if (s.course) { line('patient', { key: 'courseReceipt' }); line('patient', { key: 'confirmedCourse' }); } } },
     { n: 14, role: 'pt', title: 'ครั้งที่ 2 (ตัดคอร์ส) และใบรับรอง', start: 't.work', done: () => s.cert.issued,
       guide: { 't.work': ['[data-act="openVisit"]', 'เปิดนัดครั้งที่ 2'], 't.visit': ['[data-act="visitNext"], [data-go="t.opd"]', 'ทำเคสทีละขั้นจนจบ'], 't.opd': ['[data-act="publishReport"]', 'เขียน SOAP ครั้งที่ 2 แล้วส่งสรุป'], 't.cert': ['[data-act="issueCert"]', 'ตรวจข้อความ เลือกการรักษาเป็นข้อ ๆ ลงนาม แล้วกด "ส่งให้คนไข้"'] },
-      complete() { const x = s.visits[1]; if (x) { x.step = 4; x.published = true; } if (s.course) s.course.used = Math.max(s.course.used || 0, 2); if (!s.cert.tx.length) s.cert.tx = ['ther', 'func', 'home']; s.cert.issued = true; line('patient', { key: 'courseUsed', n: 2 }); line('patient', { key: 'report2' }); line('patient', { key: 'certReady' }); } },
+      complete() { const x = s.visits[1]; if (x) { x.step = 4; x.published = true; } if (s.course) s.course.used = Math.max(s.course.used || 0, 1); if (!s.cert.tx.length) s.cert.tx = ['ther', 'func', 'home']; s.cert.issued = true; line('patient', { key: 'courseUsed', n: 1 }); line('patient', { key: 'report2' }); line('patient', { key: 'certReady' }); } },
     { n: 15, role: 'pt', title: 'ครบคอร์ส: สรุปผลและเสนอต่อคอร์ส', start: 't.work', done: () => !!(s.renewal && s.renewal.sent),
       guide: { 't.work': ['[data-act="courseSkipLast"], [data-act="openVisit"], [data-go="t.renew"]', 'ซ้อมข้ามเวลาไปครั้งสุดท้ายของคอร์ส → ทำเคสจนจบ (ระบบตัดคอร์สครั้งสุดท้าย) → สรุปจบคอร์ส'], 't.visit': ['[data-act="visitNext"]', 'กดจนจบการดูแล ระบบตัดคอร์สให้เอง'], 't.renew': ['[data-act="renewSend"]', 'เทียบผลกับเป้าหมาย เลือกคำแนะนำ แล้วส่งให้คนไข้'] },
       complete() { const c = s.course; if (c) c.used = c.sessions + (c.bonus || 0); s.renewal = { progress: 'part', note: 'ลุกจากเก้าอี้เองได้แล้ว เดินในบ้านมั่นคงขึ้น ยังต้องฝึกเดินนอกบ้านต่อ', rec: 'renew', pack: 5, next: 'อ. 8 ธ.ค. 09:00', sent: true }; line('patient', { key: 'courseUsed', n: c ? c.used : 10 }); line('patient', { key: 'renewOffer' }); } },
@@ -291,15 +336,20 @@
   const px = (val, t) => val == null ? null : (val in t ? t[val] + 'px' : val);
   const ART = { 'request-received': 'line-request-received', welcome: 'line-welcome', 'payment-due': 'line-payment-due', 'payment-received': 'line-payment-received', 'pt-matched': 'line-pt-matched', 'appointment-confirmed': 'line-appointment-confirmed', 'appointment-reminder': 'line-appointment-reminder', 'pt-en-route': 'line-pt-en-route', 'report-ready': 'line-report-ready', feedback: 'line-feedback' };
   const art = url => { const m = /team-20261012-([a-z-]+)\.png/.exec(url || ''); return m && ART[m[1]] ? `a/${ART[m[1]]}.jpg` : ''; };
+  let curMsg = null;
   function personal(text) {
+    const cs = (curMsg && curMsg.cs) || null;
     return String(text)
+      .replace(/ไม่ถึง 3 นาที/g, 'ราว 5–10 นาที')
+      .replace(/เหลือ 9 จาก 10 ครั้ง/g, () => cs && cs.total ? `เหลือ ${cs.left} จาก ${cs.total} ครั้ง` : 'ดูจำนวนครั้งในแอป')
+      .replace(/แผน 10 ครั้ง ใน 5 สัปดาห์ · สัปดาห์ละ 2 ครั้ง/g, () => cs && cs.plan ? `แผน ${cs.plan.freq * cs.plan.weeks} ครั้ง ใน ${cs.plan.weeks} สัปดาห์ · สัปดาห์ละ ${cs.plan.freq} ครั้ง` : 'แผนตามที่คุยกับนักกายภาพ')
       .replace(/คุณแม่สมใจ/g, s.patient.name || 'คุณแม่สมใจ')
       .replace(/คุณบอส/g, s.pt.displayName || 'คุณบอส')
       .replace(/SC-2610-0099/g, (s.request && s.request.ref) || 'SC-2610001')
       .replace(/บางนา/g, s.patient.address.district || s.patient.district || 'บางนา')
       .replace(/เสาร์ 25 ต\.ค\./g, 'เสาร์ 24 ต.ค.').replace(/28 ต\.ค\./g, '27 ต.ค.').replace(/27 ต\.ค\. 09:00–10:30/g, '27 ต.ค. 09:00–10:00')
       // The real course card carries an old sample total; show the course this rehearsal priced (Boss 30 Oct: 10 visits = ฿15,910).
-      .replace(/12,900\.00/g, (s.course ? s.course.total : 15910).toLocaleString('en-US', { minimumFractionDigits: 2 }));
+      .replace(/12,900\.00/g, () => ((cs && cs.money) || (s.course ? s.course.total : 15910)).toLocaleString('en-US', { minimumFractionDigits: 2 }));
   }
   function fnode(c, parent, cardKey) {
     const st = []; const t = c.type;
@@ -330,11 +380,11 @@
     const r = s.request; if (!r) return m;
     if (!r.offerId) SC.bumpOffer(r);
     const sc = SC.clinScope(s);
-    return Object.assign({}, m, { offerId: r.offerId, snap: { area: (s.patient.address && s.patient.address.district) || s.patient.district || '—', when: `${VISIT1.date} · ${VISIT1.time}`, want: sc.want, allow: sc.allowPt, not: sc.notPt, limits: sc.limits, prec: sc.prec } });
+    return Object.assign({}, m, { offerId: r.offerId, snap: { area: (s.patient.address && s.patient.address.district) || s.patient.district || '—', when: `${VISIT1.date} · ${VISIT1.time}`, cross: !!r.crossZone, want: sc.want, allow: sc.allowPt, not: sc.notPt, limits: sc.limits, prec: sc.prec } });
   }
   function offerCard(m) {
     const r = s.request, sn = m.snap || {}, live = !!r && r.status === 'OFFERED' && r.offerId === m.offerId && (r.offerTo || []).includes('me');
-    const lines = [`เลขงาน: ${m.offerId || '—'}`, `เขต/อำเภอ: ${sn.area || '—'}`, sn.when, `เป้าหมายที่คนไข้เลือก: ${sn.want || '—'}`, (sn.allow || []).length ? `ทีมคลินิกอนุมัติเฉพาะ: ${sn.allow.join(' · ')}` : '', (sn.not || []).length ? `ไม่อนุมัติ: ${sn.not.join(' · ')}` : '', sn.limits ? `ข้อจำกัด: ${sn.limits}` : '', ...(sn.prec || []), `รายได้สุทธิ: ${SC.money(1199)}`, live ? 'ตอบรับภายใน 30 นาที' : ''].filter(Boolean);
+    const lines = [`เลขงาน: ${m.offerId || '—'}`, `เขต/อำเภอ: ${sn.area || '—'}`, sn.when, `เป้าหมายที่คนไข้เลือก: ${sn.want || '—'}`, (sn.allow || []).length ? `ทีมคลินิกอนุมัติเฉพาะ: ${sn.allow.join(' · ')}` : '', (sn.not || []).length ? `ไม่อนุมัติ: ${sn.not.join(' · ')}` : '', sn.limits ? `ข้อจำกัด: ${sn.limits}` : '', ...(sn.prec || []), sn.cross ? 'ข้ามโซน: ทีมยืนยันแล้ว คุณต้องกดยอมรับพื้นที่นี้เอง · ไม่มีค่าเดินทางเพิ่ม' : '', `รายได้สุทธิ: ${money2(POLICY.trialPtNet)}`, live ? 'ตอบรับภายใน 30 นาที' : ''].filter(Boolean);
     const body = lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('');
     return `<div class="fx-card"><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">ข้อเสนองานใหม่</div>${live ? '' : '<div class="fx-t" style="font-size:13px;font-weight:600;color:#8a5a1f;margin-top:4px">ขอบเขตหรือสถานะงานเปลี่ยนแล้ว การ์ดนี้ใช้รับงานไม่ได้</div>'}${body}</div>
       <div class="fx-foot" style="padding:10px 14px 14px;display:grid;gap:6px">${live ? `${SC.offerBlock(s) ? `<div class="fx-t" data-offer-state="blocked" style="font-size:13px;color:#8a3b2a">ยังรับงานนี้ไม่ได้ · ${esc(SC.offerBlock(s))}</div>` : `<button class="fx-b" style="background:#00543C;color:#fff" data-card="ptOffer:accept" data-offer="${esc(m.offerId)}">รับงาน</button>`}<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูรายละเอียด</button>` : '<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="ptOffer:view">ดูข้อมูลล่าสุด</button>'}</div></div>`;
@@ -358,16 +408,21 @@
     // Rich menu "การดูแลของฉัน" (postback menu=my-care): the bot answers with this patient's own state.
     myCareLive: () => {
       const nv = s.visits.find(x => x.step < 4), c = s.course, left = c ? Math.max(0, c.sessions + (c.bonus || 0) - (c.used || 0)) : null;
-      if (!s.request) return `<div class="fx-msg">ยังไม่มีนัดค่ะ เริ่มคัดกรองได้ที่ปุ่ม "หน้าของฉัน" ในเมนูด้านล่าง ใช้เวลาไม่ถึง 3 นาที</div>`;
+      if (!s.request) return `<div class="fx-msg">ยังไม่มีนัด เริ่มประเมินอาการได้ที่ปุ่ม "หน้าของฉัน" ในเมนูด้านล่าง ใช้เวลาราว 5–10 นาที</div>`;
       const row = (k, val) => `<div class="fx-t" style="font-size:12px;color:#0E7A55;margin-top:8px">${k}</div><div class="fx-t" style="font-size:15px;font-weight:600;color:#073D2C">${esc(val)}</div>`;
       return `<div class="fx-card"><div class="fx-body" style="padding:14px 14px 6px;background:#FFFEFB"><div class="fx-t" style="font-size:18px;font-weight:700;color:#073D2C">การดูแลของฉัน</div>
         ${row('นัดครั้งหน้า', nv ? `${nv.date} · ${nv.time}` : 'ยังไม่มีนัด')}${row('นักกายภาพ', s.request.ptId || s.visits.length ? (s.pt.displayName || 'นักกายภาพของคุณ') : 'ทีมกำลังหานักกายภาพให้')}${left !== null ? row('คอร์ส', `เหลือ ${left} ครั้ง`) : ''}</div>
         <div class="fx-foot" style="padding:10px 14px 14px;display:grid;gap:6px"><button class="fx-b" style="background:#00885F;color:#fff" data-card="myCareLive">ดูนัดของฉัน</button>${s.visits.length ? `<button class="fx-b" style="background:#E7F5EF;color:#0b5c42" data-card="myCare:cert">${s.cert.issued ? 'เปิดใบรับรองกายภาพ' : 'ขอใบรับรองกายภาพ'}</button>` : ''}</div></div>`;
     },
     ptIntro: () => ptIntroCard(),
+    /* The real card printed "เหลือ 9 ครั้ง" whatever the course was (7 Nov rehearsal P4). This one reads the course when it was sent. */
+    confirmedCourse: (m) => { const cs = m.cs || countSnap(), v2 = cs.v2 || { date: VISIT2.date, time: VISIT2.time };
+      return simpleCard('นัดหมายยืนยันแล้ว', [`ครั้งที่ 2 · ${v2.date} · ${v2.time} น.`, `นักกายภาพ: ${s.pt.displayName || 'นักกายภาพของคุณ'}`, cs.total ? `ใช้สิทธิ์คอร์ส · ตอนนี้เหลือ ${cs.left} จาก ${cs.total} ครั้ง` : 'ใช้สิทธิ์คอร์ส'], 'ดูนัดของฉัน', 'line-appointment-confirmed', 'confirmedCourse'); },
+    /* Notices added for the 7 Nov documents: a title, short lines, and one button that opens the right screen. tag = a review label such as รอตัดสิน. */
+    note: (m) => `<div class="fx-card fx-note"><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">${esc(m.title)}</div>${m.tag ? `<div class="fx-t fx-tag">${esc(m.tag)}</div>` : ''}${(m.lines || []).filter(Boolean).map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('')}</div>${m.go ? `<div class="fx-foot"><button class="fx-b" style="background:#00583e;color:#fff" data-card="go:${esc(m.go)}">${esc(m.button || 'เปิดดู')}</button></div>` : ''}</div>`,
     // Day-before confirmation (real: appointment.tomorrow.v1 goes to everyone on the appointment, 24 h before)
-    tomorrowPatient: () => simpleCard('พรุ่งนี้มีนัดหมาย', [`${VISIT1.date} · ${VISIT1.time}`, `นักกายภาพ: ${s.pt.displayName || 'นักกายภาพของคุณ'}`, 'กรุณายืนยันภายใน 18:00 วันนี้'], 'ยืนยันนัด', 'appointment-reminder'),
-    ptTomorrow: () => simpleCard('พรุ่งนี้มีนัด', [`${VISIT1.date} · ${VISIT1.time}`, `ผู้รับบริการ: ${s.patient.name || 'ผู้รับบริการ'}`, 'ยืนยันว่าไปได้ตามนัด ภายใน 18:00 วันนี้'], 'ยืนยันนัด', 'appointment-reminder')
+    tomorrowPatient: () => simpleCard('พรุ่งนี้มีนัดหมาย', [`${VISIT1.date} · ${VISIT1.time}`, `นักกายภาพ: ${s.pt.displayName || 'นักกายภาพของคุณ'}`, 'กรุณายืนยันภายใน 18:00 วันนี้'], 'ยืนยันนัด', 'line-appointment-reminder'),
+    ptTomorrow: () => simpleCard('พรุ่งนี้มีนัด', [`${VISIT1.date} · ${VISIT1.time}`, `ผู้รับบริการ: ${s.patient.name || 'ผู้รับบริการ'}`, 'ยืนยันว่าไปได้ตามนัด ภายใน 18:00 วันนี้'], 'ยืนยันนัด', 'line-appointment-reminder')
   };
   // "Meet your PT" card (Palm's Level 1): who, licence checked, why this PT fits you, then the full profile.
   function ptIntroCard() {
@@ -387,6 +442,7 @@
     return `<div class="fx-card"><img class="fx-hero" src="a/${artKey}.jpg" alt=""><div class="fx-body" style="padding:14px 14px 4px"><div class="fx-t" style="font-size:16px;font-weight:600;color:#004C38">${esc(title)}</div>${lines.map(l => `<div class="fx-t" style="font-size:13px;color:#42564F;margin-top:4px">${esc(l)}</div>`).join('')}</div><div class="fx-foot"><button class="fx-b" style="background:#00885F;color:#fff" data-card="${esc(cardKey)}" data-label="${esc(button)}">${esc(button)}</button></div></div>`;
   }
   function card(m) {
+    curMsg = m;
     if (m.me) return `<div class="fx-msg fx-me">${esc(m.text)}</div>`;
     if (CUSTOM[m.key]) return CUSTOM[m.key](m);
     const r = RAW[m.key]; if (!r) return `<div class="fx-msg">${esc(m.text || m.key)}</div>`;
@@ -521,6 +577,8 @@
     document.getElementById('devsw').innerHTML = [['phone', 'smartphone', 'มือถือ'], ['tablet', 'tablet', 'iPad'], ['desktop', 'monitor', 'คอม']].map(([k, ic, label]) => `<button class="${curDev === k ? 'on' : ''}" data-device="${k}" aria-pressed="${curDev === k}">${icon(ic)}${label}</button>`).join('');
     // Role switch
     document.getElementById('roles').innerHTML = Object.entries(ROLE).map(([r, d]) => `<button class="${v.role === r ? 'on' : ''}" data-role="${r}">${icon(d.icon)}${d.label}${s.unread[r] ? `<span class="dotn">${s.unread[r]}</span>` : ''}</button>`).join('');
+    /* Open a role in its own tab; every tab follows the same case live (storage event). */
+    const tabsEl = document.getElementById('roletabs'); if (tabsEl) tabsEl.innerHTML = `<span>เปิดแยกแท็บ</span>${Object.entries(ROLE).map(([r, d]) => `<a href="?role=${r}" target="_blank" rel="noopener" data-newtab="${r}">${icon('external-link')}${d.label}</a>`).join('')}`;
     // Guide
     const guide = document.getElementById('guide');
     if (v.celebrate) {
@@ -533,9 +591,13 @@
     } else guide.innerHTML = `<div class="g-pass"><button class="g-lv g-icon" data-open-levels aria-label="เลือกด่าน">${icon('trophy')}</button><div class="grow"><b>ซ้อมครบทั้ง ${STAGES.length} ด่าน</b><small>เปิดหน้าแรกคนไข้เพื่อดูรีวิวที่ขึ้นเว็บ หรือกดดูทุกหน้าได้อิสระ</small></div><button class="btn sm" data-gofeed>ดูหน้าแรก</button>${lineBtn}</div>`;
     if (v.caseRun) guide.insertAdjacentHTML('afterbegin', `<div class="g-case">${icon('git-branch')}<span>กำลังซ้อมกรณี: <b>${esc(v.caseRun)}</b></span><button class="ib" data-case-end aria-label="จบการซ้อมกรณีนี้">${icon('x')}</button></div>`);
     // LINE panel
-    const chat = s.line[v.role] || [];
-    document.getElementById('lineHead').innerHTML = `<img src="a/synaclair-icon.svg" alt="" width="28" height="28"><div class="grow"><b>SynaClair</b><small>LINE ของ${ROLE[v.role].label} · ห้องซ้อม ไม่ส่งจริง</small></div><button class="line-x" data-open-line aria-label="ปิดแชต LINE">${icon('x')}</button>`;
-    document.getElementById('lineBody').innerHTML = chat.length ? chat.map(m => `<div class="msg${m.me ? ' me' : ''}">${card(m)}</div>`).join('') : `<p class="line-empty">ยังไม่มีข้อความถึง${ROLE[v.role].label}<br>ทำตามด่านแล้วการ์ดจะเด้งมาที่นี่</p>`;
+    const all = s.line[v.role] || [], adm = v.role === 'admin', box = adm ? (v.inbox || 'all') : 'all', team = SC.TEAM || {};
+    const forBox = m => box === 'all' || m.me || (m.to || []).includes(box);
+    const chat = adm ? all.filter(forBox) : all;
+    const who = m => adm && !m.me && (m.to || []).length ? `<div class="msg-to">ถึง ${(m.to || []).map(id => esc((team[id] || {}).name || id)).join(' · ')}</div>` : '';
+    const inbox = adm ? `<div class="inbox-tabs" role="tablist" aria-label="LINE ของใคร">${[['all', 'ทุกคน']].concat(Object.values(team).map(x => [x.id, x.name])).map(([k, t]) => `<button role="tab" aria-selected="${box === k}" class="${box === k ? 'on' : ''}" data-inbox="${k}">${esc(t)}<span>${k === 'all' ? all.filter(m => !m.me).length : all.filter(m => (m.to || []).includes(k)).length}</span></button>`).join('')}</div>` : '';
+    document.getElementById('lineHead').innerHTML = `<div class="lh-row"><img src="a/synaclair-icon.svg" alt="" width="28" height="28"><div class="grow"><b>SynaClair</b><small>${adm ? (box === 'all' ? 'LINE แอดมิน · ทุกคน (ดูว่าใครได้อะไร)' : `LINE ของ${esc((team[box] || {}).name || '')} · ${esc((team[box] || {}).role || '')}`) : `LINE ของ${ROLE[v.role].label}`} · ห้องซ้อม ไม่ส่งจริง</small></div><button class="line-x" data-open-line aria-label="ปิดแชต LINE">${icon('x')}</button></div>${inbox}`;
+    document.getElementById('lineBody').innerHTML = chat.length ? chat.map(m => `${who(m)}<div class="msg${m.me ? ' me' : ''}">${card(m)}</div>`).join('') : `<p class="line-empty">ยังไม่มีข้อความถึง${adm && box !== 'all' ? esc((team[box] || {}).name || '') : ROLE[v.role].label}<br>ทำตามด่านแล้วการ์ดจะเด้งมาที่นี่</p>`;
     const lb = document.getElementById('lineBody'); lb.scrollTop = lb.scrollHeight;
     document.getElementById('lineMenu').innerHTML = richMenuHtml();
     document.getElementById('lineBadge').textContent = s.unread[v.role] ? s.unread[v.role] : '';
@@ -546,7 +608,7 @@
 
   /* ---------- Events ---------- */
   function onClick(e) {
-    const t = e.target.closest('button, a, [data-go], [data-act], [data-close], [data-jump], [data-role], [data-card], [data-toggle], [data-pick], [data-device], [data-wi]');
+    const t = e.target.closest('button, a, [data-go], [data-act], [data-close], [data-jump], [data-role], [data-card], [data-toggle], [data-pick], [data-device], [data-wi], [data-inbox]');
     if (!t) return;
     if (t.matches('[data-close]') && (t.tagName === 'BUTTON' || e.target === t)) { close(); return; }
     if (t.dataset.jump) { const n = +t.dataset.jump; if (STAGES.find(x => x.n === n).done() || n === (stageNow() || {}).n) { const st = STAGES.find(x => x.n === n); go(st.start); closeLevels(); return; } confirmJump(n); return; }
@@ -564,9 +626,10 @@
     if (t.hasAttribute('data-wi-close')) { v.wi = null; v.wiCase = null; renderShell(); return; }
     if (t.hasAttribute('data-case-end')) { v.caseRun = null; renderShell(); return; }
     if (t.dataset.wiPlay) { const f = PLAY[t.dataset.wiPlay]; if (f) { v.wi = null; v.wiCase = null; closeLevels(); f(); } return; }
+    if (t.dataset.inbox) { v.inbox = t.dataset.inbox; renderShell(); return; }
     if (t.dataset.rm !== undefined) { richTap(+t.dataset.rm); return; }
     if (t.hasAttribute('data-rm-toggle')) { v.rmOpen = v.rmOpen === false; renderShell(); return; }
-    if (t.dataset.card !== undefined && t.closest('#lineBody')) { const target = CARD_TARGET[t.dataset.card]; document.body.classList.remove('line-open'); if (CARD_ACT[t.dataset.card]) runAct(CARD_ACT[t.dataset.card], t); else if (target) go(target); else toast('ปุ่มนี้ตอบกลับในแชต'); return; }
+    if (t.dataset.card !== undefined && t.closest('#lineBody')) { const target = t.dataset.card.startsWith('go:') ? t.dataset.card.slice(3) : CARD_TARGET[t.dataset.card]; document.body.classList.remove('line-open'); if (CARD_ACT[t.dataset.card]) runAct(CARD_ACT[t.dataset.card], t); else if (target) go(target); else toast('ปุ่มนี้ตอบกลับในแชต'); return; }
     if (!t.closest('#dev')) return;
     if (t.hasAttribute('data-back')) { e.preventDefault(); back(); return; }
     if (t.dataset.toggle) { const arr = (get(t.dataset.toggle) || []).slice(); const val = t.dataset.value; const i = arr.indexOf(val); if (i >= 0) arr.splice(i, 1); else arr.push(val); set(t.dataset.toggle, arr); render(true); return; }
@@ -658,6 +721,6 @@
   }
 
   window.SC = { cardHtml: card, screen, action, go, back, sheet, dialog, close, toast, xp, line, render, get, set, ui, esc, money, me, param,
-    jump: jumpTo, reset, confirmJump, onShell: fn => shellHooks.push(fn), stageNow, get s() { return s; }, get v() { return v; }, ZONES, SAMPLE_PTS, CERT_TX, certTxText, TRIAL, CLIN, VISIT1, RATE, bpCat, VISIT2, TODAY, STAGES };
+    jump: jumpTo, reset, confirmJump, money2, POLICY, PAY_TERMS, actions, screens, runAct, PLAY, onShell: fn => shellHooks.push(fn), stageNow, get s() { return s; }, get v() { return v; }, ZONES, SAMPLE_PTS, CERT_TX, certTxText, TRIAL, CLIN, VISIT1, RATE, bpCat, VISIT2, TODAY, STAGES };
   document.addEventListener('DOMContentLoaded', boot);
 })();
