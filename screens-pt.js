@@ -58,6 +58,15 @@
 .tt-cover .tt-ctop{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center}
 .pd-xpbtn{min-height:0;padding:0;border:0;background:none;margin-top:6px;cursor:pointer}.pd-next{margin:0;font-size:13.5px;color:#e4f0ea;position:relative;z-index:1}.pd-next b{color:#fff}
 .tt-cover .tt-cadd{position:absolute;right:14px;bottom:14px}
+.tt-goals .pp-choice{display:flex;gap:10px;align-items:center;width:100%;min-height:52px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:#fff;text-align:left;font:500 15px var(--body,inherit);color:var(--ink)}.tt-goals .pp-choice svg{flex:none;color:var(--mute)}.tt-goals .pp-choice.on{border-color:var(--em);background:#f3faf6}.tt-goals .pp-choice.on svg{color:var(--em)}
+.tt-hp{display:grid;gap:8px;margin-top:-4px}.tt-hpimg{position:relative;display:block}.tt-hpimg img{width:100%;max-height:180px;object-fit:cover;border-radius:14px}.tt-hpimg .ib{position:absolute;top:8px;right:8px}.tt-hplink{position:relative;display:block}.tt-hplink>svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--em);pointer-events:none}.tt-hplink .in{padding-left:42px}
+.tt-tfields{display:grid;gap:6px;flex:1;min-width:0}
+.tt-house{margin:0;display:grid;gap:6px}.tt-house img{width:100%;max-height:200px;object-fit:cover;border-radius:14px}.tt-house figcaption{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--mute)}.tt-house svg{width:16px;height:16px}
+.tt-own .pf-cover .tt-set{position:absolute;top:10px;right:12px}.tt-own .pf-cover .tt-cadd{position:absolute;right:14px;bottom:14px;background:#ffffffe6}
+.tt-own .pf-top{align-items:flex-end}.tt-own .tt-ownav .tt-avwrap{filter:drop-shadow(0 8px 18px #07302322)}.tt-own .tt-ownav img,.tt-own .tt-ownav .avatar{box-shadow:0 0 0 4px #fff;border-radius:50%}
+.tt-ownnote{display:flex;gap:8px;align-items:flex-start;margin:2px 0 0;padding:10px 12px;border-radius:12px;background:var(--mint,#f3faf6);font-size:13.5px;color:var(--ink2,#46605a)}.tt-ownnote svg{flex:none;width:18px;height:18px;color:var(--em);margin-top:1px}
+.tt-capsbtn{display:flex;align-items:center;gap:12px;width:100%;min-height:0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:left;cursor:pointer}.tt-capsbtn>svg:first-child{color:var(--em);width:22px;height:22px;flex:none}.tt-capsbtn b{display:block;font:600 15px var(--display);color:var(--ink)}.tt-capsbtn small{display:block;font-size:13px;color:var(--mute)}
+.tt-own .pl-tab .tt-compose{margin-bottom:10px}.tt-own .pl-tab .tt-feed{padding:0;display:grid;gap:10px}.tt-own .pl-tab .tt-biohole{width:100%;margin-bottom:12px}
 .tt-prof{margin-top:-46px;padding:0 16px;display:grid;gap:10px;position:relative}
 .tt-who{display:grid;justify-items:start;gap:12px;min-width:0}.tt-who>.avatar,.tt-who>.tt-avwrap{margin-left:6px}
 .tt-who .avatar{box-shadow:0 0 0 4px #fff,0 0 0 6px var(--gold2)}
@@ -887,7 +896,7 @@
         body = `<div class="stack"><span class="kick">โปรไฟล์ที่คนไข้เห็น</span><h1 class="h1">คนไข้จะเห็นคุณแบบนี้</h1><p class="small">ตัวอย่างสด เปลี่ยนตามที่พิมพ์</p></div>
           <div class="card"><div class="row">${ui.avatar(p.displayName || 'ช', null, 60)}<div class="grow"><b class="h3">${esc(p.displayName || 'ชื่อที่แสดงของคุณ')}</b><div class="small">นักกายภาพบำบัด</div></div></div>
             <span class="pill wait">${I('hourglass')}รอตรวจใบประกอบ</span></div>
-          <label class="field"><span>ชื่อที่แสดง <span class="tt-xp">+10 XP</span></span><input class="in" data-bind="pt.displayName" data-live maxlength="40" value="${esc(p.displayName)}" placeholder="เช่น กภ.หญิง ดูแลผู้สูงอายุ"><small class="hint">ตั้งเองได้ เช่น ชื่อเล่น + สิ่งที่ถนัด</small></label>
+          <label class="field"><span>ชื่อที่แสดง</span><input class="in" data-bind="pt.displayName" data-live maxlength="40" value="${esc(p.displayName)}" placeholder="เช่น กภ.หญิง ดูแลผู้สูงอายุ"><small class="hint">ตั้งเองได้ เช่น ชื่อเล่น + สิ่งที่ถนัด</small></label>
           ${ideas.length ? `<div class="chips">${ideas.map(x => `<button class="chip ${p.displayName === x ? 'on' : ''}" data-pick="pt.displayName" data-value="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : ''}`;
         foot = `<button class="btn" data-act="signNext" data-need="pt.displayName">ต่อไป ${I('arrow-right')}</button>`;
       } else if (st === 3) {
@@ -896,20 +905,20 @@
       } else {
         const z = SC.ZONES.find(x => x.code === p.zoneTab) || SC.ZONES[0];
         const all = z.districts.every(d => p.zones.includes(d));
-        body = `<div class="stack"><span class="kick">เขตที่รับงาน <span class="tt-xp">+50 XP</span></span><h1 class="h1">รับงานเขตไหนบ้าง</h1><p class="small">เลือกได้หลายโซนและหลายเขต ตามที่สะดวกไปรับงาน งานเสนอจะส่งมาเฉพาะเขตที่เลือก แก้ได้ทุกเมื่อ</p></div>
+        body = `<div class="stack"><span class="kick">เขตที่รับงาน</span><h1 class="h1">รับงานเขตไหนบ้าง</h1><p class="small">เลือกได้หลายโซนและหลายเขต ตามที่สะดวกไปรับงาน งานเสนอจะส่งมาเฉพาะเขตที่เลือก แก้ได้ทุกเมื่อ</p></div>
           ${zonePicker(p, z, all)}`;
-        foot = `<button class="btn" data-act="ptSignup" data-need="pt.legalName,pt.license,pt.licenseFile,pt.cv.edu,pt.displayName,pt.zones">${I('sparkles')}สร้างโปรไฟล์ · +${XP.signup} XP</button>
+        foot = `<button class="btn" data-act="ptSignup" data-need="pt.legalName,pt.license,pt.licenseFile,pt.cv.edu,pt.displayName,pt.zones">${I('sparkles')}สร้างโปรไฟล์</button>
           ${lockNote('ชื่อจริงเห็นเฉพาะทีมตรวจ ใช้บนใบรับรอง · เลขใบประกอบแสดงให้คนไข้ตรวจสอบได้')}`;
       }
       return `<div class="scr">${head}<div class="body">${body}</div><div class="foot">${foot}</div></div>`;
     }
   });
   /* Step 4 · งานที่รับ (พี่ปาล์ม v2.3/v2.4, R1.1–R1.4): pick services first, then answer only the tasks in those services, de-duplicated.
-     Each task: ทำได้ / ยังไม่ถนัด / ขอคุยก่อน. Ticking is a declaration, not an approval: the team checks evidence for specialty tasks.
+     Each task: ทำได้ / ทำได้ แต่ยังไม่มั่นใจ / ยังทำไม่ได้ (Boss 11 Nov wording; same meaning as Palm's ทำได้ / ขอคุยก่อน / ยังไม่ถนัด). Ticking is a declaration, not an approval: the team checks evidence for specialty tasks.
      S06 suction is shown locked and can't be declared here. */
   const CLIN = SC.CLIN;
   const capTasks = p => [...new Set(CLIN.services.filter(x => (p.services || []).includes(x.id)).flatMap(x => x.tasks))].sort((a, b) => (a[0] === b[0] ? 0 : a[0] === 'C' ? -1 : 1) || a.localeCompare(b));
-  const CAP_OPT = [['can', 'ทำได้'], ['no', 'ยังไม่ถนัด'], ['ask', 'ขอคุยก่อน']];
+  const CAP_OPT = [['can', 'ทำได้'], ['ask', 'ทำได้ แต่ยังไม่มั่นใจ'], ['no', 'ยังทำไม่ได้']];
   const EQUIP = ['ไม้ค้ำ / walker', 'ยางยืดออกกำลัง', 'เครื่องกระตุ้นไฟฟ้า', 'เครื่องอัลตราซาวด์', 'เข็มขัดช่วยพยุง (gait belt)', 'เครื่องวัดออกซิเจนปลายนิ้ว'];
   const capState = (p, id) => { const d = (p.capDecisions || {})[id]; if (!d) return ''; return d.status === 'PENDING' ? '<small class="tt-capst">รอทีมพิจารณา · แก้คำตอบเองไม่ทำให้อนุมัติ งานอื่นรับได้ตามปกติ</small>' : d.status === 'REJECTED' ? '<small class="tt-capst">ทีมยังไม่อนุมัติงานนี้ · แก้คำตอบเองไม่เปลี่ยนผล</small>' : '<small class="tt-capst">ทีมอนุมัติแล้ว</small>'; };
   act('capPick', (s, ctx) => { SC.capPick(s, ctx.data.id, ctx.data.v); });
@@ -918,13 +927,13 @@
   function capsStep(p) {
     const list = capTasks(p), done = list.filter(id => CLIN.restricted.includes(id) || p.caps[id]).length;
     const row = id => CLIN.restricted.includes(id)
-      ? `<div class="tt-cap lock"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
-      : `<div class="tt-cap"><div class="grow"><b>${esc(CLIN.label(id))}</b><small>${esc(CLIN.tasks[id])}</small>${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' && !(p.capDecisions || {})[id] ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}${capState(p, id)}</div>
+      ? `<div class="tt-cap lock"><div class="grow">${CLIN.row(id)}<small>${I('lock')} ยังไม่เปิดรับ ต้องผ่านการตรวจขอบเขตวิชาชีพและทักษะจริงก่อน ทีมจะติดต่อเอง</small></div></div>`
+      : `<div class="tt-cap"><div class="grow">${CLIN.row(id)}${id[0] === 'S' ? '<small>งานเฉพาะทาง · ทีมขอดูหลักฐาน</small>' : ''}${p.caps[id] === 'ask' && !(p.capDecisions || {})[id] ? '<small>ทีมจะติดต่อคุยก่อน ระหว่างนี้ยังไม่ส่งงานแบบนี้ให้ งานอื่นรับได้ตามปกติ</small>' : ''}${capState(p, id)}</div>
           <div class="tt-seg" role="group" aria-label="${esc(CLIN.label(id))}">${CAP_OPT.map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-act="capPick" data-id="${id}" data-v="${v}">${l}</button>`).join('')}</div></div>`;
     return `<div class="stack"><span class="kick">งานที่รับ</span><h1 class="h1">รับงานกลุ่มไหนบ้าง</h1><p class="small">เลือกกลุ่มก่อน แล้วตอบเฉพาะงานในกลุ่มนั้น ไม่ต้องทำได้ทุกข้อ ตอบตามจริงช่วยให้ได้เคสที่เหมาะ</p></div>
       <div class="tt-svc">${CLIN.services.map(x => { const on = p.services.includes(x.id); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.services" data-value="${x.id}">${I(x.icon)}${esc(x.name)}</button>`; }).join('')}</div>
       ${list.length ? `<div class="card flat"><div class="row between"><b class="h3">งานในกลุ่มที่เลือก ${list.length} ข้อ</b><span class="pill ${done === list.length ? '' : 'wait'}">ตอบแล้ว ${done}/${list.length}</span></div>
-        ${(n => n ? `<button class="btn sm ghost" data-act="capAllCore" data-caps-all>${I('check-check')}ทำได้ทุกข้อพื้นฐานที่ยังไม่ตอบ (${n} ข้อ)</button><small class="hint">งานเฉพาะทาง (S) ตอบทีละข้อ เพราะทีมขอดูหลักฐาน · แก้ทีละข้อได้ภายหลัง</small>` : '')(list.filter(id => id[0] === 'C' && !p.caps[id]).length)}
+        ${(n => n ? `<button class="btn sm ghost" data-act="capAllCore" data-caps-all>${I('check-check')}ทำได้ทุกข้อพื้นฐานที่ยังไม่ตอบ (${n} ข้อ)</button><small class="hint">งานเฉพาะทางตอบทีละข้อ เพราะทีมขอดูหลักฐาน · สมัครเสร็จแล้วถ้าจะแก้ ต้องกด "ขอแก้งานที่รับ" และบอกเหตุผล</small>` : '')(list.filter(id => id[0] === 'C' && !p.caps[id]).length)}
         ${list.map(row).join('')}</div>
       <div class="card flat"><b class="h3">อุปกรณ์ที่นำไปได้ <span class="small">(ถ้ามี)</span></b><span class="small">ไม่จำเป็นต้องมีเอง บางบ้านมีอุปกรณ์อยู่แล้ว</span>
         <div class="chips">${EQUIP.map(e => { const on = p.equip.includes(e); return `<button class="chip ${on ? 'on' : ''}" aria-pressed="${on}" data-toggle="pt.equip" data-value="${esc(e)}">${on ? I('check') : ''}${esc(e)}</button>`; }).join('')}</div></div>
@@ -1017,92 +1026,66 @@
     if (!c) return '';
     const dots = Array.from({ length: c.total }, (_, i) => `<i class="${i < c.n ? 'done' : i === c.n ? 'on' : ''}"></i>`).join('');
     return `<div class="tt-tip${c.dock ? ' dock' : ''}" data-tt-tip="${c.key}" data-keep-anim role="note">
-      <div class="tt-tiphead"><span class="tt-tipdots" aria-label="ขั้น ${c.n + 1} จาก ${c.total}">${dots}</span>${c.xp ? `<span class="tt-xp">+${c.xp} XP</span>` : ''}</div>
+      <div class="tt-tiphead"><span class="tt-tipdots" aria-label="ขั้น ${c.n + 1} จาก ${c.total}">${dots}</span></div>
       <b>${c.title}</b><span class="s">${c.sub}</span>
       <div class="row"><button class="btn sm" data-tt-go ${c.attr}>${c.btn}</button>${c.skip ? `<button class="btn sm ghost" data-act="${c.skip}">ข้ามไปก่อน</button>` : ''}</div></div>`;
   }
-  /* Palm's PT Dashboard (board 23 Oct): a deep-green welcome card with the level ring and the three numbers, progress bars, today's
-     missions and badges. Every number comes from the PT's own data; XP shows only where the app really gives it. No gold on dark green. */
-  function dash(s, cases, rv) {
-    // Boss (28 Oct): XP lives only here. A new +XP flies into the gold pill, then the bar and ring fill from where they were.
-    const p = s.pt, shown = SC.v.xpShown == null ? p.xp : SC.v.xpShown, L = lvl(p.xp), ok = verified(s);
-    const pctOf = x => { const l = lvl(x); return l.next ? (x - l.floor) / (l.next - l.floor) : 1; }, pct = pctOf(p.xp), from = lvl(shown).level === L.level ? pctOf(shown) : 0;
-    const r = 30, C = 2 * Math.PI * r, today = new Date().toDateString();
-    const profParts = [!!p.photo, !!p.bio, !!p.cover, p.zones.length > 0, !!(p.cv && (p.cv.edu || []).length), ok];
-    const bars = [
-      ['user-round-check', 'โปรไฟล์สมบูรณ์', profParts.filter(Boolean).length / profParts.length],
-      ['images', 'ผลงานที่โพสต์', Math.min(1, p.posts.length / 3), `${Math.min(p.posts.length, 3)}/3`],
-      ['calendar-range', 'ตารางเวลาว่าง', p.schedule.sent ? 1 : 0, p.schedule.sent ? 'ส่งแล้ว' : 'ยังไม่ส่ง'],
-      ['star', 'รีวิวจากผู้รับบริการ', rv ? 1 : 0, rv ? '1 รีวิว' : 'ยังไม่มี']
-    ];
-    const offers = s.request && s.request.status === 'OFFERED' && !SC.offerBlock(s) ? 1 : 0;
-    const missions = [
-      { t: 'แชร์โน้ตสั้น ๆ วันนี้', done: p.noteXpDay === today, xp: p.noteXpDay === today ? 0 : XP.note, attr: 'data-act="noteOpen"' },
-      { t: offers ? 'ตอบงานที่เสนอเข้ามา' : 'เช็กงานที่เสนอเข้ามา', done: !offers, attr: 'data-go="t.work"' },
-      { t: 'ลงเวลาว่างให้ครบ', done: !!p.schedule.sent, xp: p.schedXp ? 0 : XP.schedule, attr: 'data-go="t.schedule"' },
-      { t: 'เล่าความรู้ 1 โพสต์', done: p.posts.some(x => x.at === 'เมื่อสักครู่'), xp: p.postXp ? 0 : XP.post, attr: 'data-act="compose"' }
-    ];
-    const badges = [['badge-check', 'ใบประกอบผ่านแล้ว', ok], ['house', 'เคสแรก', cases > 0], ['star', 'รีวิวแรก', !!rv], ['pen-line', 'โพสต์แรก', p.posts.length > 0]];
-    // Boss (28 Oct): the XP total shows once (gold pill on the cover); the to-dos sit right under the level card, then the composer.
-    const top = `<div class="pd-hero">
-        <div class="pd-hi"><span class="pd-ring" aria-label="ระดับ ${L.level}"><svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="${r}" class="bg"/><circle cx="36" cy="36" r="${r}" class="fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - from)).toFixed(1)}" data-to="${(C * (1 - pct)).toFixed(1)}"/></svg><b>${L.level}</b></span>
-          <div class="grow"><small>ระดับ ${L.level}</small><b>${esc(p.displayName)}</b><button class="pd-xpbtn" data-act="xpHistory" aria-label="ดูประวัติ XP">${ui.xpPill(L.next)}</button></div></div>
-        <div class="pd-bar" aria-hidden="true"><i style="width:${Math.round(from * 100)}%" data-to="${Math.round(pct * 100)}%"></i></div>
-        <p class="pd-next">${L.next ? `อีก <b>${L.next - p.xp} XP</b> ขึ้นระดับ ${L.level + 1}` : 'ระดับสูงสุดแล้ว'}</p>
-        <div class="pd-nums"><div><b>${cases}</b><span>เคสที่ดูแล</span></div><div><b>${rv ? 1 : 0}</b><span>รีวิว</span></div><div><b>${rv ? rv.stars.toFixed(1) : '–'}</b><span>คะแนนเฉลี่ย</span></div></div>
-      </div>
-      <div class="pd-card"><h2>${I('list-checks')}ภารกิจวันนี้</h2>
-        ${missions.map(m => `<button class="pd-mis${m.done ? ' done' : ''}" ${m.attr}><span class="ck">${I(m.done ? 'check' : 'circle')}</span><span class="grow">${m.t}</span>${m.xp ? `<span class="tt-xp">+${m.xp} XP</span>` : I('chevron-right')}</button>`).join('')}</div>`;
-    const rest = `<div class="pd-card"><h2>${I('trending-up')}ความคืบหน้าของคุณ</h2>
-        ${bars.map(([ic, t, v, note]) => `<div class="pd-prog"><span class="ic">${I(ic)}</span><span class="grow"><span class="row between"><b>${t}</b><small>${note || Math.round(v * 100) + '%'}</small></span><span class="pd-track"><i style="width:${Math.round(v * 100)}%"></i></span></span></div>`).join('')}</div>
-      <div class="pd-card"><h2>${I('trophy')}เหรียญของคุณ</h2>
-        <div class="pd-badges">${badges.map(([ic, t, on]) => `<div class="pd-badge${on ? ' on' : ''}"><span>${I(on ? ic : 'lock')}</span><small>${t}</small></div>`).join('')}</div></div>`;
-    return { top, rest };
-  }
+  /* Boss (11 Nov): the PT's own page is the same profile the patient sees (Palm's Level 2), like your own Facebook page: same layout,
+     plus edit buttons only you see. No XP, level, missions or badges (XP paused 30 Oct). */
   scr('t.hub', {
     render(s) {
       const p = s.pt;
       if (p.status === 'NONE') return `<div class="scr">${ui.bar('หน้าของฉัน', { back: false })}<div class="body">${ui.empty('user-round', 'ยังไม่มีโปรไฟล์', 'สมัครด้วย LINE แล้วกรอก 4 ช่อง ใช้เวลาไม่ถึง 2 นาที', `<button class="btn auto" data-go="t.join">ไปหน้าสมัคร</button>`)}</div>${ui.tabs('pt', 't.hub')}</div>`;
-      const ok = verified(s), c = coachStep(s), at = k => (c && c.key === k ? coachTip(c) : '');
-      const rv = s.review && s.review.approved && !s.review.hidden ? s.review : null;
-      const cases = s.visits.some(v => v.step >= 4) ? 1 : 0, d = dash(s, cases, rv);
-      const status = ok
-        ? `<p class="tt-stat ok">${I('badge-check')}ใบประกอบวิชาชีพ ตรวจสอบได้</p>`
-        : `<p class="tt-stat wait">${I('hourglass')}รอผลตรวจใบประกอบ · แจ้งผลใน LINE</p>`;
-      const feed = p.posts.length ? p.posts.map(x => `<button class="tt-fpost" data-act="openPost" data-id="${esc(x.id)}" aria-label="เปิดโพสต์">
+      const P = SC.ptProf, me = P.meItem(s), ok = verified(s), c = coachStep(s);
+      const tab = P.PT_TABS.some(([k]) => k === p.hubTab) ? p.hubTab : 'about';
+      const posts = p.posts.length ? p.posts.map(x => `<button class="tt-fpost" data-act="openPost" data-id="${esc(x.id)}" aria-label="เปิดโพสต์">
           <span class="row">${ui.avatar(p.displayName, p.photo, 36)}<span class="grow"><b>${esc(p.displayName)}</b><small>${esc(x.at || 'เมื่อสักครู่')}</small></span></span>
           <span class="tx">${esc(x.text.length > 160 ? x.text.slice(0, 160) + '…' : x.text)}</span>
           ${x.image ? `<span class="im"><img src="${esc(x.image)}" alt="">${x.video ? `<span class="tt-play">${I('play')}</span>` : ''}</span>` : ''}</button>`).join('')
-        : `<p class="small tt-c">ยังไม่มีโพสต์ · โพสต์แรกจะขึ้นตรงนี้</p>`;
-      return `<div class="scr white">
-        <div class="tt-cover" style="${p.cover ? `background-image:url('${esc(p.cover)}')` : ''}">
-          <div class="tt-ctop"><span></span><button class="ib soft" data-go="t.me" aria-label="ตั้งค่าบัญชี">${I('settings')}</button></div>
-          <button class="btn sm ghost tt-cadd" data-act="coverSheet">${I('image')}${p.cover ? 'เปลี่ยนรูปปก' : 'ใส่รูปปก'}</button>
+        : `<p class="pl-empty">${I('images')}ยังไม่มีโพสต์ · โพสต์แรกจะขึ้นตรงนี้</p>`;
+      const panel = tab === 'work'
+        ? `<button class="tt-compose${c && c.key === 'post' ? ' tt-spot' : ''}" data-act="compose">${ui.avatar(p.displayName, p.photo, 38)}<span class="grow">เขียนโพสต์ใหม่…</span>${I('image')}</button><div class="tt-feed">${posts}</div>`
+        : tab === 'about' && !p.bio
+          ? `<button class="tt-biohole${c && c.key === 'bio' ? ' tt-spot' : ''}" data-act="editBio">${I('pencil')}เขียนแนะนำตัวสั้น ๆ ให้คนไข้รู้จักคุณ</button>${P.ptTab(s, me, tab)}`
+          : P.ptTab(s, me, tab);
+      return `<div class="scr pp white pl tt-own">
+        <div class="pf-cover" ${p.cover ? `style="background-image:url('${esc(p.cover)}');background-position:center 22%"` : ''}>
+          <button class="ib soft tt-set" data-go="t.me" aria-label="ตั้งค่าบัญชี">${I('settings')}</button>
+          <button class="btn sm ghost tt-cadd" data-act="coverSheet">${I('camera')}${p.cover ? 'เปลี่ยนรูปปก' : 'ใส่รูปปก'}</button></div>
+        <div class="body pf-body">
+          <section class="pf-id">
+            <div class="pf-top"><span class="tt-ownav${c && c.key === 'photo' ? ' tt-spot' : ''}">${avStack(p, 96, { editNote: true })}</span><button class="btn sm pl-fol" data-act="editProfile">${I('pencil')}แก้ไขโปรไฟล์</button></div>
+            <h1>${esc(me.name)}</h1>
+            <p class="pf-sub">นักกายภาพบำบัด${me.tags.length ? ' / ' + me.tags.map(esc).join(' / ') : ''}</p>
+            ${me.zones.length ? `<p class="pf-loc">${I('map-pin')}<span>${me.zones.map(esc).join(' · ')}</span></p>` : ''}
+            ${ok ? P.plVer(me, true) : `<p class="tt-stat wait">${I('hourglass')}รอผลตรวจใบประกอบ · แจ้งผลใน LINE</p>`}
+            ${SC.ptBoard(s)}
+          </section>
+          <p class="tt-ownnote">${I(ok ? 'eye' : 'eye-off')}<span>${ok ? 'คนไข้เห็นหน้านี้แบบเดียวกับที่คุณเห็น ปุ่มแก้ไขเห็นแค่คุณ' : 'คนไข้จะเห็นหน้านี้หลังทีมตรวจใบประกอบ'}</span></p>
+          ${c && !c.dock ? coachTip(c) : ''}
+          <button class="tt-capsbtn" data-go="t.caps">${I('list-checks')}<span class="grow"><b>งานที่รับ และผลจากทีม</b><small>ดูว่าระบบส่งงานแบบไหนให้คุณได้</small></span>${I('chevron-right')}</button>
+          <nav class="pf-tabs" role="tablist" aria-label="โปรไฟล์ของฉัน">${P.PT_TABS.map(([k, x]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-pick="pt.hubTab" data-value="${k}">${k === 'work' ? 'โพสต์' : x}</button>`).join('')}</nav>
+          <div class="pl-tab" role="tabpanel">${panel}</div>
         </div>
-        <div class="tt-prof enter">
-          <div class="tt-who"><span class="${c && c.key === 'photo' ? 'tt-spot' : ''}">${avStack(p, 92, { editNote: true })}</span><div><h1>${esc(p.displayName)}${ok ? I('badge-check') : ''}</h1><div class="small">นักกายภาพบำบัด</div></div></div>
-          ${at('photo')}
-          ${status}
-          ${p.bio ? `<button class="tt-bio" data-act="editBio" aria-label="แก้แนะนำตัว">${esc(p.bio)}</button>` : `<button class="tt-biohole${c && c.key === 'bio' ? ' tt-spot' : ''}" data-act="editBio">${I('pencil')}เขียนแนะนำตัวสั้น ๆ ให้คนไข้รู้จักคุณ</button>`}
-          ${at('bio')}
-          ${cvBlock(p)}
-          <p class="small row" style="color:var(--em)">${I('map-pin')}<span>${esc(p.zones.join(' · '))}</span></p>
-          ${SC.ptBoard(s)}
-          <button class="btn sm ghost" style="width:100%" data-go="t.caps">${I('list-checks')}งานที่รับ และผลจากทีม</button>
-          <div class="grid2"><button class="btn sm ghost" style="width:100%" data-act="editBio">${I('pencil')}แก้แนะนำตัว</button><button class="btn sm ghost" style="width:100%" data-act="previewMe">${I('eye')}ดูหน้าที่คนไข้เห็น</button></div>
-        </div>
-        <section class="pd">
-          ${at('agree')}
-          <button class="tt-compose${c && c.key === 'post' ? ' tt-spot' : ''}" data-act="compose">${ui.avatar(p.displayName, p.photo, 38)}<span class="grow">เขียนโพสต์ใหม่…</span>${I('image')}</button>
-          ${at('post')}
-          ${d.top}${d.rest}</section>
-        <div class="body tt-feed">
-          ${feed}
-        </div>
-        ${at('schedule')}
+        ${c && c.dock ? coachTip(c) : ''}
         ${ui.tabs('pt', 't.hub')}</div>`;
     },
   });
+  /* One place to edit everything the patient sees, like "แก้ไขโปรไฟล์" on Facebook. */
+  act('editProfile', s => openSheet(st => {
+    const p = st.pt, row = (ic, t, sub, attr) => `<button class="li" ${attr}><span class="tile">${I(ic)}</span><span class="grow"><span class="t">${t}</span><br><span class="s">${sub}</span></span>${I('chevron-right', 'chev')}</button>`;
+    return `<div class="row between"><b class="h2">แก้ไขโปรไฟล์</b><button class="ib soft" data-close aria-label="ปิด">${I('x')}</button></div>
+      <p class="small">ทุกอย่างในนี้คนไข้เห็นบนหน้าโปรไฟล์ของคุณ</p>
+      <div class="list">
+        ${row('camera', 'รูปโปรไฟล์', p.photo ? 'มีรูปแล้ว · เปลี่ยนได้' : 'ยังไม่มีรูป', 'data-go="t.photo"')}
+        ${row('image', 'รูปปก', p.cover ? 'มีรูปปกแล้ว' : 'ยังไม่มีรูปปก', 'data-act="coverSheet"')}
+        ${row('user-round', 'แนะนำตัว', p.bio ? esc(p.bio.slice(0, 40)) + (p.bio.length > 40 ? '…' : '') : 'ยังไม่ได้เขียน', 'data-act="editBio"')}
+        ${row('graduation-cap', 'การศึกษาและการอบรม', `${(p.cv.edu || []).length} การศึกษา · ${(p.cv.train || []).length} การอบรม`, 'data-act="editCv"')}
+        ${row('map-pin', 'เขตที่รับงาน', esc(p.zones.length ? p.zones.join(' · ') : 'ยังไม่เลือก'), 'data-act="editZones"')}
+      </div>
+      <p class="small">ชื่อจริงและเลขใบประกอบ แก้ได้ที่ ตั้งค่า › ขอแก้ชื่อจริงหรือเลขใบประกอบ</p>
+      <button class="btn ghost" data-close>เสร็จ</button>`;
+  }));
 
   // Palm (23 Oct): PTs add education and training/certificates themselves; no workplace field (team agreement).
   // Boss (28 Oct): education and training sit in the bio like IG / Facebook ("studied at ..."), tap to edit.
@@ -1156,20 +1139,9 @@
   act('cvAddTrain', (s, ctx) => { const d = cvdOf(s); if (!d.course.trim()) return; s.pt.cv.train.push([(d.cyear || '').trim(), d.course.trim(), !!d.cert]); Object.assign(d, { course: '', cyear: '', cert: false }); ctx.toast('เพิ่มการอบรมแล้ว'); });
   act('cvDel', (s, ctx) => { const k = ctx.data.k; if (s.pt.cv[k]) s.pt.cv[k].splice(+ctx.data.i, 1); });
 
-  act('xpHistory', s => openSheet(st => {
-    const p = st.pt, L = lvl(p.xp);
-    return `<div class="row">${ring(p.xp, 64)}<div class="grow"><b class="h2">${p.xp} XP · ระดับ ${L.level}</b><div class="small">${L.next ? `อีก ${L.next - p.xp} XP ถึงระดับ ${L.level + 1}` : 'ระดับสูงสุดแล้ว'}</div></div></div>
-      <p class="small">XP บอกความคืบหน้าของคุณเอง ไม่ใช่เกรด และไม่มีผลกับการเสนองาน</p>
-      <div class="list">${p.xpLog.length ? p.xpLog.map(x => `<div class="li"><span class="tile gold">${I('sparkles')}</span><span class="grow t">${esc(x.reason)}</span><b class="tt-xp">+${x.points} XP</b></div>`).join('') : '<div class="li"><span class="s">ยังไม่มี XP</span></div>'}</div>
-      <b class="h3">ได้ XP จากอะไรบ้าง</b>
-      <div class="kv"><dt>สร้างโปรไฟล์</dt><dd>+${XP.signup}</dd><dt>รูปโปรไฟล์ครั้งแรก</dt><dd>+${XP.photo}</dd><dt>แนะนำตัวครั้งแรก</dt><dd>+${XP.bio}</dd><dt>โพสต์แรก</dt><dd>+${XP.post}</dd><dt>ส่งตารางเวลาว่างครั้งแรก</dt><dd>+${XP.schedule}</dd><dt>ใบประกอบได้รับการยืนยัน</dt><dd>+${XP.verified}</dd><dt>แชร์โน้ตสั้น (วันละครั้ง)</dt><dd>+${XP.note}</dd></div>
-      <p class="small">แต่ละอย่างได้ครั้งเดียว ยกเว้นโน้ตสั้นที่ได้วันละครั้ง · รับงาน ทำเคส และรีวิว ไม่ให้ XP</p>
-      <button class="btn ghost" data-close>ปิด</button>`;
-  }));
-
   act('editBio', s => { s.pt.bioDraft = s.pt.bio || ''; s.pt.bioIdea = null; openSheet(st => {
     const idea = BIO_IDEAS.find(x => x[0] === st.pt.bioIdea);
-    return `<div class="row between"><b class="h2">แนะนำตัว</b>${st.pt.bio ? '' : `<span class="tt-xp">+${XP.bio} XP</span>`}</div>
+    return `<div class="row between"><b class="h2">แนะนำตัว</b></div>
       <label class="field"><span class="small">เล่าสั้น ๆ ว่าคุณเป็นใคร ดูแลใคร และดูแลแบบไหน</span>
         <textarea class="in" data-bind="pt.bioDraft" data-count="ttBioN" maxlength="150" rows="3" placeholder="${esc(idea ? idea[1] : 'เช่น ดูแลผู้สูงอายุที่บ้านมา 6 ปี เน้นฝึกให้ลุกเดินเองได้')}">${esc(st.pt.bioDraft)}</textarea>
         <small class="hint"><span id="ttBioN">${(st.pt.bioDraft || '').length}</span>/150</small></label>
@@ -1190,7 +1162,7 @@
     const d = st.pt.postDraft, idea = POST_IDEAS.find(x => x[0] === st.pt.postIdea), vOk = videoOk(d.video);
     const first = !st.pt.posts.length && !st.pt.postXp;
     return `<div class="row between"><button class="btn sm ghost" data-close>ยกเลิก</button><b class="h3">โพสต์ใหม่</b><button class="btn sm" data-act="savePost" data-need="pt.postDraft.text">โพสต์</button></div>
-      ${first ? '<p class="small tt-c" style="margin:0">โพสต์แรก <span class="tt-xp">+' + XP.post + ' XP</span> · ไม่บังคับ</p>' : ''}
+      ${first ? '<p class="small tt-c" style="margin:0">โพสต์แรก · ไม่บังคับ</p>' : ''}
       <label class="field"><span class="small">อยากเล่าอะไรให้คนไข้ฟัง</span>
         <textarea class="in" data-bind="pt.postDraft.text" data-count="ttPostN" maxlength="2000" rows="4" placeholder="${esc(idea ? idea[1] : 'เช่น ท่าลุกจากเก้าอี้ให้ปลอดภัย 3 ขั้น')}">${esc(d.text)}</textarea>
         <small class="hint"><span id="ttPostN">${d.text.length}</span>/2000</small></label>
@@ -1259,7 +1231,7 @@
         <p class="tt-nhint">${I('clock-3')}โน้ตจะหายไปเองใน 24 ชั่วโมง</p>
       </div>
       <p class="note row tt-top">${I('shield-alert')}<span>ห้ามใส่ชื่อ ที่อยู่ หรือข้อมูลที่ระบุตัวคนไข้</span></p>
-      <button class="btn" data-act="noteSave">${I('send')}แชร์โน้ต${p.noteXpDay === new Date().toDateString() ? '' : ` · +${XP.note} XP`}</button>
+      <button class="btn" data-act="noteSave">${I('send')}แชร์โน้ต</button>
       ${n2 ? '<button class="btn danger" data-act="noteDelete">ลบโน้ต</button>' : ''}
       <button class="btn ghost" data-close>ปิด</button>`;
   }); });
@@ -1281,7 +1253,7 @@
       const p = s.pt, src = p.photoDraft ? photoSrc(p.photoDraft) : (p.photo ? photoSrc(p.photo) : null);
       return `<div class="scr white">${ui.bar('รูปโปรไฟล์')}
         <div class="body">
-          <div class="stack"><div class="row between"><h1 class="h1">ใส่รูปโปรไฟล์</h1>${p.photo ? '' : `<span class="tt-xp">+${XP.photo} XP</span>`}</div><p class="p">คนไข้เห็นรูปนี้ก่อนรับนัด รูปที่เห็นหน้าชัดช่วยให้เขาวางใจ</p></div>
+          <div class="stack"><div class="row between"><h1 class="h1">ใส่รูปโปรไฟล์</h1></div><p class="p">คนไข้เห็นรูปนี้ก่อนรับนัด รูปที่เห็นหน้าชัดช่วยให้เขาวางใจ</p></div>
           <label class="tt-photo" aria-label="แตะเพื่อเลือกรูป">${src ? `<img src="${esc(src)}" alt="รูปที่เลือก">` : `<span style="display:grid;justify-items:center;gap:6px">${I('camera')}<span class="small">แตะเพื่อเลือกรูป</span></span>`}<span class="tt-cam">${I('camera')}</span><input type="file" accept="image/*" data-file="pt.photoDraft" data-then="photoEdit"></label>
           ${src ? `<button class="btn sm ghost" style="justify-self:center" data-act="photoEdit">${I('crop')}ครอป หมุน หรือซูมรูปนี้</button>` : ''}
           <div class="tt-dos"><span class="y"><i>${I('check')}</i>เห็นหน้าชัด</span><span class="y"><i>${I('check')}</i>แสงสว่าง</span><span class="n"><i>${I('x')}</i>แว่นดำ หมวก</span><span class="n"><i>${I('x')}</i>รูปกลุ่ม</span></div>
@@ -1402,7 +1374,7 @@
         <div class="body tight">
           <!-- Boss (28 Oct): what to do comes first; the calendar follows. -->
           <!-- T04 (UX audit 7 Nov): the rules fold to one line so the calendar shows on the first screen. -->
-          <details class="card cream tt-sendcard tt-rules"><summary class="row between"><b class="sec-h">${I('calendar-range')}ข้อกำหนดส่งตาราง · ดูกติกา</b>${p.schedule.sent && !drafts ? '<span class="pill">ส่งแล้ว</span>' : p.schedXp ? '' : `<span class="tt-xp">+${XP.schedule} XP</span>`}</summary>
+          <details class="card cream tt-sendcard tt-rules"><summary class="row between"><b class="sec-h">${I('calendar-range')}ข้อกำหนดส่งตาราง · ดูกติกา</b>${p.schedule.sent && !drafts ? '<span class="pill">ส่งแล้ว</span>' : ''}</summary>
             ${chk.html}
           </details>
           <div class="seg" role="tablist">${[['day', 'วัน'], ['week', 'สัปดาห์'], ['month', 'เดือน']].map(([k, t]) => `<button class="${c.view === k ? 'on' : ''}" data-act="calView" data-v="${k}" role="tab" aria-selected="${c.view === k}">${t}</button>`).join('')}</div>
@@ -1636,7 +1608,8 @@
     }
   });
   // OPD/SOAP is due 2 hours after the visit ends (user-requirements 15 Oct); the old card said a fixed 20:00.
-  function opdDue(v) { const m = /–(\d{2}):(\d{2})/.exec(v.time || ''); if (!m) return 'ส่งภายใน 2 ชม. หลังจบเคส'; const t = +m[1] * 60 + +m[2] + 120; return `ส่งภายใน ${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${m[2]} (2 ชม. หลังจบเคส)`; }
+  /* Palm (11 Nov): the OPD/SOAP is due by 23:59 on the day of the visit, not 2 hours after it. */
+  function opdDue(v) { return 'ส่งภายใน 23:59 ของวันนี้'; }
   function remainMin(s) { const t0 = s.pt.offerSeenAt || Date.now(); return Math.max(1, 30 - Math.floor((Date.now() - t0) / 60000)); }
   act('openOffer', s => { if (!s.pt.offerSeenAt) s.pt.offerSeenAt = Date.now(); return 't.offer'; });
   // Rehearsal time skip before visit 1: day-before confirmation in LINE for both sides, then the 1-hour card whose button opens t.visit.
@@ -1672,8 +1645,8 @@
   function scopePanel(s, ref, forVisit) {
     const r = s.request, rv = r && r.review, c = SC.clinScope(s), on = rv && rv.cleared; if (!on && !c.prec.length && !forVisit && !(SC.scopeExtra && SC.scopeExtra(s))) return '';
     const hold = forVisit && SC.visitHold(s);
-    return `<div class="card" data-scope="panel">${on ? `<b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b>${c.assessOnly ? '<p class="note" style="margin:0">อนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}<ul class="tt-ok">${c.allowPt.map(t => `<li>${I('check')}${esc(t)}</li>`).join('')}</ul>
-      ${c.notPt.length ? `<p class="note warn" style="margin:0"><b>ไม่อนุมัติ:</b> ${c.notPt.map(esc).join(' · ')}</p>` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : forVisit ? `<b class="h3">${I('clipboard-check')} ขอบเขตงาน</b><p class="small" style="margin:0">${hold ? 'ข้อมูลคนไข้เปลี่ยน ทีมคลินิกกำลังตรวจใหม่ · ยังไม่ต้องเดินทางจนกว่าทีมจะแจ้ง' : 'เคสทั่วไป ไม่มีการอนุมัติเฉพาะกิจกรรมจากทีมคลินิก'}</p>` : ''}
+    return `<div class="card" data-scope="panel">${on ? `<b class="h3">${I('clipboard-check')} ทีมคลินิกอนุมัติให้ทำเฉพาะ</b>${c.assessOnly ? '<p class="note" style="margin:0">อนุมัติเฉพาะการประเมิน ยังไม่รวมการรักษา</p>' : ''}${SC.CLIN.list(c.allowIds || [])}
+      ${c.notPt.length ? `<b class="tk-h" style="color:var(--red)">ไม่อนุมัติในเคสนี้</b>${SC.CLIN.list(c.notIds || [], { tight: true })}` : ''}${c.limits ? `<p class="note" style="margin:0"><b>ข้อจำกัด:</b> ${esc(c.limits)}</p>` : ''}` : forVisit ? `<b class="h3">${I('clipboard-check')} ขอบเขตงาน</b><p class="small" style="margin:0">${hold ? 'ข้อมูลคนไข้เปลี่ยน ทีมคลินิกกำลังตรวจใหม่ · ยังไม่ต้องเดินทางจนกว่าทีมจะแจ้ง' : 'เคสทั่วไป ไม่มีการอนุมัติเฉพาะกิจกรรมจากทีมคลินิก'}</p>` : ''}
       ${c.prec.length ? `<b class="h3">${I('shield-check')} ข้อควรระวังจากคำสั่งแพทย์</b>${c.prec.map(x => `<p class="small" style="margin:0;color:var(--forest);font-weight:600">${esc(x)}${/Unknown$/.test(x) ? ' · ยังไม่ทราบ ห้ามถือว่าลงน้ำหนักได้เต็มที่' : ''}</p>`).join('')}` : ''}
       ${forVisit ? `<div class="row wrap" style="gap:6px">${hold ? '<span class="pill warn">พักการดูแลอยู่ · ทีมคลินิกกำลังตรวจใหม่</span>' : `<span class="pill ${on ? '' : 'gray'}">${on ? 'ทีมคลินิกอนุมัติแล้ว' : 'ไม่ต้องตรวจเฉพาะเคส'}</span><span class="pill gray">ไม่มีการพักการดูแล</span>`}</div>` : ''}
       ${SC.scopeExtra ? SC.scopeExtra(s) : ''}
@@ -1784,7 +1757,7 @@
           <button class="tt-big" data-go="t.plan"><span class="grow"><b>วางแผนการรักษากับคนไข้</b><small>เป้าหมาย ความถี่ วันนัด และคอร์ส</small></span><span class="arw">${I('clipboard-list')}</span></button>`;
       } else if (!v.published) {
         main = `<div class="note mint row">${I('badge-check')}<span>${n === 1 ? 'วางแผนกับคนไข้แล้ว · เขียน OPD' : 'จบการดูแลแล้ว · เขียน SOAP'} แล้วลงนามส่งให้คนไข้</span></div>
-          <button class="tt-big" data-go="t.opd" data-p-n="${n}"><span class="grow"><b>${n === 1 ? 'เขียนบันทึก OPD' : 'เขียน SOAP ครั้งที่ ' + n}</b><small>ส่งภายใน 2 ชม. หลังจบเคส</small></span><span class="arw">${I('file-pen-line')}</span></button>`;
+          <button class="tt-big" data-go="t.opd" data-p-n="${n}"><span class="grow"><b>${n === 1 ? 'เขียนบันทึก OPD' : 'เขียน SOAP ครั้งที่ ' + n}</b><small>ส่งภายใน 23:59 ของวันนี้</small></span><span class="arw">${I('file-pen-line')}</span></button>`;
       } else {
         main = `<div class="note mint row">${I('badge-check')}<span>ส่งสรุปเข้า LINE คนไข้แล้ว</span></div><button class="btn ghost" data-act="viewReport" data-n="${n}">ดูสรุปที่ส่ง</button>`;
       }
@@ -1794,6 +1767,7 @@
         <div class="tt-map" role="img" aria-label="แผนที่บ้านคนไข้"><span class="me"></span><span class="pin">${I('map-pin')}</span><button class="btn sm ghost" data-act="ptMaps">${I('navigation')}นำทาง</button></div>
         <div class="list">
           <div class="li"><span class="tile">${I('house')}</span><span class="grow"><span class="t">ที่อยู่</span><br><span class="s">${esc(addr)}</span></span></div>
+          ${a.housePhoto ? `<figure class="tt-house"><img src="${esc(a.housePhoto === 'sample' ? 'a/welcome.jpg' : a.housePhoto)}" alt="รูปหน้าบ้านคนไข้"><figcaption>${I('house')}รูปหน้าบ้านที่คนไข้แนบ</figcaption></figure>` : ''}
           ${a.landmark ? `<div class="li"><span class="tile">${I('signpost')}</span><span class="grow"><span class="t">จุดสังเกตและวิธีเข้าบ้าน</span><br><span class="s">${esc(a.landmark)}</span></span></div>` : ''}
           <button class="li" data-act="ptCallFamily"><span class="tile">${I('phone')}</span><span class="grow"><span class="t">โทรหาผู้ติดต่อ</span><br><span class="s">${s.patient.bookingFor === 'SOMEONE_ELSE' ? 'ญาติที่จองให้' : esc(pname(s))} · โทรผ่านเบอร์กลาง</span></span>${I('chevron-right', 'chev')}</button>
           <div class="li"><span class="tile">${I('clipboard-check')}</span><span class="grow"><span class="t">สิ่งที่คนไข้ขอ</span><br><span class="s">${esc(goalText(s))}</span></span></div>
@@ -1847,12 +1821,28 @@
   // Free text only: the PT writes in their own words, no prompts or example phrases (owner, 21 Oct).
   // P holds both what was done today (interventions) and the plan that follows from it, written together.
   // Boss (29 Oct): no plan section; the last block is the home program the patient and family read, so Thai is fine.
-  function planP(base) { return area(base + '.p', '<span class="tt-soapL">H</span>การบ้าน (Home program) <small class="small">ภาษาไทยได้ · คนไข้และญาติเห็น</small>', 3); }
-  /* T replaces A (Boss 29 Oct): what was done this visit, one block per treatment. Tap "เพิ่มการรักษา" and type each one. */
+  /* Palm (11 Nov): PTs won't want to type the home program, so they can attach a photo, a YouTube link, or one of their own posts instead.
+     Any one of the four is enough. */
+  function planP(base) {
+    const img = SC.get(base + '.hpImg'), post = SC.get(base + '.hpPost'), posts = SC.s.pt.posts || [];
+    return `${area(base + '.p', '<span class="tt-soapL">H</span>การบ้าน (Home program) <small class="small">ภาษาไทยได้ · คนไข้และญาติเห็น · พิมพ์ หรือแนบอย่างใดอย่างหนึ่งก็ได้</small>', 3)}
+      <div class="tt-hp">
+        ${img ? `<span class="tt-hpimg"><img src="${esc(img === 'sample' ? 'a/companion.jpg' : img)}" alt="รูปท่าฝึก"><button class="ib soft" data-pick="${base}.hpImg" data-value="" aria-label="เอารูปออก">${I('x')}</button></span>`
+          : `<label class="btn sm ghost tt-file">${I('image-plus')}แนบรูปท่าฝึก<input type="file" accept="image/*" data-file="${base}.hpImg" aria-label="แนบรูปท่าฝึก"></label>`}
+        <label class="tt-hplink">${I('youtube')}<input class="in" type="url" data-bind="${base}.hpLink" data-live value="${esc(SC.get(base + '.hpLink') || '')}" placeholder="วางลิงก์ YouTube หรือคลิป" aria-label="ลิงก์คลิปท่าฝึก"></label>
+        ${posts.length ? `<label class="tt-hplink">${I('newspaper')}<select class="in" data-bind="${base}.hpPost" aria-label="แนบโพสต์ของฉัน"><option value="">แนบโพสต์ของฉัน (ไม่บังคับ)</option>${posts.map(x => `<option value="${esc(x.id)}" ${post === x.id ? 'selected' : ''}>${esc(x.text.slice(0, 48))}${x.text.length > 48 ? '…' : ''}</option>`).join('')}</select></label>` : ''}
+      </div>`;
+  }
+  /* T replaces A (Boss 29 Oct): what was done this visit, one block per treatment.
+     Palm (11 Nov): each block picks one of the 17 core tasks by its English name (no code), then the PT adds what exactly they did. */
+  const CORE = Object.keys(SC.CLIN.en).filter(id => /^C/.test(id));
   function treatT(base, n) {
-    const list = SC.get(base + '.t') || [];
+    const list = SC.get(base + '.t') || [], tk = SC.get(base + '.tk') || [];
     return `<div class="field tt-tlist"><span><span class="tt-soapL">T</span>การรักษาวันนี้<span class="tt-en">EN</span><small class="small"> ทีละอย่าง</small></span>
-      ${list.map((x, k) => `<div class="tt-tblock"><span class="no">${k + 1}</span><input class="in" lang="en" data-bind="${base}.t.${k}" data-live value="${esc(x)}" placeholder="e.g. Sit-to-stand training, 3 sets" aria-label="การรักษาข้อที่ ${k + 1}"><button class="ib soft" data-act="soapTDel" data-n="${n}" data-k="${k}" aria-label="ลบข้อที่ ${k + 1}">${I('x')}</button></div>`).join('')}
+      ${list.map((x, k) => `<div class="tt-tblock"><span class="no">${k + 1}</span><div class="tt-tfields">
+        <select class="in" data-bind="${base}.tk.${k}" aria-label="ประเภทการรักษาข้อที่ ${k + 1}"><option value="">เลือกการรักษา หรือพิมพ์เองด้านล่าง</option>${CORE.map(id => `<option value="${id}" ${tk[k] === id ? 'selected' : ''}>${esc(SC.CLIN.en[id])}</option>`).join('')}</select>
+        <input class="in" lang="en" data-bind="${base}.t.${k}" data-live value="${esc(x)}" placeholder="${tk[k] ? 'Details, e.g. 3 sets x 10 reps' : 'e.g. Sit-to-stand training, 3 sets'}" aria-label="รายละเอียดการรักษาข้อที่ ${k + 1}"></div>
+        <button class="ib soft" data-act="soapTDel" data-n="${n}" data-k="${k}" aria-label="ลบข้อที่ ${k + 1}">${I('x')}</button></div>`).join('')}
       <button class="btn sm soft tt-tadd" data-act="soapTAdd" data-n="${n}">${I('plus')}เพิ่มการรักษา</button></div>`;
   }
   function area(path, label, rows = 2, en = false) {
@@ -1865,7 +1855,8 @@
       const n = +(param.n || 1), i = s.visits.findIndex(x => x.n === n), v = s.visits[i];
       if (!v) return `<div class="scr">${ui.bar('บันทึกการดูแล')}<div class="body">${ui.empty('file-text', 'ยังไม่มีนัดนี้', 'บันทึกเขียนได้หลังจบการดูแล', '<button class="btn auto" data-go="t.work">ไปหน้างาน</button>')}</div></div>`;
       if (!v.soap) v.soap = {};
-      if (n === 1 && !v.soap.goal && s.coursePlan && s.coursePlan.goal) v.soap.goal = s.coursePlan.goal; // goal agreed with the patient during planning
+      // Palm (11 Nov): the OPD goal starts blank so the PT writes it in detail; the short goal picked in the care plan shows as a hint.
+      const planGoal = s.coursePlan && s.coursePlan.goal;
       const base = `visits.${i}.soap`;
       const title = n === 1 ? 'OPD ครั้งแรก · ' + pname(s) : `SOAP ครั้งที่ ${n} · ${pname(s)}`;
       if (v.published) return `<div class="scr">${ui.bar(title)}<div class="body">${ui.empty('badge-check', 'ลงนามและส่งสรุปแล้ว', 'แก้ไม่ได้หลังลงนาม ถ้าต้องแก้ ทีมสร้างฉบับแก้ไขใหม่ให้', `<button class="btn auto" data-act="viewReport" data-n="${n}">ดูสรุปที่ส่ง</button>`)}</div></div>`;
@@ -1873,7 +1864,7 @@
       const flag = s.cert.requested ? `<p class="note row tt-top">${I('file-text')}<span>คนไข้ขอใบรับรอง (TH/EN) · ระบบเติมใบรับรองจากบันทึกนี้</span></p>` : '';
       let fields, need;
       if (n === 1) {
-        fields = `${area(base + '.goal', 'เป้าหมาย (ญาติเห็น)')}
+        fields = `${planGoal ? `<p class="small tt-c" style="margin:0">${I('target')} เป้าหมายที่เลือกตอนวางแผน: <b>${esc(planGoal)}</b> · เขียนให้ละเอียดด้านล่าง</p>` : ''}${area(base + '.goal', 'เป้าหมาย (ญาติเห็น)')}
           <div class="row between"><b class="h3">OPD · ${esc(shortDate(v.date))}</b><span class="pill gray">ทีมดูแลเห็นเท่านั้น</span></div>
           ${area(base + '.s', '<span class="tt-soapL">S</span>อาการและสิ่งที่คนไข้เล่า <small class="small">ภาษาไทยได้</small>', 2)}
           ${area(base + '.o', '<span class="tt-soapL">O</span>ผลตรวจร่างกาย (พบว่า)', 2, true)}
@@ -1881,7 +1872,7 @@
           ${area(base + '.dx', 'การวินิจฉัยทางกายภาพบำบัด', 2, true)}
           ${planP(base)}
           ${area(base + '.family', 'ข้อความถึงคนไข้และญาติ')}`;
-        need = ['goal', 's', 'o', 't', 'dx', 'p'].map(k => `${base}.${k}`).join(',');
+        need = ['goal', 's', 'o', 't', 'dx'].map(k => `${base}.${k}`).join(',');
       } else {
         const g = (visitOf(s, 1) || {}).soap || {};
         fields = `${g.goal ? `<div class="note mint"><b>เป้าหมาย</b> (จาก OPD ครั้งแรก)<br>${esc(g.goal)}</div>` : ''}
@@ -1891,20 +1882,22 @@
           ${treatT(base, n)}
           ${planP(base)}
           ${area(base + '.family', 'ข้อความถึงคนไข้และญาติ (ไม่บังคับ)')}`;
-        need = ['s', 'o', 't', 'p'].map(k => `${base}.${k}`).join(',');
+        need = ['s', 'o', 't'].map(k => `${base}.${k}`).join(',');
       }
       return `<div class="scr">${ui.bar(title)}<div class="body">
         ${flag}${enNote}${fields}
-        <p class="small row">${I('save')}<span>บันทึกร่างอัตโนมัติ · ญาติเห็นแค่เป้าหมายกับข้อความ</span></p>
+        <p class="small row">${I('save')}<span>บันทึกร่างอัตโนมัติ · ญาติเห็นเป้าหมาย การบ้าน และข้อความ</span></p>
       </div><div class="foot"><p class="small" style="margin:0">ลงนามแล้วแก้ไม่ได้ ถ้าต้องแก้ ระบบสร้างฉบับแก้ไขใหม่</p><button class="btn" data-act="publishReport" data-n="${n}" data-need="${need}">${I('pen-line')}ลงนามและส่งสรุป</button></div></div>`;
     }
   });
-  act('soapTAdd', (s, ctx) => { const v = visitOf(s, +ctx.data.n); if (!v) return; v.soap = v.soap || {}; (v.soap.t = v.soap.t || []).push(''); });
-  act('soapTDel', (s, ctx) => { const v = visitOf(s, +ctx.data.n); if (v && v.soap && v.soap.t) v.soap.t.splice(+ctx.data.k, 1); });
+  act('soapTAdd', (s, ctx) => { const v = visitOf(s, +ctx.data.n); if (!v) return; v.soap = v.soap || {}; (v.soap.t = v.soap.t || []).push(''); (v.soap.tk = v.soap.tk || []).length = v.soap.t.length; });
+  act('soapTDel', (s, ctx) => { const v = visitOf(s, +ctx.data.n); if (v && v.soap && v.soap.t) { v.soap.t.splice(+ctx.data.k, 1); if (v.soap.tk) v.soap.tk.splice(+ctx.data.k, 1); } });
   act('publishReport', (s, ctx) => {
     const n = +(ctx.data.n || ctx.param.n || 1), v = visitOf(s, n); if (!v || v.step < 4) return;
-    v.soap.t = (v.soap.t || []).map(x => String(x).trim()).filter(Boolean);
+    const tk = v.soap.tk || []; // picked task name + typed details → one line, e.g. "Strength Training: 3 sets x 10 reps"
+    v.soap.t = (v.soap.t || []).map((x, k) => { const d = String(x || '').trim(), nm = tk[k] ? SC.CLIN.en[tk[k]] : ''; return nm && d ? `${nm}: ${d}` : nm || d; }).filter(Boolean); v.soap.tk = [];
     if (!v.soap.t.length) { ctx.toast('เพิ่มการรักษาวันนี้อย่างน้อย 1 อย่าง'); return; }
+    const so = v.soap; if (!String(so.p || '').trim() && !so.hpImg && !String(so.hpLink || '').trim() && !so.hpPost) { ctx.toast('ใส่การบ้าน: พิมพ์ แนบรูป ลิงก์คลิป หรือโพสต์ อย่างใดอย่างหนึ่ง'); return; }
     v.published = true;
     ctx.line('patient', { key: n === 1 ? 'report' : 'report2' });
     ctx.toast('ลงนามแล้ว ส่งสรุปเข้า LINE คนไข้แล้ว');
@@ -1979,7 +1972,12 @@
         foot = `<button class="btn" data-act="planMode">${I('eye')}กลับโหมดคนไข้ · ใช้ราคานี้</button>`;
       } else if (st === 0) {
         const low = (Number(cp.full) || 0) < FLOOR;
-        body = `<label class="field"><span>เป้าหมายการรักษา</span><textarea class="in tt-ta" data-auto rows="2" data-bind="coursePlan.goal">${esc(cp.goal || '')}</textarea></label>
+        body = `${(() => { /* Palm (11 Nov): to sell the course quickly, the goal comes from what the patient chose in the assessment. One goal is picked for the PT;
+              with several, the PT taps the one that matters most now. Details go in the OPD/SOAP later. */
+            const gs = SC.goalLabels(s); if (gs.length === 1 && !cp.goal) cp.goal = gs[0];
+            return gs.length ? `<div class="field"><span>เป้าหมายการรักษา <small class="small">${gs.length > 1 ? 'คนไข้เลือกไว้ ' + gs.length + ' ข้อ · แตะข้อที่สำคัญสุดตอนนี้' : 'จากที่คนไข้เลือกในแบบประเมิน'}</small></span>
+              <div class="stack tt-goals">${gs.map(g => `<button class="pp-choice${cp.goal === g ? ' on' : ''}" aria-pressed="${cp.goal === g}" data-pick="coursePlan.goal" data-value="${esc(g)}">${I(cp.goal === g ? 'circle-check' : 'circle')}<span>${esc(g)}</span></button>`).join('')}</div></div>`
+              : `<label class="field"><span>เป้าหมายการรักษา</span><textarea class="in tt-ta" data-auto rows="2" data-bind="coursePlan.goal">${esc(cp.goal || '')}</textarea></label>`; })()}
           <div class="field"><span>ความถี่</span><div class="seg">${[1, 2, 3].map(x => `<button class="${cp.freq === x ? 'on' : ''}" data-pick="coursePlan.freq" data-value="${x}" data-then="planReset">${x} ครั้ง/สัปดาห์</button>`).join('')}</div></div>
           <div class="field"><span>ระยะเวลา</span><div class="seg">${[4, 5, 8].map(x => `<button class="${cp.weeks === x ? 'on' : ''}" data-pick="coursePlan.weeks" data-value="${x}" data-then="planReset">${x} สัปดาห์</button>`).join('')}</div></div>
           <div class="card cream"><div class="row between"><span>รวม ${n} ครั้ง · แนะนำคอร์ส</span><b class="h2">${packFor(n)} ครั้ง</b></div></div>
@@ -2036,7 +2034,7 @@
             <div class="card flat"><div class="kv"><dt>นัดครั้งที่ 2</dt><dd>${esc(cp.next)} น.</dd>${cp.backups.length ? `<dt>เวลาสำรอง</dt><dd>${esc(cp.backups.join(' · '))}</dd>` : ''}<dt>ค่าบริการ</dt><dd>${money(cp.full)} ต่อครั้ง</dd></div></div>`
           : `<div class="stack tt-c" style="justify-items:center;padding-top:12px"><span class="tile lg">${I('badge-check')}</span><h1 class="h1">ส่งให้แอดมินแล้ว</h1><p class="p">เปิดสิทธิ์คอร์สเมื่อยอดตรง ผลแจ้งใน LINE ทั้งคุณและคนไข้</p></div>
           ${courseSummary(s)}`;
-        foot = `<button class="btn" data-act="planDone">${I('file-pen-line')}เขียน OPD (ภายใน 2 ชม.)</button>`;
+        foot = `<button class="btn" data-act="planDone">${I('file-pen-line')}เขียน OPD (ภายใน 23:59 วันนี้)</button>`;
       }
       return `<div class="scr">${head}<div class="body">${body}</div><div class="foot">${foot}</div></div>`;
     }
@@ -2295,7 +2293,7 @@
         <div class="list">
           <button class="li" data-act="editZones"><span class="tile">${I('map-pin')}</span><span class="grow"><span class="t">เขตที่รับงาน</span><br><span class="s">${esc(p.zones.length ? p.zones.join(' · ') : 'ยังไม่เลือก')}</span></span>${I('chevron-right', 'chev')}</button>
           <button class="li" data-go="t.agreement"><span class="tile">${I('file-text')}</span><span class="grow"><span class="t">ข้อตกลงการรับงาน</span><br><span class="s">${p.agreement ? 'ยอมรับแล้ว · แตะเพื่ออ่าน' : 'ยังไม่ได้อ่าน · อ่านครั้งเดียวก่อนงานแรก'}</span></span>${I('chevron-right', 'chev')}</button>
-          <button class="li" data-act="xpHistory"><span class="tile gold">${I('sparkles')}</span><span class="grow"><span class="t">XP และประวัติ</span><br><span class="s">${p.xp} XP · ระดับ ${lvl(p.xp).level}</span></span>${I('chevron-right', 'chev')}</button>
+          
         </div>
         <span class="kick">LINE และการแจ้งเตือน</span>
         <div class="list">

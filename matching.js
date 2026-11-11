@@ -79,7 +79,7 @@
     const from = cleared ? `งานที่ทีมคลินิกอนุมัติ โดย ${rv.by || '—'}` : tpl ? `ต้นแบบ ${tpl.case_id}` : svc && svc !== 'UNSURE' ? `งานขั้นต่ำของบริการกลุ่ม ${+svc} · ${(SC.CLIN.services.find(x => x.id === svc) || {}).name || ''}` : 'ยังระบุกลุ่มบริการไม่ได้';
     return { code, block, essential, gap, from, prep, optional: tpl ? M.tasks(tpl).optional : [], template: tpl ? tpl.case_id : '', district: SC.patientDistrict(s), required: need, patientHas: r.patientHas || [], round: r.round || 0, crossZone: !!r.crossZone, group: svc };
   };
-  const capCause = (p, id) => { const c = (p.caps || {})[id], d = (p.capDecisions || {})[id]; if (!c) return 'ยังไม่ตอบ'; if (c === 'no') return 'ตอบว่าทำไม่ได้'; if (d && d.status === 'PENDING') return 'รอทีมพิจารณา'; if (d && d.status === 'REJECTED') return 'ทีมไม่อนุมัติ'; if (c === 'ask') return 'ขอคุยก่อน'; return id[0] === 'S' ? 'ยังไม่ผ่านการอนุมัติ Specialty' : 'ยังไม่ผ่าน'; };
+  const capCause = (p, id) => { const c = (p.caps || {})[id], d = (p.capDecisions || {})[id]; if (!c) return 'ยังไม่ตอบ'; if (c === 'no') return 'ตอบว่าทำไม่ได้'; if (d && d.status === 'PENDING') return 'รอทีมพิจารณา'; if (d && d.status === 'REJECTED') return 'ทีมไม่อนุมัติ'; if (c === 'ask') return 'ตอบว่ายังไม่มั่นใจ'; return id[0] === 'S' ? 'ยังไม่ผ่านการอนุมัติ Specialty' : 'ยังไม่ผ่าน'; };
   /* Every step is recorded so the team can see all reasons. failedAt is the first in Palm's order. */
   M.evalPt = (pt, ctx, opt = {}) => {
     const round = opt.round !== undefined ? opt.round : ctx.round, cannot = ctx.essential.filter(id => !SC.capEligible(pt, id));
@@ -138,7 +138,7 @@
   M.book = (s, ptId) => { const r = s.request; r.status = 'BOOKED'; r.bookedPt = ptId; r.bookingId = `${r.ref}-B1`; const t = trace(r); t.accept = { ptId, offerId: r.offerId, at: now() }; t.bookingId = r.bookingId; };
   const LABEL = id => esc(SC.CLIN.label(id));
   /* DR-01: what the PT should prepare for. Shown with the offer; it never decides eligibility. */
-  M.prepCard = s => { if (!s.request) return ''; const c = M.ctxOf(s); return c.prep.length ? `<div class="card flat" data-offer-prep><span class="small">ข้อมูลเตรียมตัวก่อนพบผู้ป่วย</span><b style="display:block;font-size:14px">${c.prep.map(LABEL).join(' · ')}</b></div>` : ''; };
+  M.prepCard = s => { if (!s.request) return ''; const c = M.ctxOf(s); return c.prep.length ? `<div class="card flat" data-offer-prep><span class="small">ข้อมูลเตรียมตัวก่อนพบผู้ป่วย</span>${SC.CLIN.list(c.prep, { tight: true })}</div>` : ''; };
   /* ---------- Team view ---------- */
   M.traceCard = s => {
     const r = s.request; if (!r) return '';

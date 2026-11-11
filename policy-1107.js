@@ -391,7 +391,7 @@
   SC.clinExtraChecks = (s, list) => {
     const r = s.request, rv = r.review, M = SC.MATCH, tpl = M.templateOf(s), b = s.patient.branch || {}, out = [];
     const gap = tpl ? M.tasks(tpl).essential.filter(id => !rv.allow.includes(id)) : [];
-    if (tpl && gap.length) out.push(`<div class="note" data-required-gap><b>งานจำเป็นของต้นแบบ ${esc(tpl.case_id)} ที่ยังไม่ติ๊ก:</b> ${gap.map(id => esc(SC.CLIN.label(id))).join(' · ')}<br><span class="small">ติ๊กเพิ่ม หรือเลือก Limited Scope พร้อมเหตุผล · ห้ามตัดงานจำเป็นออกเงียบ ๆ</span>
+    if (tpl && gap.length) out.push(`<div class="note" data-required-gap><b>งานจำเป็นของต้นแบบ ${esc(tpl.case_id)} ที่ยังไม่ติ๊ก:</b>${SC.CLIN.list(gap, { tight: true, code: true })}<span class="small">ติ๊กเพิ่ม หรือเลือก Limited Scope พร้อมเหตุผล · ห้ามตัดงานจำเป็นออกเงียบ ๆ</span>
       <label class="check"><input type="checkbox" data-bind="request.review.limited" ${rv.limited ? 'checked' : ''}><span>Limited Scope: ทำเฉพาะงานที่ติ๊ก</span></label>${rv.limited ? `<label class="field"><span>เหตุผล Limited Scope</span><input class="in" data-bind="request.review.limitedWhy" value="${esc(rv.limitedWhy || '')}"></label>` : ''}${OPEN('เงื่อนไข Limited Scope')}</div>`);
     if (M.suctionUnsure(s)) out.push(`<label class="check" data-no-suction><input type="checkbox" data-bind="request.review.noSuction" ${rv.noSuction ? 'checked' : ''}><span>ยืนยันแล้วว่าเคสนี้ไม่ต้องดูดเสมหะ (ไม่ติ๊ก = พักไว้ ไปชำระเงินไม่ได้)</span></label>`);
     if (['GERI', 'BED'].includes(s.patient.group) && ['YES', 'UNSURE'].includes(b.breath)) out.push(`<label class="check"><input type="checkbox" data-bind="request.review.s04Need" ${rv.s04Need ? 'checked' : ''}><span>MAP-01: S04 จำเป็น · ส่งได้เฉพาะ PT ที่ได้อนุมัติ S04</span></label>`);
@@ -417,9 +417,9 @@
   SC.scopeExtra = s => {
     if (!s.request) return ''; const ctx = SC.MATCH.ctxOf(s), can = ctx.essential.filter(id => SC.capEligible(s.pt, id)), cant = ctx.essential.filter(id => !SC.capEligible(s.pt, id));
     const c11 = [...ctx.essential, ...ctx.prep].includes('C11') && !SC.capEligible(s.pt, 'C11');
-    return `${can.length ? `<p class="small" style="margin:0" data-pt-can><b>คุณทำได้:</b> ${can.map(id => esc(SC.CLIN.label(id))).join(' · ')}</p>` : ''}${cant.length ? `<p class="small" style="margin:0"><b>ยังทำไม่ได้:</b> ${cant.map(id => esc(SC.CLIN.label(id))).join(' · ')}</p>` : ''}
-      ${ctx.optional.length ? `<p class="small" style="margin:0" data-optional><b>ทำได้แต่ไม่บังคับ:</b> ${ctx.optional.map(id => esc(SC.CLIN.label(id))).join(' · ')}</p>` : ''}
-      ${c11 ? `<p class="note warn" style="margin:0" data-c11-block><b>C11 NOT AUTHORIZED FOR THIS PT</b> · ปิดกิจกรรมฝึกย้ายตัว (C11) สำหรับคุณในเคสนี้</p>` : ''}`;
+    return `${can.length ? `<div data-pt-can><b class="tk-h">คุณทำได้</b>${SC.CLIN.list(can, { tight: true })}</div>` : ''}${cant.length ? `<div><b class="tk-h">ยังทำไม่ได้</b>${SC.CLIN.list(cant, { tight: true })}</div>` : ''}
+      ${ctx.optional.length ? `<div data-optional><b class="tk-h">ทำได้ แต่ไม่บังคับ</b>${SC.CLIN.list(ctx.optional, { tight: true })}</div>` : ''}
+      ${c11 ? `<p class="note warn" style="margin:0" data-c11-block><b>ยังไม่อนุมัติให้คุณ: ฝึกย้ายตัว (Transfer Training)</b> · ในเคสนี้คุณยังทำกิจกรรมนี้ไม่ได้ ถ้าคนไข้ต้องย้ายตัว ให้แจ้งทีมในแชต</p>` : ''}`;
   };
   /* MT-28 (H13 NEW-01 §2A ข้อ 3): the transfer answers go to the PT who took the job. */
   const LIFT = { N0: 'ทำเองได้', N1: 'ต้องมีคนช่วย 1 คน', N2: 'ต้องมีคนช่วย 2 คน หรือใช้เครื่องยก', UNSURE: 'ไม่แน่ใจ' }, HELP = { N0: 'ไม่มีคนช่วย', N1: 'มีคนช่วย 1 คน', N2: 'มีคนช่วย 2 คนขึ้นไป', HOIST: 'มีเครื่องยก' };

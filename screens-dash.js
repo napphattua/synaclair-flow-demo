@@ -142,10 +142,10 @@
       const queue = Object.entries(p.caps || {}).filter(([id, v]) => (dec[id] || {}).status === 'PENDING' || (!dec[id] && (v === 'ask' || (id[0] === 'S' && v === 'can'))));
       const name = hasMe ? SC.me().name : 'PT ในห้องซ้อม';
       return SC.adminShell(s, 'a.caps', { kick: 'ทีม PT', title: 'ความสามารถ PT', sub: 'สิ่งที่ PT ตอบ กับสิ่งที่ทีมอนุมัติ เป็นคนละเรื่อง การตอบเองไม่นับเป็นกำลังรับงาน' }, `
-        <p class="dc-note">${I('scale')}<span>งานพื้นฐาน (C01–C17) ที่ PT ตอบว่าทำได้ ใช้จับคู่ได้เลย · งานเฉพาะทาง (S) หรือข้อที่ขอคุยก่อน ต้องให้ Clinical Lead อนุมัติ 1 คน · เกณฑ์หลักฐานยังรอ Clinical Lead ตรวจรับ</span></p>
+        <p class="dc-note">${I('scale')}<span>งานพื้นฐาน (C01–C17) ที่ PT ตอบว่าทำได้ ใช้จับคู่ได้เลย · งานเฉพาะทาง (S) หรือข้อที่ตอบว่า "ยังไม่มั่นใจ" ต้องให้ Clinical Lead อนุมัติ 1 คน · เกณฑ์หลักฐานยังรอ Clinical Lead ตรวจรับ</span></p>
         <div class="dc-kpis"><div class="dc-kpi watch"><span>รอพิจารณา (ห้องซ้อม)</span><b>${queue.length} งาน</b></div><div class="dc-kpi ok"><span>ทีมอนุมัติแล้ว</span><b>${me.ok} งาน</b></div><div class="dc-kpi ok"><span>ไม่อนุมัติ</span><b>${me.no} งาน</b></div></div>
         <section class="dc-card"><div class="row between wrap"><h2>คิวรอพิจารณา</h2><span class="pill wait">${queue.length} งาน</span></div>
-          ${queue.length ? queue.map(([id, v]) => `<div class="dc-cq"><span class="tile gold">${I('hourglass')}</span><span class="grow"><b>${esc(SC.CLIN.label(id))}</b><small>${esc(name)} · PT ตอบ: ${v === 'ask' ? 'ขอคุยก่อน' : v === 'can' ? 'ทำได้' : 'ยังไม่ถนัด'}</small></span><button class="btn sm ghost" data-act="capsOpen">พิจารณา</button></div>`).join('') : '<p class="small" style="margin:0">ไม่มีงานรอพิจารณาในห้องซ้อม</p>'}</section>
+          ${queue.length ? queue.map(([id, v]) => `<div class="dc-cq"><span class="tile gold">${I('hourglass')}</span><span class="grow">${SC.CLIN.row(id, { code: true })}<small>${esc(name)} · PT ตอบ: ${v === 'ask' ? 'ทำได้ แต่ยังไม่มั่นใจ' : v === 'can' ? 'ทำได้' : 'ยังทำไม่ได้'}${(((p.capReqs || []).find(r => r.id === id && r.status === 'PENDING')) || {}).reason ? ` · ขอแก้: ${esc(p.capReqs.find(r => r.id === id && r.status === 'PENDING').reason)}` : ''}</small></span><button class="btn sm ghost" data-act="capsOpen">พิจารณา</button></div>`).join('') : '<p class="small" style="margin:0">ไม่มีงานรอพิจารณาในห้องซ้อม</p>'}</section>
         <section class="dc-card"><h2>นักกายภาพ</h2><div class="dc-pts">
           ${ptRow(name, '<span class="pill">ห้องซ้อม</span>', p.status === 'VERIFIED', !!p.agreement, !!(p.schedule && p.schedule.sent), me.asked, me.ok, queue.length)}
           ${SAMPLE_CAPS.map(([id, l, t, sc, a, o, w]) => ptRow((SC.SAMPLE_PTS.find(x => x.id === id) || {}).name || id, ui.sample(), !!l, !!t, !!sc, a, o, w)).join('')}
@@ -157,22 +157,53 @@
   /* The PT's own view: their answer and the team's result, side by side. */
   SC.screen('t.caps', {
     role: 'pt',
+    /* Boss 11 Nov: a summary, not a form. Changing an answer goes through "ขอแก้งานที่รับ" with a reason and, to raise an answer, evidence for the team. */
     render(s) {
-      const p = s.pt, ids = [...new Set(SC.CLIN.services.filter(x => (p.services || []).includes(x.id)).flatMap(x => x.tasks))].filter(id => !SC.CLIN.restricted.includes(id)).sort((a, b) => (a[0] === b[0] ? 0 : a[0] === 'C' ? -1 : 1) || a.localeCompare(b)), dec = p.capDecisions || {};
-      const c = taskCount(p), res = id => { const d = dec[id]; if (d) return d.status === 'APPROVED' ? ['ทีมอนุมัติแล้ว', ''] : d.status === 'REJECTED' ? ['ยังไม่อนุมัติ', 'warn'] : ['รอทีมพิจารณา', 'wait']; if (p.caps[id] === 'ask') return ['รอทีมพิจารณา', 'wait']; if (p.caps[id] === 'no') return ['ไม่รับงานนี้', 'gray']; if (id[0] === 'S' && p.caps[id] === 'can') return ['รอทีมดูหลักฐาน', 'wait']; return p.caps[id] ? ['คำตอบของคุณ', 'gray'] : ['ยังไม่ตอบ', 'gray']; };
-      const sorted = [...ids].sort((a, b) => (res(a)[1] === 'wait' ? 0 : 1) - (res(b)[1] === 'wait' ? 0 : 1));
+      const p = s.pt, ids = capIds(p), dec = p.capDecisions || {}, reqs = p.capReqs || [], open = reqs.filter(r => r.status === 'PENDING');
+      const res = id => { const d = dec[id]; if (open.some(r => r.id === id)) return ['รอทีมดูคำขอแก้', 'wait', 'hourglass']; if (d) return d.status === 'APPROVED' ? ['ส่งงานนี้ให้คุณได้', '', 'check'] : d.status === 'REJECTED' ? ['ยังไม่ส่งงานนี้ให้', 'warn', 'x'] : ['รอทีมดู', 'wait', 'hourglass']; const c = p.caps[id]; if (c === 'no') return ['ไม่ส่งงานนี้ให้', 'gray', 'minus']; if (c === 'ask') return ['รอทีมดู', 'wait', 'hourglass']; if (id[0] === 'S' && c === 'can') return ['รอทีมดู', 'wait', 'hourglass']; if (c === 'can') return ['ส่งงานนี้ให้คุณได้', '', 'check']; return ['ยังไม่ได้ตอบ', 'gray', 'minus']; };
+      const go = ids.filter(id => res(id)[1] === ''), wait = ids.filter(id => res(id)[1] === 'wait'), off = ids.filter(id => ['gray', 'warn'].includes(res(id)[1]));
+      const row = id => { const [t, tone, ic] = res(id); return `<li class="dc-tt" data-task="${id}">${SC.CLIN.row(id, { tail: `<span class="pill ${tone}">${I(ic)}${t}</span>` })}</li>`; };
+      const sec = (title, list, openIt) => list.length ? `<details class="card flat dc-done"${openIt ? ' open' : ''}><summary class="sec-h">${title} (${list.length})</summary><ul class="tk-list">${list.map(row).join('')}</ul></details>` : '';
       return `<div class="scr">${ui.bar('งานที่รับ')}<div class="body">
-        <div class="dc-ptsum"><div><b>${c.ok}</b><span>ทีมอนุมัติ</span></div><div class="w"><b>${c.wait}</b><span>รอพิจารณา</span></div><div><b>${ids.filter(id => p.caps[id] === 'can').length}</b><span>ตอบว่าทำได้</span></div></div>
-        <p class="note" style="margin:0">แก้คำตอบได้ตลอด แต่การแก้เองไม่ทำให้งานที่รอพิจารณาผ่าน งานอื่นรับได้ตามปกติ</p>
-        ${(() => { /* T05 (UX audit 7 Nov): waiting items first; answered ones folded, grouped as งานพื้นฐาน C and งานเฉพาะทาง S. */
-          if (!sorted.length) return ui.empty('list-checks', 'ยังไม่ได้เลือกกลุ่มงาน', 'เลือกกลุ่มงานตอนสร้างโปรไฟล์ก่อน', '');
-          const card = id => { const [t, tone] = res(id); return `<div class="card flat dc-tt" data-task="${id}"><div class="row between" style="gap:8px;align-items:flex-start"><b>${esc(SC.CLIN.label(id))}</b><span class="pill ${tone}">${t}</span></div><small>${esc(SC.CLIN.tasks[id])}</small><div class="tt-seg" role="group" aria-label="${esc(SC.CLIN.label(id))}">${[['can', 'ทำได้'], ['no', 'ยังไม่ถนัด'], ['ask', 'ขอคุยก่อน']].map(([v, l]) => `<button aria-pressed="${p.caps[id] === v}" data-act="capPick" data-id="${id}" data-v="${v}">${l}</button>`).join('')}</div>${dec[id] && dec[id].reason ? `<small>เหตุผลจากทีม: ${esc(dec[id].reason)}</small>` : ''}</div>`; }, wait = sorted.filter(id => res(id)[1] === 'wait'), done = sorted.filter(id => res(id)[1] !== 'wait');
-          const grp = (t, ids) => ids.length ? `<h3 class="h3" style="margin:6px 0 0">${t} (${ids.length})</h3>${ids.map(card).join('')}` : '';
-          return `${wait.length ? `<h2 class="sec-h">รอทีมพิจารณา (${wait.length})</h2>${wait.map(card).join('')}` : ''}<details class="card flat dc-done"${wait.length ? '' : ' open'}><summary class="sec-h">ตอบแล้ว (${done.length})</summary>${grp('งานพื้นฐาน C', done.filter(id => id[0] === 'C'))}${grp('งานเฉพาะทาง S', done.filter(id => id[0] === 'S'))}</details>`;
-        })()}
-        <div class="tt-cap lock card flat"><b>${esc(SC.CLIN.label('S06'))}</b><small>${I('lock')} ยังไม่เปิดรับ ทีมจะติดต่อเอง</small></div>
+        <div class="dc-ptsum"><div><b>${go.length}</b><span>ส่งงานให้ได้</span></div><div class="w"><b>${wait.length}</b><span>รอทีมดู</span></div><div><b>${off.length}</b><span>ยังไม่ส่งให้</span></div></div>
+        ${!ids.length ? ui.empty('list-checks', 'ยังไม่ได้เลือกกลุ่มงาน', 'เลือกกลุ่มงานตอนสร้างโปรไฟล์ก่อน', '') : `
+        ${open.length ? `<div class="note" data-cap-req-open>${I('hourglass')} คำขอแก้ ${open.length} เรื่อง รอทีมดู · ทีมตอบกลับใน LINE · ระหว่างนี้งานอื่นรับได้ตามปกติ</div>` : ''}
+        ${sec('รอทีมดู', wait, true)}${sec('ส่งงานให้คุณได้', go, !wait.length)}${sec('ยังไม่ส่งให้', off, false)}
+        <div class="tt-cap lock card flat">${SC.CLIN.row('S06')}<small>${I('lock')} ยังไม่เปิดรับ ทีมจะติดต่อเอง</small></div>
+        <button class="btn" style="width:100%" data-act="capReqOpen">${I('pencil')}ขอแก้งานที่รับ</button>
+        <p class="small" style="margin:0">แก้เองไม่ได้ ต้องบอกเหตุผล ถ้าขอเพิ่มสิ่งที่ทำได้ ต้องแนบหลักฐานให้ทีมดู · ถ้าขอลด มีผลทันที</p>
+        ${reqs.length ? `<details class="small"><summary>ประวัติคำขอแก้ ${reqs.length} เรื่อง</summary>${reqs.slice().reverse().map(r => `<p style="margin:4px 0">${esc(r.at)} · ${esc(SC.CLIN.th(r.id))} · ${esc(CAPW[r.from] || '—')} → ${esc(CAPW[r.to])} · ${r.status === 'PENDING' ? 'รอทีมดู' : r.status === 'APPLIED' ? 'มีผลแล้ว' : r.status === 'APPROVED' ? 'ทีมอนุมัติ' : 'ทีมไม่อนุมัติ'}</p>`).join('')}</details>` : ''}`}
       </div>${ui.tabs('pt', 't.hub')}</div>`;
     }
+  });
+  const CAPW = { can: 'ทำได้', ask: 'ทำได้ แต่ยังไม่มั่นใจ', no: 'ยังทำไม่ได้' }, RANK = { no: 0, ask: 1, can: 2 };
+  const capIds = p => [...new Set(SC.CLIN.services.filter(x => (p.services || []).includes(x.id)).flatMap(x => x.tasks))].filter(id => !SC.CLIN.restricted.includes(id)).sort((a, b) => (a[0] === b[0] ? 0 : a[0] === 'C' ? -1 : 1) || a.localeCompare(b));
+  const isRaise = (from, to) => (RANK[to] ?? 0) > (RANK[from] ?? -1);
+  function reqSheet(s, ids) {
+    const p = s.pt, d = p.capDraft = p.capDraft || {}, from = d.id ? p.caps[d.id] : '', raise = d.id && d.to && isRaise(from, d.to);
+    return `<div class="stack" data-cap-sheet>
+      <b class="h3">${I('pencil')}ขอแก้งานที่รับ</b>
+      <label class="field"><span>1 · งานไหน</span><select class="in" data-bind="pt.capDraft.id"><option value="">เลือกงาน</option>${ids.map(id => `<option value="${id}" ${d.id === id ? 'selected' : ''}>${esc(SC.CLIN.th(id))} · ${esc(SC.CLIN.en[id])}</option>`).join('')}</select></label>
+      ${d.id ? `<div class="small">ตอนนี้: <b>${esc(CAPW[from] || 'ยังไม่ได้ตอบ')}</b></div>
+      <div class="field"><span>2 · เปลี่ยนเป็น</span><div class="chips">${['can', 'ask', 'no'].filter(v => v !== from).map(v => `<button class="chip ${d.to === v ? 'on' : ''}" data-pick="pt.capDraft.to" data-value="${v}">${CAPW[v]}</button>`).join('')}</div></div>` : ''}
+      ${d.to ? `<label class="field"><span>3 · ทำไมถึงขอแก้</span><textarea class="in" style="min-height:64px" maxlength="200" data-bind="pt.capDraft.reason" placeholder="${raise ? 'เช่น ผ่านอบรมเรื่องนี้แล้ว / ดูแลเคสแบบนี้มา 2 ปีที่โรงพยาบาล' : 'เช่น ช่วงนี้ไม่ได้ทำงานนี้ ขอไม่รับไปก่อน'}">${esc(d.reason || '')}</textarea></label>
+      ${raise ? `<div class="field"><span>4 · แนบหลักฐานให้ทีมดู</span>${d.file ? `<span class="pill">${I('check')}แนบ${d.file === 'sample' ? 'ไฟล์ตัวอย่าง' : String(d.file).startsWith('data:application/pdf') ? 'ไฟล์ PDF' : 'รูปภาพ'}แล้ว</span>` : `<div class="grid2"><label class="btn sm ghost tt-file" style="width:100%">${I('upload')}แนบไฟล์<input type="file" accept="image/*,application/pdf" data-file="pt.capDraft.file" aria-label="แนบหลักฐาน"></label><button class="btn sm ghost" style="width:100%" data-pick="pt.capDraft.file" data-value="sample">ไฟล์ตัวอย่าง</button></div>`}<small class="small">เช่น ใบอบรม ใบรับรองการทำงาน</small></div><p class="small" style="margin:0">ทีมดูแล้วตอบใน LINE · ระหว่างรอ ระบบยังใช้คำตอบเดิม</p>` : '<p class="small" style="margin:0">ขอลด มีผลทันที ระบบจะไม่ส่งงานแบบนี้ให้คุณ (ไม่ต้องแนบหลักฐาน)</p>'}` : ''}
+      <div class="row"><button class="btn ghost" data-act="capReqClose">ยกเลิก</button><button class="btn" data-act="capReqSend" ${d.id && d.to ? '' : 'disabled'}>${raise ? 'ส่งให้ทีมดู' : 'ยืนยัน'}</button></div>
+    </div>`;
+  }
+  SC.action('capReqOpen', (s, ctx) => { s.pt.capDraft = {}; ctx.sheet(st => reqSheet(st, capIds(st.pt))); });
+  SC.action('capReqClose', (s, ctx) => { s.pt.capDraft = {}; ctx.close(); });
+  SC.action('capReqSend', (s, ctx) => {
+    const p = s.pt, d = p.capDraft || {}, id = d.id, to = d.to, from = (p.caps || {})[id] || '', why = (d.reason || '').trim(), ev = d.file ? (d.file === 'sample' ? 'ไฟล์ตัวอย่าง' : 'ไฟล์แนบ') : '';
+    if (!id || !to) return; if (!why) { ctx.toast('บอกเหตุผลก่อน'); return; }
+    const raise = isRaise(from, to); if (raise && !ev) { ctx.toast('ขอเพิ่มสิ่งที่ทำได้ ต้องแนบหลักฐานให้ทีมดู'); return; }
+    const at = SC.stamp ? SC.stamp(5) : SC.TODAY, req = { id, from, to, reason: why, evidence: ev, file: d.file || '', at, status: raise ? 'PENDING' : 'APPLIED' };
+    (p.capReqs = p.capReqs || []).push(req);
+    if (!raise) { p.caps[id] = to; const dd = (p.capDecisions || {})[id]; if (dd && dd.status === 'APPROVED') dd.status = to === 'no' ? 'REJECTED' : 'PENDING'; (p.capLog = p.capLog || []).push({ kind: 'declare', id, from, to, at, note: `ขอลด · ${why}` }); ctx.toast(`ลดแล้ว · ระบบไม่ส่งงาน "${SC.CLIN.th(id)}" ให้คุณ`); }
+    else { const dec = p.capDecisions = p.capDecisions || {}; if (!dec[id] || dec[id].status !== 'PENDING') dec[id] = Object.assign({}, dec[id] || {}, { status: 'PENDING', at, req: true }); (p.capLog = p.capLog || []).push({ kind: 'declare', id, from, to, at, note: `ขอแก้ · ${why} · หลักฐาน: ${ev}` });
+      ctx.line('admin', { key: 'note', title: 'PT ขอแก้งานที่รับ รอทีมดู', lines: [`${p.displayName || 'PT'} ขอเปลี่ยน "${SC.CLIN.th(id)}" (${SC.CLIN.en[id]})`, `จาก ${CAPW[from] || 'ยังไม่ได้ตอบ'} เป็น ${CAPW[to]}`, `เหตุผล: ${why}`, `หลักฐาน: ${ev}`, 'ใครมีสิทธิ์ Clinical Lead ก็ตัดสินได้'], go: 'a.caps', button: 'ดูคำขอ' });
+      ctx.toast('ส่งคำขอให้ทีมแล้ว ทีมตอบใน LINE'); }
+    p.capDraft = {}; ctx.close();
   });
   /* ---------- "มาใหม่ · รอตรวจ": what the owner should look at next, on the flow and on the screen itself ---------- */
   const fireAct = SC.fireAct = (name, data) => { const b = document.createElement('button'); b.dataset.act = name; Object.assign(b.dataset, data || {}); (document.querySelector('#dev .scr') || document.body).appendChild(b); b.click(); };

@@ -78,7 +78,16 @@
   /* พี่ปาล์ม Fix Brief round 2 (Q-G): PT and clinical screens show the code and English term; Thai is secondary. IDs, mapping and PT answers do not change. */
   CLIN.en = { C01: 'Safety Screening', C02: 'MSK Assessment', C03: 'Neuro Assessment', C04: 'Functional Assessment', C05: 'Balance Assessment', C06: 'ROM & Mobility Exercise', C07: 'Strength Training', C08: 'Endurance & Aerobic Training', C09: 'Postural Control', C10: 'Bed Mobility', C11: 'Transfer Training', C12: 'Gait & Stair Training', C13: 'Balance Training', C14: 'Upper Limb Function', C15: 'Manual Therapy', C16: 'Home Program & Education', C17: 'Physical Modalities',
     S01: 'Post-operative Rehabilitation', S02: 'Orthotics & Prosthetics', S03: 'Neurological Rehabilitation', S04: 'Respiratory Rehabilitation', S05: 'Airway Clearance', S06: 'Airway Suction (Restricted)', S08: 'Cardiac Rehabilitation' };
-  CLIN.label = id => `${id} — ${CLIN.en[id]}`;
+  /* Boss 11 Nov: no bare codes in front of PTs or in LINE. A task reads as its English term with the Thai meaning under it and an icon.
+     The code stays only as a small grey tag on clinical review screens (Palm's Q-G, 4 Nov: code + English term; Thai is now shown too). */
+  CLIN.icon = { C01: 'shield-check', C02: 'activity', C03: 'brain', C04: 'clipboard-list', C05: 'shield-alert', C06: 'rotate-ccw', C07: 'dumbbell', C08: 'timer', C09: 'person-standing', C10: 'bed', C11: 'arrow-left-right', C12: 'footprints', C13: 'scale', C14: 'hand', C15: 'hand-heart', C16: 'house', C17: 'zap',
+    S01: 'scissors', S02: 'accessibility', S03: 'brain-circuit', S04: 'wind', S05: 'waves', S06: 'lock', S08: 'heart-pulse' };
+  CLIN.label = id => `${CLIN.en[id]} (${CLIN.tasks[id]})`;  // plain text: LINE lines, reasons, aria
+  CLIN.th = id => CLIN.tasks[id];
+  /* One task as a row: icon tile, English term, Thai meaning. opts.code adds the grey code tag (clinical screens only). */
+  CLIN.row = (id, opts = {}) => `<span class="tk"><span class="tk-i">${icon(CLIN.icon[id] || 'circle')}</span><span class="tk-t"><b>${esc(CLIN.en[id])}</b><small>${esc(CLIN.tasks[id])}</small></span>${opts.code ? `<span class="tk-c">${id}</span>` : ''}${opts.tail || ''}</span>`;
+  /* A list of tasks as bullets instead of a run-on line joined by " · ". */
+  CLIN.list = (ids, opts = {}) => ids && ids.length ? `<ul class="tk-list${opts.tight ? ' tight' : ''}">${ids.map(id => `<li>${CLIN.row(id, opts)}</li>`).join('')}</ul>` : '';
   // Blood pressure categories (AHA chart Boss sent, 23 Oct). sys/dia in mmHg; the higher category of the two wins.
   const BP_CATS = [
     { key: 'normal', label: 'ปกติ', tone: 'ok', note: 'ต่ำกว่า 120/80' },
@@ -188,6 +197,8 @@
      The layer lives outside the screen markup so re-renders don't wipe it; the pill shows the old total until the reward lands. */
   let fx;
   function xp(points, reason) {
+    /* Boss (30 Oct, again 11 Nov): no XP for PTs until there is a reward budget. Keep the call sites; just confirm the step. */
+    return toast(`${reason} เรียบร้อย`);
     if (v.xpShown == null) v.xpShown = s.pt.xp;
     s.pt.xp += points; s.pt.xpLog.unshift({ points, reason });
     const dev = document.getElementById('dev'); if (!dev) return;
@@ -296,7 +307,7 @@
     { n: 10, role: 'pt', title: 'วางแผนการรักษากับคนไข้', start: 't.visit', done: () => !!((s.course && s.course.slip && s.course.next && s.course.notified) || (s.perVisit && s.perVisit.next)),
       guide: { 't.visit': ['[data-go="t.plan"]', 'กด "วางแผนการรักษากับคนไข้"'], 't.work': ['[data-go="t.plan"]', 'เปิดการ์ดคุยแผนการรักษากับคนไข้'], 't.plan': ['[data-act="planNext"], [data-act="coursePaid"], [data-act="bookNext"]', 'พิมพ์เป้าหมายที่คนไข้อยากได้ → ความถี่และวัน → เลือกคอร์ส → คนไข้สแกนจ่าย แล้วแจ้งแอดมิน → นัดครั้งที่ 2'] },
       complete() { s.coursePlan = { step: 6, goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', freq: 2, weeks: 5, full: 1850, pack: 10, code: false, price: null, bonus: 0, slip: 'sample', next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'] }; s.course = { sessions: 10, bonus: 0, perSession: 1368, fee: 2227, net: 13683, total: 15910, code: '', paid: false, slip: 'sample', approved: false, used: 0, next: VISIT2.short, backups: ['ศ. 30 ต.ค. 09:00'], notified: true }; line('admin', { key: 'paymentReviewCourse' }); } },
-    { n: 11, role: 'pt', title: 'เขียน OPD ภายใน 2 ชม.', start: 't.work', done: () => !!(s.visits[0] && s.visits[0].published),
+    { n: 11, role: 'pt', title: 'เขียน OPD ภายใน 23:59 วันนั้น', start: 't.work', done: () => !!(s.visits[0] && s.visits[0].published),
       guide: { 't.plan': ['[data-act="planDone"]', 'กด "เขียน OPD"'], 't.work': ['[data-go="t.opd"]', 'เปิดบันทึกที่ต้องส่ง'], 't.opd': ['[data-act="publishReport"]', 'เป้าหมายดึงมาจากแผนที่คุยกับคนไข้ เขียน OPD แล้วกด "ลงนามและส่งสรุป"'] },
       complete() { const x = s.visits[0]; x.published = true; x.soap = { goal: 'ลุกจากเก้าอี้และเดินในบ้านได้เองอย่างปลอดภัย', s: 'Low back pain when standing up, 6/10', o: 'Needs hands to push up from a chair; slow gait', t: ['Lumbar mobilization', 'Sit-to-stand training, 3 sets', 'Home exercise teaching'], p: 'ฝึกลุกจากเก้าอี้ 10 ครั้ง วันละ 2 รอบ มีคนยืนข้าง ๆ', dx: 'Low back pain with lower-limb weakness', family: 'ให้คุณแม่ฝึกลุกนั่งวันละ 2 รอบ มีคนยืนข้าง ๆ' }; line('patient', { key: 'report' }); } },
     { n: 12, role: 'patient', title: 'คนไข้อ่านสรุปและรีวิว', start: 'p.report', done: () => !!s.review,
@@ -393,7 +404,7 @@
   const CUSTOM = {
     received: (m) => simpleCard('รับคำขอเรียบร้อยแล้ว', m.snap || receivedSnap(), 'ดูสถานะ', 'line-request-received', 'received'),
     ptOffer: (m) => offerCard(m.offerId ? m : offerStamp(m)),
-    ptVerified: () => simpleCard('ใบประกอบวิชาชีพ ตรวจสอบได้แล้ว', [`ยินดีด้วย ${s.pt.displayName || ''}`, 'ผู้รับบริการเห็นโปรไฟล์ของคุณแล้ว', '+50 XP'], 'ดูหน้าของฉัน', 'line-welcome'),
+    ptVerified: () => simpleCard('ใบประกอบวิชาชีพ ตรวจสอบได้แล้ว', [`ยินดีด้วย ${s.pt.displayName || ''}`, 'ผู้รับบริการเห็นโปรไฟล์ของคุณแล้ว', 'ระบบเริ่มส่งงานในเขตของคุณได้'], 'ดูหน้าของฉัน', 'line-welcome'),
     certReady: () => simpleCard('ใบรับรองกายภาพบำบัดพร้อมแล้ว', ['ภาษาไทย และ English', `ออกโดย ${s.pt.displayName || 'นักกายภาพ'}`], 'เปิดใบรับรอง', 'line-report-ready'),
     teamReply: (m) => `<div class="fx-msg">${esc(m.text)}</div>`,
     // Patient asked for a certificate from My Care (Boss 29 Oct): the PT gets a task card.

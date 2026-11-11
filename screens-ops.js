@@ -75,6 +75,8 @@
   const taskKey = x => `${x.kind || 'x'}:${x.title}`;
   const hours = from => from && SC.clockHours ? SC.clockHours(from) : null;
   const ageText = h => h == null ? '' : h < 1 ? 'ไม่ถึง 1 ชม.' : h < 48 ? `${Math.round(h)} ชม.` : `${Math.round(h / 24)} วัน`;
+  /* Palm (11 Nov): OPD/SOAP is late after 23:59 on the visit day. Minutes from the visit start to 23:59. */
+  const untilMidnight = v => { const h = /^(\d{2}):(\d{2})/.exec(v.time || ''); return h ? 23 * 60 + 59 - (+h[1] * 60 + +h[2]) : 600; };
   const visitEnd = v => { const m = /–(\d{2}):(\d{2})/.exec(v.time || ''), h = /^(\d{2}):(\d{2})/.exec(v.time || ''); if (!m || !h) return 60; return (+m[1] * 60 + +m[2]) - (+h[1] * 60 + +h[2]); };
   const isoDate = iso => String(iso || '').slice(0, 10);
 
@@ -99,7 +101,7 @@
     vToday.forEach(v => { const o = SC.visitOutcome(s, v); if (o && !o.done) byState.other++; else if (v.step >= 4) { byState.done++; if (!v.published) byState.opd++; } else if (v.step === 3) byState.care++; else if (v.step === 2) byState.arrived++; else if (v.step === 1) byState.travel++; });
     const nextV = s.visits.filter(v => v.step < 4).map(v => SC.visitIso(v)).filter(x => x && x >= now).sort()[0];
     /* OPD past 2 h after the visit ends */
-    const opdLate = s.visits.filter(v => v.step >= 4 && !v.exit && !v.published && SC.visitIso(v) && SC.visitIso(v, visitEnd(v) + 120) < now);
+    const opdLate = s.visits.filter(v => v.step >= 4 && !v.exit && !v.published && SC.visitIso(v) && SC.visitIso(v, untilMidnight(v)) < now);
     /* safety */
     const em = SC.emCase(s), emOpen = em && !em.closed ? em : null, inc = (s.incidents || []).filter(x => x.open);
     const hold = r && r.scopeHold && !r.closed ? (() => { const paid = r.paidAt || '2026-10-22', H = r.hold || {}; return { d14: SC.addDays(paid, 14), d30: SC.addDays(paid, 30), sent14: !!H.d14, sent30: !!H.d30 }; })() : null;
@@ -119,7 +121,7 @@
     f.inc.forEach(x => a.push(['red', 'triangle-alert', `Incident ${x.id} · ${x.title}`, 'incOpen', x.id]));
     if (f.hold) { if (!f.hold.sent14) a.push(['', 'calendar-clock', `พักการดูแล ${r.ref}: วันที่ 14 = ${SC.thDateIso(f.hold.d14)}`, 'go:a.clinical']); else if (!f.hold.sent30) a.push(['', 'calendar-clock', `พักการดูแล ${r.ref}: วันที่ 30 = ${SC.thDateIso(f.hold.d30)}`, 'go:a.clinical']); }
     if (f.waitPt.some(x => x.d24)) a.push(['', 'search', `ค้นหา ${r.ref} ครบ 24 ชม. แล้วยังไม่ได้ PT`, 'go:a.match']);
-    f.opdLate.forEach(v => a.push(['', 'file-clock', `OPD ครั้งที่ ${v.n} เกิน 2 ชม. แล้ว`, 'go:a.appts']));
+    f.opdLate.forEach(v => a.push(['', 'file-clock', `OPD ครั้งที่ ${v.n} เลย 23:59 ของวันนัดแล้ว`, 'go:a.appts']));
     if (r && r.check && r.check.state === 'open') a.push(['', 'receipt', `สลิปยอดไม่ตรง ${r.ref}`, 'go:a.payments']);
     if (!a.length) return `<div class="ops-alerts calm" data-ops-alerts="0">${I('circle-check')} ไม่มีเรื่องด่วน · ฉุกเฉิน Incident วันที่ 14/30 ค้นหาเกิน 24 ชม. OPD เกิน 2 ชม. และสลิปผิดยอด จะขึ้นที่นี่</div>`;
     return `<div class="ops-alerts" data-ops-alerts="${a.length}" role="status"><b>${I('bell-ring')} เตือน</b>${a.map(([tone, ic, t, to, id]) => to.startsWith('go:') ? `<button class="ops-al ${tone}" data-go="${to.slice(3)}">${I(ic)}${esc(t)}</button>` : `<button class="ops-al ${tone}" data-act="${to}" ${id ? `data-id="${esc(id)}"` : ''}>${I(ic)}${esc(t)}</button>`).join('')}</div>`;

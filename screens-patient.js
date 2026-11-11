@@ -409,6 +409,7 @@
   .pl-fopen .pl-chev { align-self: center; width: 20px; height: 20px; color: var(--mute); flex: none; }
   @media (prefers-reduced-motion: reduce) { html:not(.motion-on) .pl-post { animation: none; } }
   /* ---------- Palm's board: Level 1 detail + Level 2 profile ---------- */
+  .pp-house { display: grid; gap: 8px; } .pp-house img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 14px; } em.opt { font-style: normal; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #eef4f1; color: var(--mute); }
   .pf-cover { position: relative; height: 148px; flex: none; background: linear-gradient(120deg, #00583e, #4f9a7a 55%, #f2e3c6) center / cover; }
   .pf-cover .ib { position: absolute; top: 12px; left: 12px; background: #ffffffe6; box-shadow: 0 4px 12px #04392820; }
   .pf-cover .smp { position: absolute; top: 20px; right: 16px; }
@@ -479,7 +480,15 @@
   const POSTAL_SUB = {"พระนคร|พระบรมมหาราชวัง":"10200","พระนคร|วังบูรพาภิรมย์":"10200","พระนคร|วัดราชบพิธ":"10200","พระนคร|สำราญราษฎร์":"10200","พระนคร|ศาลเจ้าพ่อเสือ":"10200","พระนคร|เสาชิงช้า":"10200","พระนคร|บวรนิเวศ":"10200","พระนคร|ตลาดยอด":"10200","พระนคร|ชนะสงคราม":"10200","พระนคร|บ้านพานถม":"10200","พระนคร|บางขุนพรหม":"10200","พระนคร|วัดสามพระยา":"10200","ดุสิต|ดุสิต":"10300","ดุสิต|วชิรพยาบาล":"10300","ดุสิต|สวนจิตรลดา":"10300","ดุสิต|สี่แยกมหานาค":"10300","ดุสิต|ถนนนครไชยศรี":"10300","หนองจอก|กระทุ่มราย":"10530","หนองจอก|หนองจอก":"10530","หนองจอก|คลองสิบ":"10530","หนองจอก|คลองสิบสอง":"10530","หนองจอก|โคกแฝด":"10530","หนองจอก|คู้ฝั่งเหนือ":"10530","หนองจอก|ลำผักชี":"10530","หนองจอก|ลำต้อยติ่ง":"10530","บางรัก|มหาพฤฒาราม":"10500","บางรัก|สีลม":"10500","บางรัก|สุริยวงศ์":"10500","บางรัก|บางรัก":"10500","บางรัก|สี่พระยา":"10500","บางเขน|อนุสาวรีย์":"10220","บางเขน|ท่าแร้ง":"10220","บางกะปิ|คลองจั่น":"10240","บางกะปิ|หัวหมาก":"10240","ปทุมวัน|รองเมือง":"10330","ปทุมวัน|วังใหม่":"10330","ปทุมวัน|ปทุมวัน":"10330","ปทุมวัน|ลุมพินี":"10330","ป้อมปราบศัตรูพ่าย|ป้อมปราบ":"10100","ป้อมปราบศัตรูพ่าย|วัดเทพศิรินทร์":"10100","ป้อมปราบศัตรูพ่าย|คลองมหานาค":"10100","ป้อมปราบศัตรูพ่าย|บ้านบาตร":"10100","ป้อมปราบศัตรูพ่าย|วัดโสมนัส":"10100","พระโขนง|บางจาก":"10260","พระโขนง|พระโขนงใต้":"10260","มีนบุรี|มีนบุรี":"10510","มีนบุรี|แสนแสบ":"10510","ลาดกระบัง|ลาดกระบัง":"10520","ลาดกระบัง|คลองสองต้นนุ่น":"10520","ลาดกระบัง|คลองสามประเวศ":"10520","ลาดกระบัง|ลำปลาทิว":"10520","ลาดกระบัง|ทับยาว":"10520","ลาดกระบัง|ขุมทอง":"10520","ยานนาวา|ช่องนนทรี":"10120","ยานนาวา|บางโพงพาง":"10120","สัมพันธวงศ์|จักรวรรดิ":"10100","สัมพันธวงศ์|สัมพันธวงศ์":"10100","สัมพันธวงศ์|ตลาดน้อย":"10100","พญาไท|สามเสนใน":"10400","พญาไท|พญาไท":"10400","ธนบุรี|วัดกัลยาณ์":"10600","ธนบุรี|หิรัญรูจี":"10600","ธนบุรี|บางยี่เรือ":"10600","ธนบุรี|บุคคโล":"10600","ธนบุรี|ตลาดพลู":"10600","ธนบุรี|ดาวคะนอง":"10600","ธนบุรี|สำเหร่":"10600","บางกอกใหญ่|วัดอรุณ":"10600","บางกอกใหญ่|วัดท่าพระ":"10600","ห้วยขวาง|ห้วยขวาง":"10310","ห้วยขวาง|บางกะปิ":"10310","ห้วยขวาง|สามเสนนอก":"10310","คลองสาน|สมเด็จเจ้าพระยา":"10600","คลองสาน|คลองสาน":"10600","คลองสาน|บางลำภูล่าง":"10600","คลองสาน|คลองต้นไทร":"10600","ตลิ่งชัน|คลองชักพระ":"10170","ตลิ่งชัน|ตลิ่งชัน":"10170","ตลิ่งชัน|ฉิมพลี":"10170","ตลิ่งชัน|บางพรม":"10170","ตลิ่งชัน|บางระมาด":"10170","ตลิ่งชัน|บางเชือกหนัง":"10170","บางกอกน้อย|ศิริราช":"10700","บางกอกน้อย|บ้านช่างหล่อ":"10700","บางกอกน้อย|บางขุนนนท์":"10700","บางกอกน้อย|บางขุนศรี":"10700","บางกอกน้อย|อรุณอมรินทร์":"10700","บางขุนเทียน|ท่าข้าม":"10150","บางขุนเทียน|แสมดำ":"10150","ภาษีเจริญ|บางหว้า":"10160","ภาษีเจริญ|บางด้วน":"10160","ภาษีเจริญ|บางจาก":"10160","ภาษีเจริญ|บางแวก":"10160","ภาษีเจริญ|คลองขวาง":"10160","ภาษีเจริญ|ปากคลองภาษีเจริญ":"10160","ภาษีเจริญ|คูหาสวรรค์":"10160","หนองแขม|หนองแขม":"10160","หนองแขม|หนองค้างพลู":"10160","ราษฎร์บูรณะ|ราษฎร์บูรณะ":"10140","ราษฎร์บูรณะ|บางปะกอก":"10140","บางพลัด|บางพลัด":"10700","บางพลัด|บางอ้อ":"10700","บางพลัด|บางบำหรุ":"10700","บางพลัด|บางยี่ขัน":"10700","ดินแดง|ดินแดง":"10400","ดินแดง|รัชดาภิเษก":"10400","บึงกุ่ม|คลองกุ่ม":"10240","บึงกุ่ม|นวมินทร์":"10240","บึงกุ่ม|นวลจันทร์":"10240","สาทร|ทุ่งวัดดอน":"10120","สาทร|ยานนาวา":"10120","สาทร|ทุ่งมหาเมฆ":"10120","บางซื่อ|บางซื่อ":"10800","บางซื่อ|วงศ์สว่าง":"10800","จตุจักร|ลาดยาว":"10900","จตุจักร|เสนานิคม":"10900","จตุจักร|จันทรเกษม":"10900","จตุจักร|จอมพล":"10900","จตุจักร|จตุจักร":"10900","บางคอแหลม|บางคอแหลม":"10120","บางคอแหลม|วัดพระยาไกร":"10120","บางคอแหลม|บางโคล่":"10120","ประเวศ|ประเวศ":"10250","ประเวศ|หนองบอน":"10250","ประเวศ|ดอกไม้":"10250","คลองเตย|คลองเตย":"10110","คลองเตย|คลองตัน":"10110","คลองเตย|พระโขนง":"10110","สวนหลวง|สวนหลวง":"10250","สวนหลวง|อ่อนนุช":"10250","สวนหลวง|พัฒนาการ":"10250","จอมทอง|บางขุนเทียน":"10150","จอมทอง|บางค้อ":"10150","จอมทอง|บางมด":"10150","จอมทอง|จอมทอง":"10150","ดอนเมือง|สีกัน":"10210","ดอนเมือง|ดอนเมือง":"10210","ดอนเมือง|สนามบิน":"10210","ราชเทวี|ทุ่งพญาไท":"10400","ราชเทวี|ถนนพญาไท":"10400","ราชเทวี|ถนนเพชรบุรี":"10400","ราชเทวี|มักกะสัน":"10400","ลาดพร้าว|ลาดพร้าว":"10230","ลาดพร้าว|จรเข้บัว":"10230","วัฒนา|คลองเตยเหนือ":"10110","วัฒนา|คลองตันเหนือ":"10110","วัฒนา|พระโขนงเหนือ":"10110","บางแค|บางแค":"10160","บางแค|บางแคเหนือ":"10160","บางแค|บางไผ่":"10160","บางแค|หลักสอง":"10160","หลักสี่|ทุ่งสองห้อง":"10210","หลักสี่|ตลาดบางเขน":"10210","สายไหม|สายไหม":"10220","สายไหม|ออเงิน":"10220","สายไหม|คลองถนน":"10220","คันนายาว|คันนายาว":"10230","คันนายาว|รามอินทรา":"10230","สะพานสูง|สะพานสูง":"10240","สะพานสูง|ราษฎร์พัฒนา":"10240","สะพานสูง|ทับช้าง":"10250","วังทองหลาง|วังทองหลาง":"10310","วังทองหลาง|สะพานสอง":"10310","วังทองหลาง|คลองเจ้าคุณสิงห์":"10310","วังทองหลาง|พลับพลา":"10310","คลองสามวา|สามวาตะวันตก":"10510","คลองสามวา|สามวาตะวันออก":"10510","คลองสามวา|บางชัน":"10510","คลองสามวา|ทรายกองดิน":"10510","คลองสามวา|ทรายกองดินใต้":"10510","บางนา|บางนาเหนือ":"10260","บางนา|บางนาใต้":"10260","ทวีวัฒนา|ทวีวัฒนา":"10170","ทวีวัฒนา|ศาลาธรรมสพน์":"10170","ทุ่งครุ|บางมด":"10140","ทุ่งครุ|ทุ่งครุ":"10140","บางบอน|บางบอนเหนือ":"10150","บางบอน|บางบอนใต้":"10150","บางบอน|คลองบางพราน":"10150","บางบอน|คลองบางบอน":"10150"};
   const subsOf = d => d ? (SUBS[d] || [d]) : [];
   const zoneOf = d => SC.ZONES.find(z => z.districts.includes(d));
-  const DAYS = ['ส. 24 ต.ค.', 'อา. 25 ต.ค.', 'จ. 26 ต.ค.', 'อ. 27 ต.ค.', 'พ. 28 ต.ค.', 'พฤ. 29 ต.ค.', 'ศ. 30 ต.ค.'];
+  /* Palm (11 Nov): the patient can pick any day left in this month. Near the month's end (under 14 days left) the first 14 days of next
+     month show too, because PTs send next month's schedule by the 25th. The rehearsal starts on ส. 24 ต.ค. 2569. */
+  const DAYS = (() => {
+    const WDS = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'], MS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    const start = new Date(2026, 9, 24), y = start.getFullYear(), m = start.getMonth(), last = new Date(y, m + 1, 0).getDate();
+    const out = []; for (let d = start.getDate(); d <= last; d++) out.push(new Date(y, m, d));
+    if (last - start.getDate() + 1 < 14) for (let d = 1; d <= 14; d++) out.push(new Date(y, m + 1, d));
+    return out.map(x => `${WDS[x.getDay()]} ${x.getDate()} ${MS[x.getMonth()]}`);
+  })();
   const TIMES = Array.from({ length: 23 }, (_, i) => `${String(8 + Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`);
   const STEP_LABELS = ['เริ่มต้น', 'ผู้รับบริการ', 'เป้าหมาย', 'ข้อมูลสุขภาพ', 'กิจวัตร', 'ที่อยู่', 'เวลา', 'การใช้ข้อมูล', 'สรุป'];
   const GOALS = [['WALK', 'เดินในบ้านได้มั่นใจขึ้น', 'footprints'], ['TRANSFER', 'ลุกนั่งและย้ายตัวได้สะดวกขึ้น', 'armchair'], ['SELF_CARE', 'ดูแลตัวเองในชีวิตประจำวันได้มากขึ้น', 'heart-handshake'],
@@ -740,7 +749,7 @@
     const r = s.request || {}, rv = r.review, p = s.patient, on = !!(rv && rv.cleared);
     const b = p.branch || {}, asksSuction = (p.group === 'CARDIO' && ['SUCTION', 'UNSURE'].includes(b.airway)) || SC.clinExtraTasks(s).length > 0, allowIds = on ? rv.allow : [], notIds = on ? [...new Set([...SC.clinExtraTasks(s), ...(asksSuction ? ['S06'] : [])])].filter(id => !allowIds.includes(id)) : [];
     const prec = p.group === 'ORTHO' && b.wb ? [`Weight-bearing: ${WB_TERM[b.wb]}`, ...(b.prec === 'HAS' ? ['มีข้อห้ามจากหมอ ดูรายละเอียดหลังรับงาน'] : [])] : [];
-    return { want: SC.goalLabels(s).join(' · '), allow: allowIds.map(id => SC.CLIN.tasks[id]), not: notIds.map(id => SC.CLIN.tasks[id]), allowPt: allowIds.map(SC.CLIN.label), notPt: notIds.map(SC.CLIN.label), limits: on ? rv.limits : '', prec, assessOnly: on && allowIds.length > 0 && allowIds.every(id => SC.ASSESS_TASKS.includes(id)) };
+    return { want: SC.goalLabels(s).join(' · '), allow: allowIds.map(id => SC.CLIN.tasks[id]), not: notIds.map(id => SC.CLIN.tasks[id]), allowIds, notIds, allowPt: allowIds.map(SC.CLIN.label), notPt: notIds.map(SC.CLIN.label), limits: on ? rv.limits : '', prec, assessOnly: on && allowIds.length > 0 && allowIds.every(id => SC.ASSESS_TASKS.includes(id)) };
   };
   // P0-02: one source for what the patient actually chose. Never rebuilt from service mapping or a sample.
   SC.goalLabels = s => { const p = s.patient; return (p.goals || []).map(g => g === 'OTHER' ? (p.goalOther || 'อื่น ๆ') : (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean); };
@@ -921,7 +930,8 @@
           ${/* P03 (Palm's Level 1 board): care categories, then one green match card with the main action, then PTs, then articles. */ ''}
           <nav class="pl-cats" aria-label="หมวดการดูแล">${CATS.map(([t, ic]) => `<button data-act="feedCat" data-c="${t}"><span>${I(ic)}</span>${t}</button>`).join('')}</nav>
           ${myCareCard(s)}
-          ${s.request ? '' : `<section class="pl-match" aria-label="ประเมินอาการ"><div class="grow"><b>ไม่แน่ใจว่าจะเลือกใคร</b><p>ประเมินอาการก่อน แล้วทีมหานักกายภาพที่ตรงกับอาการและเขตให้</p></div><button class="btn light" data-go="p.intake">${I('clipboard-check')}ประเมินอาการ</button></section>`}
+          ${/* Boss (11 Nov): two ways to get a PT stay visible on home: pick one yourself (cards below), or answer the assessment and let the team match. */ ''}
+          ${matchCard(s)}
           <div class="pl-ftabs" role="tablist" aria-label="ฟีด">${FEED_TABS.map(([k, t]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-pick="patient.feedTab" data-value="${k}">${t}${k === 'follow' && nf ? ` <i>${nf}</i>` : ''}</button>`).join('')}</div>
           ${feedStream(s, list, tab === 'pts' ? 'all' : tab)}
           <div class="trustbar" role="list" aria-label="ทำไมไว้ใจ SynaClair ได้">${[['shield-check', 'ตรวจใบประกอบ<br>ทุกคน'], ['users', 'ทุกนัด<br>ผ่านทีม'], ['house', 'ดูแล<br>ถึงบ้าน']].map(([ic, t]) => `<span role="listitem">${I(ic)}${t}</span>`).join('')}</div>
@@ -931,6 +941,15 @@
       </div>`;
     }
   });
+  /* Boss (11 Nov): the team-match card never disappears. Before a request it starts the assessment; while matching it shows the status;
+     once a PT has taken the job it opens that PT's profile. */
+  function matchCard(s) {
+    const r = s.request, got = r && (['BOOKED'].includes(r.status) || s.visits.length);
+    const [t, sub, btn] = !r ? ['ให้ทีมจับคู่นักกายภาพให้', 'ไม่แน่ใจว่าจะเลือกใคร ตอบแบบประเมิน แล้วทีมหาคนที่ตรงกับอาการและเขตให้', `<button class="btn light" data-go="p.intake">${I('clipboard-check')}เริ่มจับคู่</button>`]
+      : got ? ['ทีมจับคู่ให้แล้ว', 'ดูโปรไฟล์นักกายภาพที่ดูแลคุณ', `<button class="btn light" data-act="openMatchedPt">${I('user-round')}ดูนักกายภาพ</button>`]
+      : ['ทีมกำลังจับคู่ให้คุณ', 'ดูได้ว่าตอนนี้ถึงขั้นไหนแล้ว', `<button class="btn light" data-go="${r.status === 'PAYMENT_PENDING' ? 'p.pay' : 'p.paywait'}">${I('hourglass')}ดูการจับคู่</button>`];
+    return `<section class="pl-match" aria-label="ให้ทีมจับคู่นักกายภาพ"><div class="grow"><b>${t}</b><p>${sub}</p></div>${btn}</section>`;
+  }
   /* 7 Nov rehearsal P18: after booking, the home page shows the booked visit and a direct way to tell the team something changed. */
   function myCareCard(s) {
     const r = s.request; if (!r) return '';
@@ -1059,6 +1078,8 @@
       ${(c.train || []).length ? plSec('award', 'การอบรมและใบ certificate', `${plLine(c.train.map(([y, t, cert]) => [t, cert ? 'มีใบ certificate · ทีมตรวจแล้ว' : '', y]))}<div class="pl-certf" aria-hidden="true"><i>${I('award')}</i><b>Certificate of Attendance</b><small>${esc(c.train[0][1])}</small></div>`) : ''}
       ${any ? '' : `<p class="pl-empty">${I('file-clock')}นักกายภาพยังไม่ได้เพิ่มประวัติการศึกษาและการอบรม</p>`}`;
   }
+  /* Boss (11 Nov): the PT's own hub shows this same profile, plus edit buttons only the PT sees. */
+  SC.ptProf = { meItem, ptTab, plVer, PT_TABS };
   SC.screen('p.pt', {
     role: 'patient',
     render(s) {
@@ -1168,6 +1189,11 @@
         <label class="field"><span>รหัสไปรษณีย์</span><input class="in" value="${esc(a.postal)}" readonly placeholder="เติมให้เอง" aria-readonly="true"></label></div>
       <label class="field"><span>บ้านเลขที่ ซอย ถนน <em class="req">จำเป็น</em></span><input class="in" data-bind="patient.address.line" value="${esc(a.line)}" placeholder="เช่น 99/1 ซ.บางนา-ตราด 25 ถ.บางนา-ตราด" autocomplete="street-address"></label>
       <label class="field"><span>จุดสังเกตและวิธีเข้าบ้าน <em class="req">จำเป็น</em></span><textarea class="in" data-bind="patient.address.landmark" style="min-height:84px" placeholder="เช่น ตึกสีครีม ประตูรั้วสีเขียว ตรงข้ามร้านสะดวกซื้อ จอดรถหน้าบ้านได้">${esc(a.landmark || '')}</textarea></label>
+      ${/* Palm (11 Nov): an optional photo of the front of the house, so the PT finds the right door. Only the PT who takes the job sees it. */ ''}
+      <div class="field"><span>รูปหน้าบ้าน <em class="opt">ถ้ามี</em></span>
+        ${a.housePhoto ? `<span class="pp-house"><img src="${esc(a.housePhoto === 'sample' ? 'a/welcome.jpg' : a.housePhoto)}" alt="รูปหน้าบ้าน"><button class="btn sm ghost" data-pick="patient.address.housePhoto" data-value="">${I('x')}เอารูปออก</button></span>`
+          : `<div class="grid2"><label class="btn ghost tt-file" style="width:100%">${I('camera')}ถ่ายหรือเลือกรูป<input type="file" accept="image/*" data-file="patient.address.housePhoto" aria-label="แนบรูปหน้าบ้าน"></label><button class="btn ghost" style="width:100%" data-pick="patient.address.housePhoto" data-value="sample">ใช้รูปตัวอย่าง</button></div>`}
+        <small class="hint">เช่น ประตูรั้ว หรือหน้าตึก ช่วยให้นักกายภาพหาบ้านถูก · เห็นเฉพาะนักกายภาพที่รับงานนี้</small></div>
       <span class="label">หมุดบ้าน</span>
       <div class="pp-map ${a.pin ? 'ok' : ''}" role="img" aria-label="แผนที่ตัวอย่าง"><span class="pin">${I('map-pin')}</span><span class="lbl">${a.pin ? 'ยืนยันหมุดแล้ว' : 'ลากแผนที่ให้หมุดตรงบ้าน'}</span></div>
       ${a.pin ? `<button class="btn ghost" data-pick="patient.address.pin" data-value="false">${I('map-pin')}ย้ายหมุดใหม่</button>` : `<button class="btn soft" data-pick="patient.address.pin" data-value="true">${I('check')}ยืนยันหมุด</button>`}`;
@@ -1196,7 +1222,7 @@
       ${sec('เป้าหมาย', 2, p.goals.length ? `<div class="chips">${p.goals.map(g => `<span class="pill">${esc(g === 'OTHER' && p.goalOther ? p.goalOther : GOAL_TEXT[g])}</span>`).join('')}</div>` : '<p class="small">ยังไม่ได้เลือก</p>')}
       ${sec('ข้อมูลสุขภาพ', 3, HEALTH.every(q => q.bp ? bpOk(p) : (p.health || {})[q.k]) ? `<p>${SC.clinReasons(SC.s).length ? (SC.s.request && (SC.s.request.paid || ['SLIP_SENT', 'PAID', 'OFFERED', 'BOOKED'].includes(SC.s.request.status)) ? 'ทีมคลินิกต้องตรวจข้อมูลก่อน · ชำระแล้ว ไม่ต้องชำระซ้ำ' : 'ทีมคลินิกต้องตรวจข้อมูลก่อน ยังไม่ต้องชำระเงินในตอนนี้') : flags ? `มี ${flags} ข้อที่ทีมขอดูเพิ่ม ทีมอาจโทรถามก่อนนัด` : 'ยังไม่พบข้อที่ต้องให้ทีมดูเป็นพิเศษ ระบบจะตรวจอีกครั้งตอนส่ง'}</p>${bpLine(p) ? `<p class="small" style="margin:6px 0 0">ความดันล่าสุด ${bpLine(p)}</p>` : ''}${(p.health || {}).q3 === 'YES' && (p.devices || []).length ? `<p class="small" style="margin:6px 0 0">อุปกรณ์: ${p.devices.map(d => esc(d === 'อื่น ๆ' && p.deviceOther ? p.deviceOther : d)).join(' · ')}</p>` : ''}${(p.health || {}).q4 === 'YES' && p.medNote ? `<p class="small" style="margin:6px 0 0">ออกจากโรงพยาบาล / ข้อห้ามแพทย์: ${esc(p.medNote)}</p>` : ''}${(p.health || {}).q6 === 'YES' && (p.conditions || []).length ? `<p class="small" style="margin:6px 0 0">โรคประจำตัว: ${p.conditions.map(c => esc(c === 'อื่น ๆ' && p.conditionOther ? p.conditionOther : c)).join(' · ')}</p>` : ''}${(p.health || {}).q5 === 'YES' && p.surgeryNote ? `<p class="small" style="margin:6px 0 0">ผ่าตัด / อุปกรณ์ในร่างกาย: ${esc(p.surgeryNote)}</p>` : ''}` : '<p class="small">ยังตอบไม่ครบ 6 ข้อ</p>') + (p.healthStory ? `<p class="small">เล่าเพิ่ม: ${esc(p.healthStory)}</p>` : '')}
       ${sec('กิจวัตรประจำวัน', 4, `<p>${answered === 10 ? (unsure ? `ตอบครบ 10 ข้อ · ไม่แน่ใจ ${unsure} ข้อ ทีมจะช่วยดู` : 'ตอบครบ 10 ข้อแล้ว') : `ตอบแล้ว ${answered} / 10 ข้อ`}</p>`)}
-      ${sec('ที่อยู่', 5, `<p>${esc(a.line || '—')}</p>${a.landmark ? `<p class="small">จุดสังเกต: ${esc(a.landmark)}</p>` : ''}<p class="small">${esc([a.subdistrict, a.district, a.province, a.postal].filter(Boolean).join(' '))} · ${a.pin ? 'ยืนยันหมุดแล้ว' : 'ยังไม่ยืนยันหมุด'}</p>`)}
+      ${sec('ที่อยู่', 5, `<p>${esc(a.line || '—')}</p>${a.landmark ? `<p class="small">จุดสังเกต: ${esc(a.landmark)}</p>` : ''}${a.housePhoto ? '<p class="small">แนบรูปหน้าบ้านแล้ว</p>' : ''}<p class="small">${esc([a.subdistrict, a.district, a.province, a.postal].filter(Boolean).join(' '))} · ${a.pin ? 'ยืนยันหมุดแล้ว' : 'ยังไม่ยืนยันหมุด'}</p>`)}
       ${sec('เวลาที่สะดวก', 6, (p.windows || []).length ? p.windows.map((x, i) => `<p>${i ? 'สำรอง' : 'หลัก'} · ${esc(x)} น.</p>`).join('') : '<p class="small">ยังไม่ได้เลือก</p>')}
       <p class="pp-hint">${review ? 'ส่งแล้ว ทีมคลินิกจะดูข้อมูลก่อน ยังไม่ต้องจ่ายเงิน' : 'ส่งแล้วจะเห็นผลประเมินเบื้องต้น และใบแจ้งชำระ ClairMatch ฿1,599'}</p>`;
   }
@@ -1513,7 +1539,12 @@
           ${so.goal ? `<div class="card"><b class="h3">${I('target')} เป้าหมาย</b><p class="p" style="font-size:16px;color:var(--ink)">${esc(so.goal)}</p></div>` : ''}
           ${/* P18 (UX audit 7 Nov): the family sees Thai only. The English clinical note (S/O/T) stays with the PT and the certificate; the PT form is unchanged (NEW-05). */ ''}
           ${so.family ? `<div class="stack" style="gap:6px"><b class="sec-h">${I('message-square-heart')}ข้อความถึงคุณและครอบครัว</b><div class="pp-bub"><p class="bubble" style="margin:0">${esc(so.family)}</p><small>${esc(m.name)}</small></div></div>` : ''}
-          ${so.p ? `<div class="card cream"><b class="h3">${I('dumbbell')} ท่าฝึกที่บ้าน</b><p class="p" style="font-size:16px;color:var(--ink)">${esc(so.p)}</p><span class="small">ทำเท่าที่ไหว ถ้าปวดมากขึ้นให้หยุดและบอกทีม</span></div>` : ''}
+          ${(() => { const hpPost = so.hpPost && (s.pt.posts || []).find(x => x.id === so.hpPost); if (!so.p && !so.hpImg && !so.hpLink && !hpPost) return '';
+            return `<div class="card cream" data-home-program><b class="h3">${I('dumbbell')} ท่าฝึกที่บ้าน</b>${so.p ? `<p class="p" style="font-size:16px;color:var(--ink)">${esc(so.p)}</p>` : ''}
+              ${so.hpImg ? `<img class="pp-bigimg" src="${esc(so.hpImg === 'sample' ? 'a/companion.jpg' : so.hpImg)}" alt="รูปท่าฝึก">` : ''}
+              ${so.hpLink ? `<button class="btn ghost" data-act="openVideo" data-url="${esc(so.hpLink)}">${I('play')}ดูคลิปท่าฝึก</button>` : ''}
+              ${hpPost ? `<button class="btn ghost" data-act="openPt" data-id="me">${I('newspaper')}อ่านโพสต์: ${esc(hpPost.text.slice(0, 30))}…</button>` : ''}
+              <span class="small">ทำเท่าที่ไหว ถ้าปวดมากขึ้นให้หยุดและบอกทีม</span></div>`; })()}
           <div class="card flat"><b class="h3">${I('calendar-days')} นัดถัดไป</b><p class="p">${nextTxt ? esc(nextTxt) : 'ยังไม่มีนัดถัดไป นักกายภาพจะคุยแผนการดูแลกับคุณ'}</p>${nv ? `<button class="link" data-go="p.appt" data-p-n="${nv.n}" style="justify-self:start">ดูรายละเอียดนัด</button>` : ''}</div>
           <div class="card ${cert.requested ? 'mint' : 'cream'}">
             ${cert.issued ? `<div class="row">${I('file-check-2')}<div class="grow"><b class="sec-h">${I('award')}ใบรับรองพร้อมแล้ว</b><span class="small">ออกโดย ${esc(m.name)}</span></div></div><button class="btn soft" data-go="p.cert">เปิดใบรับรอง</button>`
