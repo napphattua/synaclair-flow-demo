@@ -349,3 +349,11 @@ body[data-sc-role="admin"] .stagewrap { grid-template-columns: 250px minmax(0, 1
 /* 7 Nov rehearsal: the admin's 250px desktop column rule out-ranked the phone layout, so admin at 390 drew in a 250px strip. One column on narrow screens. */
 @media (max-width: 900px) { body[data-sc-role="admin"] .stagewrap { grid-template-columns: minmax(0, 1fr); } }
 .log-row.sim { box-shadow: inset 3px 0 0 var(--em), inset 0 0 0 1px var(--line); }
+
+/* Boss 11 Nov: one website. Web pages on the phone or iPad show a browser address bar; after LINE login the same page shows LINE's in-app bar. */
+.dev-phone[data-chrome], .dev-tablet[data-chrome] { padding-top: 0; }
+.dev[data-chrome] .dev-scroll { top: 46px; }
+.dev[data-chrome]::before { content: attr(data-url); position: absolute; z-index: 9; top: 0; left: 0; right: 0; height: 46px; display: flex; align-items: center; justify-content: center; padding: 0 56px; font: 500 13px var(--text); color: #2f3b36; background: #f2f4f3; border-bottom: 1px solid #dde3e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dev-phone[data-chrome]::before { padding-top: 6px; }
+.dev[data-chrome="line"]::before { content: 'SynaClair  ·  ' attr(data-url); justify-content: flex-start; padding-left: 52px; background: #fff; color: #111; font-weight: 600; }
+.dev[data-chrome="line"]::after { content: '×'; position: absolute; z-index: 10; top: 8px; left: 16px; font: 400 26px/30px var(--text); color: #222; }

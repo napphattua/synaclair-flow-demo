@@ -823,7 +823,8 @@
   SC.screen('p.loading', {
     role: 'patient',
     render: () => loadingHtml('p.feed'),
-    mount(root, s) { s.patient.seenLoading = true; loadingMount(root, 'patient', 'p.loading', 'p.feed'); }
+    /* Boss 11 Nov: the web asks for LINE only when the visitor acts (ขอคนนี้ / ประเมินอาการ / เข้าสู่ระบบ); afterLogin is where they were going. */
+    mount(root, s) { s.patient.seenLoading = true; loadingMount(root, 'patient', 'p.loading', s.patient.afterLogin || 'p.feed'); }
   });
   /* ================================================================ p.feed */
   function districtSheet(s) {
@@ -918,7 +919,10 @@
   }
   SC.screen('p.feed', {
     role: 'patient',
+    url: '/home',
     render(s) {
+      /* Boss 11 Nov: synaclair.com/home is one page. A visitor from Google sees the public version (screens-web.js); after LINE login, this feed. */
+      if (!s.patient.seenLoading && SC.web) return SC.web.home(s);
       const list = feedList(s), tab = s.patient.feedTab || 'all', nf = follows(s).length;
       return `<div class="scr pp pl">
         <header class="pl-top">
@@ -962,7 +966,7 @@
   }
   SC.action('reportChange', (s, c) => { s.patient.intakeStep = 3; s.patient.hq = 0; return 'p.intake'; });
   const toggle = (arr, k) => { const i = arr.indexOf(k); if (i < 0) arr.push(k); else arr.splice(i, 1); return i < 0; };
-  SC.action('followPt', (s, c) => { const on = toggle(follows(s), c.data.id), n = ptName(s, c.data.id);
+  SC.action('followPt', (s, c) => { if (!s.patient.seenLoading) { c.toast('ติดตามได้หลังเข้าสู่ระบบด้วย LINE · กด "ขอคนนี้" หรือ "เข้าสู่ระบบ" ด้านบน'); return; } const on = toggle(follows(s), c.data.id), n = ptName(s, c.data.id);
     c.toast(on ? `ติดตาม ${n} แล้ว · โพสต์ใหม่จะขึ้นในแท็บกำลังติดตาม` : `เลิกติดตาม ${n} แล้ว`); });
   SC.action('likePost', (s, c) => { toggle(s.patient.likes = s.patient.likes || [], c.data.k); });
   SC.action('savePost', (s, c) => { if (toggle(s.patient.saves = s.patient.saves || [], c.data.k)) c.toast('บันทึกโพสต์แล้ว'); });
@@ -983,6 +987,7 @@
     s.patient.chosenPt = c.data.id;
     // Palm 29 Oct: asking for a PT still runs the full assessment, and a first visit pays the Trial price.
     const n = ptName(s, c.data.id); if (n) c.toast(`จำไว้แล้ว: ทีมจะส่งงานให้ ${n} ก่อน`);
+    if (!s.patient.seenLoading) { s.patient.afterLogin = 'p.intake'; return 'p.loading'; }
     return 'p.intake';
   });
   /* ================================================================ p.find */
@@ -1004,6 +1009,7 @@
   }
   SC.screen('p.find', {
     role: 'patient',
+    url: '/search',
     render(s) {
       if (!s.patient.district && !s.patient.geoOff) { s.patient.district = GEO_GUESS; s.patient.geo = true; }
       const d = s.patient.district, cat = s.patient.cat || '', f = s.patient.findF || 'all';
@@ -1080,8 +1086,10 @@
   }
   /* Boss (11 Nov): the PT's own hub shows this same profile, plus edit buttons only the PT sees. */
   SC.ptProf = { meItem, ptTab, plVer, PT_TABS };
+  SC.pp = { allPts, ranked, findPt, plAv, plVer, plRate, worksOf: typeof worksOf === 'function' ? worksOf : null, GROUPS: typeof GROUPS !== 'undefined' ? GROUPS : null };
   SC.screen('p.pt', {
     role: 'patient',
+    url: s => '/pt/' + (SC.web ? SC.web.slug(s.patient.viewPt || 'me') : ''),
     render(s) {
       const id = s.patient.viewPt || (meVisible(s) ? 'me' : 's1');
       const p0 = findPt(s, id);

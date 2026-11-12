@@ -135,7 +135,7 @@
   });
 
   let s = load() || initial();
-  const v = { device: {}, role: 'pt', at: { patient: 'p.loading', pt: 't.join', admin: 'a.queue' }, hist: { patient: [], pt: [], admin: [] }, params: {}, overlay: null, toast: null, panel: 'line', celebrate: null, wi: null, wiCase: null };
+  const v = { device: {}, role: 'pt', at: { patient: 'p.feed', pt: 't.join', admin: 'a.queue' }, hist: { patient: [], pt: [], admin: [] }, params: {}, overlay: null, toast: null, panel: 'line', celebrate: null, wi: null, wiCase: null };
   /* Live sync (7 Nov): the case lives in localStorage and is shared by every open tab; what each tab is looking at (role, screen, history)
      lives in sessionStorage, so a patient tab, a PT tab and an admin tab can stay open side by side. ?role=patient|pt|admin opens a tab as that role. */
   const ROLE_PARAM = (() => { try { const r = new URLSearchParams(location.search).get('role'); return ['patient', 'pt', 'admin'].includes(r) ? r : null; } catch (e) { return null; } })();
@@ -182,7 +182,7 @@
     const def = screens[id]; if (!def) { toast('หน้านี้ยังไม่มีในห้องซ้อม: ' + id); return; }
     const role = def.role;
     if (v.at[role] !== id) { v.hist[role].push(v.at[role]); if (v.hist[role].length > 40) v.hist[role].shift(); }
-    if (id === 'p.feed' && !s.patient.welcomed) { s.patient.welcomed = true; line('patient', { key: 'welcome' }); }
+    if (id === 'p.feed' && !s.patient.welcomed && s.patient.seenLoading) { s.patient.welcomed = true; line('patient', { key: 'welcome' }); }
     v.at[role] = id; v.role = role; if (params) v.params[id] = params; v.overlay = null; v.scrollTop = 0;
     render();
   }
@@ -249,6 +249,8 @@
     icon,
     bar: (title, o = {}) => `<header class="bar">${o.back === false ? (o.left || '<span style="width:8px"></span>') : `<button class="ib" data-back aria-label="ย้อนกลับ">${icon('chevron-left')}</button>`}<h1>${esc(title)}</h1>${o.right || '<span style="width:44px"></span>'}</header>`,
     tabs: (role, active) => {
+      /* Boss 11 Nov: one website. Before LINE login the patient is a web visitor, so no app tab bar. */
+      if (role === 'patient' && !s.patient.seenLoading) return '';
       const sets = {
         patient: [['p.feed', 'house', 'หน้าแรก'], ['p.find', 'search', 'ค้นหา'], ['p.chat', 'life-buoy', 'ช่วยเหลือ'], ['p.me', 'user-round', 'ฉัน']],
         pt: [['t.work', 'briefcase-medical', 'งาน'], ['t.schedule', 'calendar-range', 'ตาราง'], ['t.earn', 'wallet', 'รายได้'], ['t.hub', 'user-round', 'หน้าของฉัน']]
@@ -285,11 +287,11 @@
     { n: 3, role: 'admin', title: 'แอดมินตรวจใบประกอบและรูป', start: 'a.queue', done: () => s.pt.status === 'VERIFIED',
       guide: { 'a.queue': ['[data-go="a.license"]', 'เปิดงาน "ตรวจใบประกอบ"'], 'a.license': ['[data-act="approvePt"]', 'เทียบเลขกับสภาฯ แล้วกด "อนุมัติ"'] },
       complete() { s.pt.status = 'VERIFIED'; s.pt.photoApproved = true; s.pt.xp += 50; s.pt.xpLog.unshift({ points: 50, reason: 'ใบประกอบได้รับการยืนยัน' }); line('pt', { key: 'ptVerified' }); } },
-    { n: 4, role: 'patient', title: 'คนไข้เจอนักกายภาพในฟีด', start: 'p.loading', done: () => !!s.patient.chosenPt || s.patient.intakeStep > 0 || !!s.request,
-      guide: { 'p.loading': ['', 'รอสักครู่ ระบบจะพาเข้าเอง'], 'p.feed': ['[data-act="openPt"][data-id="me"]', 'กดชื่อหรือรูปนักกายภาพของคุณในฟีด เพื่อเปิดโปรไฟล์'], 'p.pt': ['[data-act="choosePt"]', 'กด "ขอคนนี้"'] },
+    { n: 4, role: 'patient', title: 'คนไข้เจอนักกายภาพบนเว็บ', start: 'p.feed', done: () => !!s.patient.chosenPt || s.patient.intakeStep > 0 || !!s.request,
+      guide: { 'p.loading': ['', 'รอสักครู่ ระบบจะพาเข้าเอง'], 'p.feed': ['[data-act="openPt"][data-id="me"]', 'หน้าเว็บ synaclair.com/home ยังไม่ต้องเข้าสู่ระบบ: กดชื่อหรือรูปนักกายภาพของคุณ เพื่อเปิดโปรไฟล์'], 'p.pt': ['[data-act="choosePt"]', 'กด "ขอคนนี้"'] },
       complete() { s.patient.seenLoading = true; s.patient.welcomed = true; s.patient.district = 'บางนา'; s.patient.chosenPt = 'me'; line('patient', { key: 'welcome' }); } },
     { n: 5, role: 'patient', title: 'ประเมินอาการ', start: 'p.intake', done: () => !!s.request,
-      guide: { 'p.intake': ['[data-act="intakeNext"], [data-act="submitRequest"]', 'ตอบทีละข้อ แล้วกด "ถัดไป" จนถึงสรุป'] },
+      guide: { 'p.loading': ['', 'เข้าสู่ระบบด้วย LINE แล้ว ระบบจะพาไปประเมินอาการเอง'], 'p.intake': ['[data-act="intakeNext"], [data-act="submitRequest"]', 'ตอบทีละข้อ แล้วกด "ถัดไป" จนถึงสรุป'] },
       complete() { Object.assign(s.patient, { bp: { sys: '138', dia: '84', unknown: false }, legalName: 'สมใจ รักดี', name: 'คุณแม่สมใจ', phone: '0812345678', bookingFor: 'SOMEONE_ELSE', goals: ['WALK', 'PAIN'], address: { province: 'กรุงเทพมหานคร', district: 'บางนา', subdistrict: 'บางนาเหนือ', postal: '10260', line: '99/1 ซ.บางนา-ตราด 25', landmark: 'ตึกสีครีม ประตูรั้วสีเขียว ตรงข้ามร้านสะดวกซื้อ', pin: true }, windows: [VISIT1.short, 'ส. 24 ต.ค. 13:00', 'อา. 25 ต.ค. 09:00'], consent: true, intakeStep: 8 });
         if (!s.patient.group) { s.patient.group = 'GERI'; s.patient.branch = s.patient.branch || {}; } /* a jump skips screening; DR-05 won't match a request with no group */ s.request = { ref: 'SC-2610001', status: 'PAYMENT_PENDING', preferredPt: s.patient.chosenPt, offerTo: [], slip: null }; SC.clinStamp(s); line('patient', { key: 'received' }); line('patient', { key: 'intakePay' }); } },
     { n: 6, role: 'patient', title: 'ชำระ ClairMatch ฿1,599', start: 'p.result', done: () => !!s.request && ['SLIP_SENT', 'PAID', 'OFFERED', 'BOOKED'].includes(s.request.status),
@@ -335,11 +337,11 @@
     s.unread = { patient: 0, pt: 0, admin: 0 };
     const st = STAGES.find(x => x.n === n);
     v.hist = { patient: [], pt: [], admin: [] };
-    v.at = { patient: s.patient.seenLoading ? 'p.feed' : 'p.loading', pt: s.pt.status === 'NONE' ? 't.join' : 't.hub', admin: 'a.queue' };
+    v.at = { patient: 'p.feed', pt: s.pt.status === 'NONE' ? 't.join' : 't.hub', admin: 'a.queue' };
     v.celebrate = null; v.overlay = null; v.toast = null; v.caseRun = null;
     if (st) go(st.start); else render();
   }
-  function reset() { s = initial(); v.at = { patient: 'p.loading', pt: 't.join', admin: 'a.queue' }; v.hist = { patient: [], pt: [], admin: [] }; v.params = {}; v.celebrate = null; go('t.join'); }
+  function reset() { s = initial(); v.at = { patient: 'p.feed', pt: 't.join', admin: 'a.queue' }; v.hist = { patient: [], pt: [], admin: [] }; v.params = {}; v.celebrate = null; go('t.join'); }
 
   /* ---------- LINE cards (rendered from the real Flex JSON in raw.json) ---------- */
   let RAW = {};
@@ -524,7 +526,10 @@
     const overlay = v.overlay ? (v.overlay.kind === 'sheet' ? `<div class="sheet-bg" data-close><div class="sheet" role="dialog" aria-modal="true"><span class="grab"></span>${ohtml}</div></div>` : `<div class="dlg" data-close><div role="dialog" aria-modal="true">${ohtml}</div></div>`) : '';
     const device = v.device[v.role] || ROLE[v.role].device;
     dev.className = 'dev dev-' + device;
-    dev.dataset.url = v.role === 'admin' ? 'admin.synaclair.com' : v.role === 'pt' ? 'synaclair.com/pt' : 'synaclair.com';
+    /* Boss 11 Nov: web and LINE are one website. A screen with `url` shows a browser bar; once the patient has logged in with LINE the same page shows LINE's in-app bar. */
+    const url = def && def.url ? (typeof def.url === 'function' ? def.url(s, param(id)) : def.url) : '';
+    dev.dataset.url = url ? 'synaclair.com' + url : v.role === 'admin' ? 'admin.synaclair.com' : v.role === 'pt' ? 'synaclair.com/pt' : 'synaclair.com';
+    if (url && device !== 'desktop') dev.dataset.chrome = (v.role === 'patient' && s.patient.seenLoading) || (v.role === 'pt' && s.pt.loggedIn) ? 'line' : 'web'; else delete dev.dataset.chrome;
     // Live inputs re-render on every keystroke: keep focus and caret on the same field.
     const ae = document.activeElement, keep = ae && dev.contains(ae) && ae.dataset && ae.dataset.bind ? { b: ae.dataset.bind, a: ae.selectionStart, z: ae.selectionEnd } : null;
     dev.innerHTML = `<div class="dev-scroll">${html}</div>${overlay}${v.toast ? `<div class="toast" role="status">${icon('circle-check')}${esc(v.toast)}</div>` : ''}`;

@@ -374,7 +374,7 @@
   /* Sheets are functions of state (engine re-renders them on every render, so chips, selects and checkboxes inside update in place). */
   function openSheet(fn, kind) { tt.sheetTop = 0; (kind === 'dlg' ? SC.dialog : SC.sheet)(fn); }
   function scr(id, def) {
-    SC.screen(id, { role: 'pt', render: (s, c) => { ensure(s); return def.render(s, c).replace('class="scr', 'class="tt-s scr'); }, mount(root, s) { mountCommon(root, s); if (def.mount) def.mount(root, s); } });
+    SC.screen(id, { role: 'pt', url: def.url, render: (s, c) => { ensure(s); return def.render(s, c).replace('class="scr', 'class="tt-s scr'); }, mount(root, s) { mountCommon(root, s); if (def.mount) def.mount(root, s); } });
   }
   const act = SC.action;
 
@@ -717,6 +717,7 @@
       </div></div>`;
   }
   scr('t.join', {
+    url: '/join',
     render(s) {
       const known = s.pt.status !== 'NONE'; const people = jnPeople(s);
       return `<div class="scr wide jn">
